@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class MainController {
-    @RequestMapping(value = "/")
-    public String index() throws Exception {
-        return "index.html";
-    }
+//    @RequestMapping(value = "/")
+//    public String index() throws Exception {
+//        return "index.html";
+//    }
 }
