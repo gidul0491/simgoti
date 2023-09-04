@@ -14,5 +14,11 @@
 <!--    ORDER BY board_pk desc-->
 <!--  </select>-->
 <!--  -->
+    <select id="selectClientList" resultType="com.simg.simgoti.dto.ClientDto">
+        select
+            *
+        from
+            client
+    </select>
 </mapper>
 
