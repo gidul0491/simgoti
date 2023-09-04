@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class MainController {
-    @GetMapping(value = "/")
+    @RequestMapping(value = "/")
     public String index() throws Exception {
         return "index.html";
     }
