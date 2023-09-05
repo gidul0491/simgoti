@@ -1,5 +1,8 @@
 package com.simg.simgoti.dto;
 
+import lombok.Data;
+
+@Data
 public class ClientDto {
     private int clientPk;
     private String clientName;
