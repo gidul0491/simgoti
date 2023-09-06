@@ -11,4 +11,14 @@ public class MainController {
     public String index() throws Exception {
         return "index.html";
     }
+
+    @RequestMapping(value = "/apply")
+    public String apply() throws Exception {
+        return "applyInfoInput.html";
+    }
+
+    @RequestMapping(value = "/applyTravelPeriod")
+    public String applyTravelPeriod() throws Exception {
+        return "applyTravelPeriod.html";
+    }
 }
