@@ -13,10 +13,27 @@
     <link rel="stylesheet" href="/css/bootstrap-datepicker.css">
     <script src="/js/bootstrap-datepicker.js"></script>
     <script src="/js/bootstrap-datepicker.ko.js"></script>
+    <style>
+        .datepicker {
+            font-size: 4rem;
+        }
+        .datepicker-switch {
+            font-size: 3rem;
+        }
+        .datepicker tbody td {
+            font-size: 3rem;
+            padding: 1rem;
+        }
+        .dow {
 
+        }
+        .day {
+
+        }
+    </style>
     <script>
         $(document).ready(function () {
-            $('#datePicker').datepicker({
+            $('#datePicker1').datepicker({
                 format: "yyyy-mm-dd",
                 language: "ko"
 
@@ -37,31 +54,44 @@
                     // 위와 같은 형태로 보인다.
                     // 추후에 yyyy-mm-dd 형태로 변경하는 코드를 업로드 하겠습니다.
                 });
+            for(let i=0; i<24; i++){
+                $(".timePick").append("<option value='"+numPadding2(i)+":00"+"'>"+numPadding2(i)+":00"+"</option>")
+            }
+            $("select").on("click", function(){
+                $(this).attr("size",5);
+            });
+
+            $("select").on("blur", function(){
+                $(this).removeAttr("size");
+            });
         });
     </script>
 </head>
-<body class="px-5">
-<div class="body d-flex flex-column justify-content-between">
-    <div class="apply-header d-flex justify-content-between align-items-center mt-5">
-        <a href="/home" class="btn back"><h1>이전</h1></a>
-        <h1>가입정보 입력</h1>
-        <a href="/home" class="btn home"><h1>홈</h1></a>
+<body>
+<div class="main">
+    <div class="apply-header d-flex justify-content-between align-items-center">
+        <a href="/home" class="btn back"><span>이전</span></a>
+        <span>가입정보 입력</span>
+        <a href="/home" class="btn home"><span>홈</span></a>
     </div>
-    <div>
-        <div class="margin-btn"><input type="text" id="datePicker" class="form-control" value="2023-09-06"></div>
-        <div class="margin-btn"></div>
 
-        <div class="d-flex align-items-start">
-
-            <div>
-                <span></span>
-            </div>
-
+    <div class="d-flex justify-content-around">
+        <div class="">
+            <span class="">여행 출발</span>
+            <input type="date" class="form-control">
+            <select name="startTime" id="startTime" class="timePick form-control">
+            </select>
+        </div>
+        <div class="">
+            <span class="">여행 종료</span>
+            <input type="date" class="form-control">
+            <select onclick="" name="endTime" id="endTime" class="timePick form-control">
+            </select>
         </div>
     </div>
 
     <div>
-        <a class="btn main-btn d-flex align-items-center justify-content-center" id="next"><h1>다음</h1></a>
+        <a class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></a>
     </div>
 
 </div>

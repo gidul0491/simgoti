@@ -14,7 +14,7 @@ public class MainController {
 
     @RequestMapping(value = "/apply")
     public String apply() throws Exception {
-        return "applyInfoInput.html";
+        return "applyTravelType.html";
     }
 
     @RequestMapping(value = "/applyTravelPeriod")

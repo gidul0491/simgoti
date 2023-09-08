@@ -1,31 +1,36 @@
+html {
+    height: 100vh;
+    overflow: hidden;
+    font-size: 2vw;
+}
+body {
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.form-control {
+    font-size: 2rem;
+}
 .main-btn {
     width: 100%;
     height: 6rem;
     margin-bottom: 1rem;
     border: 1px solid #0a53be;
 }
+.main-btn:active {
+    background: #0a53be;
+    color: white;
+}
 .main-btn h1 {
 }
 .margin-btn {
     margin: 5vh 0vh 5vh 0vh;
 }
-.modal-dialog {
-    max-width: 100%!important;
-    height: 80vh;
-    margin:auto;
-    margin-bottom: 0px;
-    top:20vh
-}
-.modal-content {
-    height: 100%;
-}
+
 .bottom-0 {
     bottom:0;
 }
 
-.body {
-    height: 100vh;
-}
 #next[href]{
     background: #0a53be;
     color: white;
@@ -49,4 +54,23 @@ span {
 }
 .check-btn.checked{
     color: #0a53be;
+}
+
+a.btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main {
+    height: 100% ;
+    padding: 4rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.apply-header {
+    margin-bottom: 4rem;
 }
