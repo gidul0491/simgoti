@@ -93,6 +93,15 @@ optgroup option {
     text-align: left;
 }
 
+/* 텍스트 셀렉트 세트 */
+.text-select-div {
+    position: relative;
+}
+.text-option {
+    position: absolute;
+    top: 100%;
+}
+
 /*.bottom-0 {*/
 /*    bottom:0;*/
 /*}*/
@@ -107,16 +116,17 @@ optgroup option {
 /*    color: white;*/
 /*}*/
 
-
-/*.check-btn {*/
-/*    color: #bbb;*/
-/*}*/
-/*.check-btn:hover{*/
-/*    color: #bbb;*/
-/*}*/
-/*.check-btn.checked{*/
-/*    color: #0a53be;*/
-/*}*/
+/* 체크 버튼 */
+.check-btn {
+    color: #bbb;
+    background: white;
+}
+.check-btn:hover{
+    color: #bbb;
+}
+.check-btn.checked{
+    color: #0a53be;
+}
 
 
 

@@ -65,13 +65,15 @@ function moveScrollTop(item){
     $("body").animate({scrollTop:top}, 400);
 }
 
-// utf8을 base64로, base64를 utf8로
-function utob( str ) {
-    return btoa(unescape(encodeURIComponent( str )));
-}
+// 날짜객체를 yyyy-MM-dd hh:mm으로 변환
+function dateToStr(date){
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
 
-function btou( str ) {
-    return decodeURIComponent(escape(atob( str )));
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
 }
 
 // // popup

@@ -1,6 +1,8 @@
 package com.simg.simgoti.controller;
 
 import com.simg.simgoti.service.ClientService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
@@ -31,5 +33,27 @@ public class ClientController{
         return result;
     }
 
+    @RequestMapping(value = "/addCalSession", method = RequestMethod.POST)
+    public void addCalSession(@RequestParam String startDt, @RequestParam String endDt, @RequestParam String birth, @RequestParam String gender, @RequestParam String country, @RequestParam String coverage, HttpServletRequest req){
+        HttpSession session = req.getSession();
+        session.setAttribute("startDt", startDt);
+        session.setAttribute("endDt", endDt);
+        session.setAttribute("birth", birth);
+        session.setAttribute("gender", gender);
+        session.setAttribute("country", country);
+        session.setAttribute("coverage", coverage);
+        System.out.println(startDt);
+    }
 
+    @RequestMapping(value = "/addAppSession", method = RequestMethod.POST)
+    public void addAppSession(@RequestParam String name, @RequestParam String resiA, @RequestParam String resiB, @RequestParam String phone, @RequestParam String email, @RequestParam int cnt, HttpServletRequest req){
+        HttpSession session = req.getSession();
+        session.setAttribute("name", name);
+        session.setAttribute("resiA", resiA);
+        session.setAttribute("resiB", resiB);
+        session.setAttribute("phone", phone);
+        session.setAttribute("email", email);
+        session.setAttribute("cnt", cnt);
+        System.out.println(phone);
+    }
 }

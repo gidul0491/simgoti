@@ -38,6 +38,15 @@ public class MainController {
     public String calculate() throws Exception {
         return "/calculate.html";
     }
-    
+
+    @RequestMapping(value = "/simgOti/applyA", method = RequestMethod.GET)
+    public String applyA() throws Exception {
+        return "/applyAlone.html";
+    }
+
+    @RequestMapping(value = "/simgOti/applyPurpose", method = RequestMethod.GET)
+    public String applyPurpose() throws Exception {
+        return "/applyPurpose.html";
+    }
 
 }

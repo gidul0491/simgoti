@@ -14,8 +14,9 @@
         let endTime = sessionStorage.getItem("endTime") || null;
         let birth = sessionStorage.getItem("birth") || null;
         let gender = sessionStorage.getItem("gender") || null;
-        let country;
+        let country = sessionStorage.getItem("country") || null;
 
+        let coverage = sessionStorage.getItem("coverage") || null;
         let startDt;
         let endDt;
 
@@ -31,19 +32,39 @@
             return insAge;
         }
 
+        function checkSessionStorageNull() {
+            let result = false;
+            if(
+                startDate != null &&
+                startTime != null &&
+                endDate != null &&
+                endTime != null &&
+                birth != null &&
+                gender != null &&
+                country != null
+            ){
+                result = true;
+            }
+            return result;
+        }
+
         $(document).ready(function () {
 
-
-
-            $("#start-date").val(startDate);
-            $("#start-time-pick").val(startTime);
-            $("#start-time").val(startTime);
-            $("#end-date").val(endDate);
-            $("#end-time-pick").val(endTime);
-            $("#end-time").val(endTime);
-            $("#birth").val(birth);
-            $("#gender-pick").val(gender);
-            $("#gender").val(gender=='M'?'남자':"여자");
+            if(checkSessionStorageNull()){
+                $("#start-date").val(startDate);
+                $("#start-time-pick").val(startTime);
+                $("#start-time").val(startTime);
+                $("#end-date").val(endDate);
+                $("#end-time-pick").val(endTime);
+                $("#end-time").val(endTime);
+                $("#birth").val(birth);
+                $("#gender-pick").val(gender);
+                $("#gender").val(gender=='M'?'남자': gender=='F'?"여자":null);
+                $("#country-text").val(country==null?null:country.split("/")[1]);
+                startDt = new Date(startDate + " " + startTime);
+                endDt = new Date(endDate + " " + endTime);
+                getPremiumAndCoverage();
+            }
 
             // 서버와 통신하여 country select 에 option 하나하나 넣기
             $.ajax({
@@ -73,8 +94,8 @@
             // 나라 선택시 텍스트창에 넣고 변수 country에도 대입
             $("#country-select").on("change", function () {
                 const selected = $("#country-select option:selected");
-                $("#country-text").val(selected.text());
-                country = selected.val();
+                country = selected.val()+"/"+selected.text();
+                $("#country-text").val(country.split("/")[1]);
             });
 
             // 출발일시, 종료일시 선택시 startDate, startTime, endDate, endTime에 값 넣기
@@ -105,8 +126,21 @@
             let covTabs = {};
             let covDetails = {};
 
-            // 보험료 확인버튼 클릭시
-            $("#calculate-btn").on("click", function () {
+            // 선택한 담보를 화면에 띄워주고 담보탭에 selected 클래스 추가하는 함수
+            function selectCoverage(covCode) {
+                let code = "10120102";
+                if(covCode != null){
+                    code = covCode;
+                }
+                $("#tab-"+code).addClass("selected");
+                $(".coverage-details").attr("hidden","hidden");
+                $("#detail-"+code).removeAttr("hidden");
+            }
+
+            // 보험료 계산해서 화면에 띄우는 함수
+            function getPremiumAndCoverage(){
+                startDt = new Date(startDate + " " + startTime);
+                endDt = new Date(endDate + " " + endTime);
                 // 여행 일수 구하기
                 const travelDay = Math.ceil((endDt - startDt) / (24 * 60 * 60 * 1000));
 
@@ -148,7 +182,7 @@
                             // 담보 선택 탭
                             $("#cov-tabs").append(
                                 "<li class='col-4'>" +
-                                "<button id='tab-"+covTabs[idx].covCode+"' class='w-100 cov-tab'>" +
+                                "<button id='tab-"+covTabs[idx].covCode+"' value='"+covTabs[idx].covCode+"' class='w-100 cov-tab'>" +
                                 "<div>"+covTabs[idx].covNm+"</div>" +
                                 "<div>"+covTabs[idx].totPremium+"</div>" +
                                 "</button>" +
@@ -160,8 +194,9 @@
                                 "<ul id='list-"+covTabs[idx].covCode+"' class='list-unstyled text-start'></ul>" +
                                 "</div>"
                             )
-                            // "표준형"이 기본으로 표시되도록
-                            $("#detail-10120102").removeAttr("hidden");
+                            // // "표준형"이 기본으로 표시되도록
+                            // $("#detail-10120102").removeAttr("hidden");
+                            selectCoverage(coverage);
                         }
 
                         // 세부담보 div에 값 집어넣기
@@ -179,19 +214,22 @@
                         }
 
                         moveScrollTop(".calculate-result");
+                        $("#calculate-btn").attr("disabled",true);
                     },
                     error: (err) => {
                         console.log(err)
                     }
                 });
+            }
+
+            // 보험료 확인버튼 클릭시
+            $("#calculate-btn").on("click", function () {
+               getPremiumAndCoverage();
             });
 
             // 문서의 모든 요소가 변할 때마다 동작
             $("html").on("change", function () {
-                startDt = new Date(startDate + " " + startTime);
-                endDt = new Date(endDate + " " + endTime);
-
-                // 모두 입력했을때 로컬스토리지에 값 저장, 보험료확인 버튼 활성화,
+                // 모두 입력했을때 로컬스토리지에 값 저장, 보험료확인 버튼 활성화, summary와 calculate-result 숨기기
                 if (startDt != "Invalid Date" && endDt != "Invalid Date" && birth != "" && gender != null && country != null) {
                     sessionStorage.setItem("startDate",startDate);
                     sessionStorage.setItem("startTime", startTime);
@@ -199,8 +237,11 @@
                     sessionStorage.setItem("endTime", endTime);
                     sessionStorage.setItem("birth", birth);
                     sessionStorage.setItem("gender", gender);
+                    sessionStorage.setItem("country", country);
 
                     $("#calculate-btn").removeAttr("disabled");
+
+                    $(".summary, .calculate-result").attr("hidden","hidden");
                 } else {
                     $("#calculate-btn").attr("disabled", "disabled");
                 }
@@ -211,16 +252,45 @@
                 const code = $(this).attr("id").split("-")[1];
                 $(".coverage-details").attr("hidden","hidden");
                 $("#detail-"+code).removeAttr("hidden");
+                coverage = $(this).val();
+                sessionStorage.setItem("coverage",coverage);
                 moveScrollTop(".calculate-result");
             });
 
+            // 1인 가입 선택시
             $("#apply-alone").on("click",function(){
-                // location.href = "";
-                const base = btoa(birth);
-                const binary = atob(base);
-                console.log(base);
-                console.log(binary);
-            });
+                if(
+                    startDt != null &&
+                    endDt != null &&
+                    birth != null &&
+                    gender != null &&
+                    country != null &&
+                    coverage != null
+                ){
+                    const startDtStr = dateToStr(startDt);
+                    const endDtStr = dateToStr(endDt);
+                    const birth6 = birth.substring(2);
+                    $.ajax({
+                        url: "/api/client/addCalSession",
+                        type: "POST",
+                        data: {
+                            startDt:startDtStr,
+                            endDt:endDtStr,
+                            birth: birth6,
+                            gender:gender,
+                            country:country,
+                            coverage:coverage
+                        },
+                        success: (data) => {
+                            location.href = "/simg/simgOti/applyA";
+                        },
+                        error: (err) => {
+
+                        }
+                    });
+                }
+
+            })
 
         });
 
@@ -294,13 +364,12 @@
                         <input type="text" class="form-control bg-white" id="birth" name="birth" placeholder="생년월일 8자리"
                                maxlength="8">
                     </div>
-                    <div class="col-6 position-relative">
+                    <div class="col-6 text-select-div">
                         <input type="text" class="form-control bg-white text-select" readonly placeholder="성별"
                                id="gender">
                         <select name="gender-pick" id="gender-pick"
-                                class="form-control position-absolute top-100 text-option" hidden size="2"
+                                class="form-control text-option" hidden size="2"
                                 style="z-index: 1">
-                            <!--                            <option value hidden selected>성별</option>-->
                             <option value="M">남자</option>
                             <option value="F">여자</option>
                         </select>
