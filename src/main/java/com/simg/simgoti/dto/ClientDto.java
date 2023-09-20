@@ -4,10 +4,11 @@ import lombok.Data;
 
 @Data
 public class ClientDto {
-    private int clientPk;
-    private String clientName;
-    private String clientNameEng;
-    private String clientPhoneNumber;
-    private String clientPhoneAgency;
-    private String clientResidentNumber;
+    private int clntPk;
+    private String clntNm;
+    private String clntPhone;
+    private String clntEmail;
+    private String clntBirth;
+    private String clntGen;
+    private String clntJumin;
 }

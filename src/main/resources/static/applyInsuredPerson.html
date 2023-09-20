@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 기간 입력</title>
+
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <script src="/js/commonjs.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let client = {};
+
+            $(".clientType").on("change", function (){
+                $(`#${$(this).attr("id").toString().split("_")[1]}`).val($(this).val());
+                $(this).attr("hidden","hidden");
+            });
+
+
+
+        });
+    </script>
+
+    <style>
+        .clientType {
+
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="apply-header d-flex justify-content-between align-items-center">
+        <a href="/home" class="btn back"><span>이전</span></a>
+        <span>가입정보 입력</span>
+        <a href="/home" class="btn home"><span>홈</span></a>
+    </div>
+
+    <div class="d-flex flex-column">
+
+        <ul>
+            <li >
+                <table>
+                    <tr><td colspan="3">
+                        <input type="text" value="계약자" readonly class="form-control">
+                    </td></tr>
+                    <tr>
+                        <td><span>생년월일</span></td>
+                        <td colspan="2"><input type="date" class="form-control"></td>
+                    </tr>
+                    <tr>
+                        <td><span>성별</span></td>
+                        <td><button type="button" value="M"><span>남</span></button></td>
+                        <td><button type="button" value="F"><span>여</span></button></td>
+                    </tr>
+                </table>
+            </li>
+
+            <li>
+                <table>
+                    <tr><td colspan="3">
+                        <input type="text" readonly class="form-control" id="client1">
+                        <select class="clientType" size="5" id="_client1">
+                            <option value="배우자">배우자</option>
+                            <option value="부모 또는 배우자의 부모">부모 또는 배우자의 부모</option>
+                            <option value="자녀">자녀</option>
+                            <option value="형제 또는 자매">형제 또는 자매</option>
+                            <option value="친구">친구</option>
+                            <option value="동료">동료</option>
+                            <option value="친척">친척</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </td></tr>
+                    <tr>
+                        <td><span>생년월일</span></td>
+                        <td colspan="2"><input type="date" class="form-control"></td>
+                    </tr>
+                    <tr>
+                        <td><span>성별</span></td>
+                        <td><button type="button" value="M"><span>남</span></button></td>
+                        <td><button type="button" value="F"><span>여</span></button></td>
+                    </tr>
+                </table>
+            </li>
+        </ul>
+        <div>
+            <button type="button" class="btn main-btn"><span>동반인 추가</span></button>
+        </div>
+    </div>
+
+    <div>
+        <button class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></button>
+    </div>
+
+</div>
+</body>
+</html>

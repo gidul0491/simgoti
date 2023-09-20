@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <script>
+
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div class="headerView">
+        <h1>로고</h1>
+        <h1>SIMG 해외여행자보험</h1>
+    </div>
+    <div class="contentsView">
+        <!-- 상위 탭-->
+        <ul class="list-unstyled row">
+            <li class="col-3">
+                <button id="calculateTab" class="w-100"><span>간편계산</span></button>
+            </li>
+            <li class="col-3">
+                <button class="w-100"><span>보험가입</span></button>
+            </li>
+            <li class="col-3">
+                <button class="w-100"><span>마이페이지</span></button>
+            </li>
+            <li class="col-3">
+                <button class="w-100"><span>QnA</span></button>
+            </li>
+        </ul>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+            <!-- 여행 시작일-->
+            <div class="text-start" id="travel-start">
+                <span>여행 출발</span>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="date" class="form-control" id="start-date">
+                    </div>
+                    <div class="col-6 position-relative">
+                        <input type="text" class="form-control time-input bg-white text-select" readonly
+                               placeholder="시간"
+                               name="start-time" id="start-time" value="">
+                        <select id="start-time-pick"
+                                class="form-control position-absolute top-100 text-option time-pick" hidden size="5"
+                                style="z-index: 1">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!--  여행 종료일-->
+            <div class="text-start" id="travel-end">
+                <span>여행 종료</span>
+                <div class="row">
+                    <div class="col-6">
+                        <input type="date" class="form-control" id="end-date">
+                    </div>
+                    <div class="col-6 position-relative">
+                        <input type="text" class="form-control time-input bg-white text-select" readonly
+                               placeholder="시간"
+                               name="end-time" id="end-time" value="">
+                        <select id="end-time-pick" class="form-control position-absolute top-100 text-option time-pick"
+                                hidden size="5" style="z-index: 1">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- 나이 성별 -->
+            <div class="text-start" id="birth-gender">
+                <div class="row">
+                    <div class="col-6">
+                        <input type="text" class="form-control bg-white" id="birth" name="birth" placeholder="생년월일 8자리"
+                               maxlength="8">
+                    </div>
+                    <div class="col-6 position-relative">
+                        <input type="text" class="form-control bg-white text-select" readonly placeholder="성별"
+                               id="gender">
+                        <select name="gender-pick" id="gender-pick"
+                                class="form-control position-absolute top-100 text-option" hidden size="2"
+                                style="z-index: 1">
+                            <!--                            <option value hidden selected>성별</option>-->
+                            <option value="M">남자</option>
+                            <option value="F">여자</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- 여행지 선택 -->
+            <div class="text-start" id="country">
+                <div class="row">
+                    <div class="col-6">
+                        <input type="text" placeholder="여행 국가 선택" id="country-text" readonly
+                               class="show-popup form-control bg-white show-popup">
+                        <div class="popup" hidden style="z-index: 1">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <select name="country" id="country-select" class="form-select mb-4" size="17">
+                                    <optgroup label="주요 여행국가" id="freq"></optgroup>
+                                    <optgroup label="전체 국가" id="others"></optgroup>
+                                </select>
+                                <button type="button" class="btn main-btn close-popup">확인</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 d-flex align-items-end">
+                        <button type="button" class="show-popup">여러 국가 여행시</button>
+                        <div class="popup" hidden style="z-index: 2">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <h3>여려 국가 여행시 국가 선택</h3>
+                                <ol>
+                                    <li>여러 국가 여행시 국가 선택은 첫번재 체류할 국가를 선택하시면 됩니다.</li>
+                                    <li>여러국가를 여행하셔도 보험기간 동안은 모두 보장됩니다(단, 여행금지국가 등 3단계 이상의 여행경보지역 제외)</li>
+                                    <li>여행지에 체코, 쿠바가 포함된 경우 여행국가를 체코, 쿠바로 선택해주세요</li>
+                                    <li>가입증명서에 기재된 여행국가는 언제든지 마이페이지에서 변경 가능하며, 이 경우 변경된 국가가 반영된 가입증명서를 이메일로 다시 받으실 수
+                                        있습니다
+                                    </li>
+                                </ol>
+                                <button type="button" class="btn main-btn close-popup">확인</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 보험료 계산 버튼 -->
+            <button type="button" class="btn main-btn" id="calculate-btn" disabled="disabled">보험료 확인</button>
+            <!-- 입력정보 요약 -->
+            <div class="summary" hidden="hidden">
+                <table>
+                    <tr>
+                        <td><span>보험기간</span></td>
+                        <td><span id="sum-period"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span>보험나이</span></td>
+                        <td><span id="sum-age"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span>성별</span></td>
+                        <td><span id="sum-gender"></span></td>
+                    </tr>
+                    <tr>
+                        <td><span>여행국가</span></td>
+                        <td><span id="sum-country"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <!-- 보험료 계산결과/담보 리스트 -->
+            <div class="calculate-result" hidden="hidden">
+                <ul class="list-unstyled row" id="cov-tabs">
+
+                </ul>
+                <div class="coverage-list"></div>
+                <!-- 가입신청 1인 동승자 버튼 -->
+                <div class="row">
+                    <div class="col-6">
+                        <button type="button" class="btn main-btn col-6" id="apply-solo">1인 가입</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn main-btn col-6" id="apply-many">2인 이상 가입</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

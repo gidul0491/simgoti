@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.simg.simgoti.mapper.CommonMapper">
+
+    <select id="getCountryList" resultType="com.simg.simgoti.dto.CountryDto">
+        select
+            iso, krNm, cntrFreq
+        from
+            country
+        where
+            useYn = "Y"
+        order by
+            cntrFreq desc, krNm asc
+    </select>
+
+</mapper>
+

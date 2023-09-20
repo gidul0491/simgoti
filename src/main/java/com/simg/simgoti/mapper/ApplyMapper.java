@@ -1,6 +1,8 @@
 package com.simg.simgoti.mapper;
 
 import com.simg.simgoti.dto.ClientDto;
+import com.simg.simgoti.dto.CoverageDto;
+import com.simg.simgoti.dto.CoverageTypeDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,7 +12,7 @@ import java.util.List;
 // 해당 인터페이스의 추상 메소드와 xml 파일의 태그명을 1:1로 연동해주는 어노테이션
 @Mapper
 public interface ApplyMapper {
-    List<ClientDto> selectClientList() throws Exception;
-
-
+//    List<ClientDto> selectClientList() throws Exception;
+    List<CoverageDto> selectCoverageList() throws Exception;
+    List<CoverageTypeDto> selectCoverageTypeList() throws Exception;
 }

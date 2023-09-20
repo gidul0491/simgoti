@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>여행 기간 입력</title>
+    <title>가입정보 입력</title>
 
     <script src="/js/jquery-3.7.0.js"></script>
     <link rel="stylesheet" href="/css/bootstrap.css">
@@ -10,59 +10,83 @@
     <script src="/js/bootstrap.bundle.js"></script>
     <link rel="stylesheet" href="/css/simgoti.css">
     <script src="/js/commonjs.js"></script>
-    <link rel="stylesheet" href="/css/bootstrap-datepicker.css">
-    <script src="/js/bootstrap-datepicker.js"></script>
-    <script src="/js/bootstrap-datepicker.ko.js"></script>
-    <style>
-        .datepicker {
-            font-size: 4rem;
-        }
-        .datepicker-switch {
-            font-size: 3rem;
-        }
-        .datepicker tbody td {
-            font-size: 3rem;
-            padding: 1rem;
-        }
-        .dow {
 
-        }
-        .day {
-
-        }
-    </style>
     <script>
         $(document).ready(function () {
-            $('#datePicker1').datepicker({
-                format: "yyyy-mm-dd",
-                language: "ko"
+            let startDate;
+            let startTime;
+            let endDate;
+            let endTime;
 
-            })
-                .on("changeDate", function (e) {
-                    //이벤트의 종류
-                    //show : datePicker가 보이는 순간 호출
-                    //hide : datePicker가 숨겨지는 순간 호출
-                    //clearDate: clear 버튼 누르면 호출
-                    //changeDate : 사용자가 클릭해서 날짜가 변경되면 호출 (개인적으로 가장 많이 사용함)
-                    //changeMonth : 월이 변경되면 호출
-                    //changeYear : 년이 변경되는 호출
-                    //changeCentury : 한 세기가 변경되면 호출 ex) 20세기에서 21세기가 되는 순간
 
-                    console.log(e);// 찍어보면 event 객체가 나온다.
-                    //간혹 e 객체에서 date 를 추출해야 하는 경우가 있는데
-                    // e.date를 찍어보면 Thu Jun 27 2019 00:00:00 GMT+0900 (한국 표준시)
-                    // 위와 같은 형태로 보인다.
-                    // 추후에 yyyy-mm-dd 형태로 변경하는 코드를 업로드 하겠습니다.
-                });
-            for(let i=0; i<24; i++){
-                $(".timePick").append("<option value='"+numPadding2(i)+":00"+"'>"+numPadding2(i)+":00"+"</option>")
-            }
-            $("select").on("click", function(){
-                $(this).attr("size",5);
+            $("#startDate").on("change", function () {
+                startDate = $(this).val();
             });
 
-            $("select").on("blur", function(){
-                $(this).removeAttr("size");
+            $("#endDate").on("change", function () {
+                endDate = $(this).val();
+            });
+
+            for (let i = 0; i < 24; i++) {
+                $(".timePick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")
+            }
+
+            $("#startTime").on("click", function () {
+                $("#startTimePick").removeAttr("hidden");
+            });
+
+            $("#startTimePick").on("change", function () {
+                $("#startTimePick").attr("hidden", "hidden");
+                startTime = $(this).val();
+                $("#startTime").val(startTime);
+            });
+
+            $("#startTimePick").on("blur", function () {
+                $("#startTimePick").attr("hidden", "hidden");
+                $("#startTime").val($(this).val());
+            });
+
+            $("#endTime").on("click", function () {
+                $("#endTimePick").removeAttr("hidden");
+            });
+
+            $("#endTimePick").on("change", function () {
+                $("#endTimePick").attr("hidden", "hidden");
+                endTime = $(this).val();
+                $("#endTime").val(endTime);
+            });
+
+            $("#endTimePick").on("blur", function () {
+                $("#endTimePick").attr("hidden", "hidden");
+                $("#endTime").val($(this).val());
+            });
+
+            $("#next").on("click", function () {
+                if (startTime == null || startDate == null || endDate == null || endTime == null) {
+                    alert("출발 시간과 종료 시간을 모두 입력해 주세요.");
+                } else {
+                    let travelDatetimeFromStr = `${startDate} ${startTime}`;
+                    let travelDatetimeToStr = `${endDate} ${endTime}`
+                    let travelDatetimeFrom = new Date(travelDatetimeFromStr);
+                    let travelDatetimeTo = new Date(travelDatetimeToStr);
+
+                    nowDatetime = new Date();
+                    if (travelDatetimeFrom - nowDatetime <= 0) {
+                        alert("출발 시간을 현재 시간 이후로 설정해 주세요.");
+                    } else if (travelDatetimeTo - travelDatetimeFrom <= 0) {
+                        alert("종료 시간을 출발 시간 이후로 설정해 주세요.");
+                    } else if (travelDatetimeFrom - nowDatetime > (62*24*60*60*1000)) {
+                        alert("여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.");
+                    } else if (travelDatetimeTo - travelDatetimeFrom > (89*24*60*60*1000)){
+                        alert("여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.");
+                    }
+                    else {
+                        window.localStorage.setItem("travelDatetimeFrom", travelDatetimeFromStr);
+                        window.localStorage.setItem("travelDatetimeTo", travelDatetimeToStr);
+                        window.location.href = "/applyInsuredPerson";
+                    }
+                }
+
             });
         });
     </script>
@@ -75,23 +99,58 @@
         <a href="/home" class="btn home"><span>홈</span></a>
     </div>
 
-    <div class="d-flex justify-content-around">
-        <div class="">
-            <span class="">여행 출발</span>
-            <input type="date" class="form-control">
-            <select name="startTime" id="startTime" class="timePick form-control">
-            </select>
+    <div class="d-flex flex-column">
+        <div class="d-flex justify-content-around">
+            <div class="position-relative m-4">
+                <div class="">
+                    <span class="">여행 출발</span>
+                    <input type="date" class="form-control" id="startDate">
+                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간"
+                           name="startTime" id="startTime">
+                </div>
+                <select name="startTimePick" id="startTimePick" class="top-100 timePick form-control position-absolute"
+                        hidden="hidden" size="5">
+                </select>
+            </div>
+
+            <div class="position-relative m-4">
+                <div class="">
+                    <span class="">여행 종료</span>
+                    <input type="date" class="form-control" id="endDate">
+                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간" name="endTime"
+                           id="endTime">
+                </div>
+                <select name="endTimePick" id="endTimePick" class="top-100 timePick form-control position-absolute"
+                        hidden="hidden" size="5">
+                </select>
+            </div>
         </div>
-        <div class="">
-            <span class="">여행 종료</span>
-            <input type="date" class="form-control">
-            <select onclick="" name="endTime" id="endTime" class="timePick form-control">
-            </select>
+        <div>
+            <ul class="list-unstyled small text-secondary">
+                <li class="d-flex ">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <p>여행(보험)기간은 집에서 출발하고 도착하는 일시이며, 이미 출발한 경우 비행기 탑승 일시를 입력해 주세요.</p>
+                </li>
+                <li class="d-flex">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <p>여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.</p>
+
+                </li>
+                <li class="d-flex">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <p>여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.</p>
+                </li>
+                <li class="d-flex">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <p>일정 변경을 원하시면 계약 취소 후 재가입 바랍니다. 계약 취소는 보험 개시 전에만 가능합니다.</p>
+                </li>
+            </ul>
         </div>
     </div>
 
+
     <div>
-        <a class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></a>
+        <button class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></button>
     </div>
 
 </div>

@@ -19,6 +19,30 @@
             *
         from
             client
+        where
+            useYn = "Y"
+    </select>
+
+    <select id="selectCoverageList" resultType="com.simg.simgoti.dto.CoverageDto">
+        select
+            c.covCode, c.covNm, c.covPremium, c.covPremiumMin, d.covDCode, covDNm, covDAmt
+        from
+            simgotidb.coverage c
+        join
+            simgotidb.coverageDetail d
+        on
+            c.covCode = d.covCode
+        where
+            c.useYN = 'Y' and d.useYN = 'Y';
+    </select>
+
+    <select id="selectCoverageTypeList" resultType="com.simg.simgoti.dto.CoverageTypeDto">
+        select
+            covCode, covNm, covPremium, covPremiumMin
+        from
+            simgotidb.coverage
+        where
+            useYN = 'Y';
     </select>
 </mapper>
 

@@ -2,43 +2,18 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>가입정보입력</title>
+    <title>가입정보 입력</title>
 
     <script src="/js/jquery-3.7.0.js"></script>
     <link rel="stylesheet" href="/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
     <script src="/js/bootstrap.bundle.js"></script>
     <link rel="stylesheet" href="/css/simgoti.css">
-    <link rel="stylesheet" href="/css/popup.css">
-    <script src="/js/commonjs.js" type="module"></script>
-
 
 
 
     <script>
         $(document).ready(() => {
-
-            // popup
-            const popup = $(".popupBackground");
-            const hidePopup = () => {
-                popup.removeClass("show");
-                popup.addClass("hide");
-            }
-            const showPopup = () => {
-                popup.removeClass("hide");
-                popup.addClass("show");
-            }
-
-            $(".popupBackground").on("click", function(e){
-                if(!$(e.target).hasClass("popup")){
-                    hidePopup();
-                }
-            });
-
-            $(".popupNext").on("click",function(){
-                hidePopup();
-            });
-            // popup end
 
             let check1bool = false;
             let travelType=-1;
@@ -81,7 +56,14 @@
                 activateNextBtn();
             });
 
-
+            $("#next").on("click",function(){
+                if (travelType==-1){
+                    alert("여행 종류를 선택해 주세요.");
+                }
+                else if(!check1bool){
+                    alert("내용 확인 후 체크 버튼을 눌러주세요.");
+                }
+            });
         });
     </script>
 
@@ -94,10 +76,6 @@
         <a href="/home" class="btn home"><span>홈</span></a>
     </div>
     <div>
-        <!--        <div class="margin-btn"><button class="btn main-btn radio" value="0" data-bs-toggle="modal" data-bs-target="#modal"><span>여행/관광</span></button></div>-->
-        <!--        <div class="margin-btn"><button class="btn main-btn radio" value="1" data-bs-toggle="modal" data-bs-target="#modal"><span>업무/출장</span></button></div>-->
-        <!--        <div class="margin-btn"><button class="btn main-btn radio" value="2" data-bs-toggle="modal" data-bs-target="#modal"><span>유학/연수/캠프</span></button></div>-->
-
         <div class="margin-btn">
             <button class="btn main-btn radio" value="0"><span>여행/관광</span></button>
         </div>
@@ -109,7 +87,7 @@
         </div>
 
         <div class="d-flex align-items-start">
-            <button class="btn check-btn me-3" id="check1">
+            <button class="btn check-btn me-3 border-0" id="check1">
                 <span><i class="bi bi-check-circle-fill"></i></span>
             </button>
             <div>
@@ -164,6 +142,6 @@
 
     </div>
 </div>
-
 </body>
+<script src="/js/commonjs.js"></script>
 </html>
