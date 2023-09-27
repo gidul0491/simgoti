@@ -1,25 +1,19 @@
+$(document).ready(function(){
+    $("#tabs").load("/tabs.html");
+    $("#header").load("/header.html");
+});
+
 // 숫자를 받아서 2자리수 문자열로 변환하는 함수
 function numPadding2(number) {
     return number < 10 ? "0" + number : number.toString();
 }
 
-// // html문서 변수선언
-// const calculate = "calculate.html"
 
-// // #content 의 내용을 바꾸는 함수
-// function changeContent(html) {
-//     $("#content").load(html);
-// }
-//
-// // 탭을 누르면 #content를 변경
-// $("#calculateTab").on("click", function(){
-//    changeContent(calculate);
-// });
 
-// 탭을 누르면 페이지 이동
-$("#calculateTab").on("click", function(){
+ // 페이지 이동 함수
+function moveToCalculate(){
     location.href = "/simg/simgOti/calculate";
-});
+}
 
 // 폼 등
 // html을 클릭했을 때, 뭐가 나타나고 뭐가 사라지고 그런거
@@ -52,21 +46,23 @@ $("html").on("click", function(e){
 });
 
 // input text의 클래스를 text-select, 바로 뒤 요소인 select의 클래스를 text-option이라고 하면
-// select값 변경시 이전 요소인 input text에 value값을 집어넣고 select요소가 사라짐
-$('.text-option').on("change", function(){
-    $(this).prev("input").val($(this).prev("input").next("select").children("option:selected").text());
+// select값 변경시 이전 요소인 input text에 text값을 집어넣고 select요소가 사라짐
+$('.text-option').on("click", function(){
+    if($(this).val() != "input"){
+        $(this).prev("input").val($(this).prev("input").next("select").children("option:selected").text());
+    }
     $(this).attr("hidden","hidden");
 });
 
 // 스크롤 이동하는 함수
 function moveScrollTop(item){
-    const offset = $(item).offset();
-    const top = Math.floor(offset.top);
-    $("body").animate({scrollTop:top}, 400);
+    const top = $(item).offset().top - 10;
+    $("html").animate({scrollTop:top}, 10);
 }
 
+
 // 날짜객체를 yyyy-MM-dd hh:mm으로 변환
-function dateToStr(date){
+function dateTimeToStr(date){
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
@@ -76,25 +72,46 @@ function dateToStr(date){
     return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
 }
 
-// // popup
-// const popup = $(".popupBackground");
-// const hidePopup = () => {
-//     popup.removeClass("show");
-//     popup.addClass("hide");
-// }
-// const showPopup = () => {
-//     popup.removeClass("hide");
-//     popup.addClass("show");
-// }
-//
-// $(".popupBackground").on("click", function(e){
-//     if(!$(e.target).hasClass("popup")){
-//         hidePopup();
-//     }
-// });
-//
-// $(".popupNext").on("click",function(){
-//     hidePopup();
-// });
-// // popup end
+// 날짜객체를 yyyy-MM-dd로 변환
+function dateToStr(date){
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+
+    return year + '-' + month + '-' + day;
+}
+
+
+// alert 및 이동
+function alertAndMove(msg, url){
+    alert(msg);
+    location.href = url;
+}
+
+// 1000단위로 끊는 함수
+function putComma(text){
+    const regex = /\B(?=(\d{3})+(?!\d))/g;
+    const matches = text.toString().replace(regex,",");
+    return matches;
+}
+// 만, 억 단위로 끊는 함수
+function numToKrUnit(num){
+    const unit = ["", "만", "억", "조", "경"];
+    let splitedNum = [];
+    let tempNum = num;
+    let result = "";
+
+    while(tempNum/10000 > 0){
+        splitedNum.push(tempNum % 10000);
+        tempNum = Math.floor(tempNum / 10000);
+    }
+
+    for(let i = 0;i < splitedNum.length; i++){
+        if(splitedNum[i] != 0){
+            result = splitedNum[i] + unit[i] + result;
+        }
+    }
+
+    return result;
+}
 

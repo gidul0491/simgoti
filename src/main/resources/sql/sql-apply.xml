@@ -4,23 +4,14 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.simg.simgoti.mapper.ApplyMapper">
-<!--  &lt;!&ndash; 게시글 리스트 불러오기 &ndash;&gt;-->
-<!--  <select id="selectBoardList" resultType="com.bitc.full505_team2_project.dto.BoardDto">-->
-<!--    SELECT-->
-<!--      board_pk, board_title, board_writer,-->
-<!--      date_format(board_date, '%Y-%m-%d') AS board_date, board_visit_cnt-->
-<!--    FROM board-->
-<!--    WHERE board_delete_yn = 'N'-->
-<!--    ORDER BY board_pk desc-->
-<!--  </select>-->
-<!--  -->
+
     <select id="selectClientList" resultType="com.simg.simgoti.dto.ClientDto">
         select
             *
         from
             client
         where
-            useYn = "Y"
+            useYN = "Y";
     </select>
 
     <select id="selectCoverageList" resultType="com.simg.simgoti.dto.CoverageDto">
@@ -44,5 +35,61 @@
         where
             useYN = 'Y';
     </select>
+
+    <select id="selectPremium" resultType="Map">
+        select
+            covPremium, covPremiumMin
+        from
+            simgotidb.coverage
+        where
+            covCode = #{covCode} and useYN = 'Y';
+    </select>
+
+    <insert id="insertRepClient" useGeneratedKeys="true" keyProperty="clntPk">
+        insert into
+            simgotidb.client (clntNm, clntBirth, clntGen, clntJumin, clntPhone, clntEmail)
+        values
+            (#{clntNm}, #{clntBirth}, #{clntGen}, #{clntJumin}, #{clntPhone}, #{clntEmail})
+    </insert>
+
+    <select id="selectClientNmJumin" resultType="int">
+        select
+            clntPk
+        from
+            simgotidb.client
+        where
+            clntNm = #{clntNm} and clntJumin = #{clntJumin} and useYN = 'Y';
+    </select>
+
+    <update id="updateClientPhoneEmailByPk" >
+        update
+            simgotidb.client
+        set
+            clntPhone = #{clntPhone}, clntEmail = #{clntEmail}, clntUdt = now()
+        where
+            clntNm = #{clntNm} and clntJumin = #{clntJumin} and useYN = 'Y';
+    </update>
+
+    <insert id="insertApplyPayment" useGeneratedKeys="true" keyProperty="payPk">
+        insert into
+            simgotidb.payment (premium, payDueDt)
+        values
+            (#{premium}, #{payDueDt});
+    </insert>
+
+    <insert id="insertApplyFinish" useGeneratedKeys="true" keyProperty="aplPk">
+        insert into
+            simgotidb.application (payPk, polNo, comCode, insComCode, clntPk, trPurpose, trPlace, trFromDt, trToDt, covCode, clntCnt, premium)
+        values
+            (#{payPk}, #{polNo}, #{comCode}, #{insComCode}, #{clntPk}, #{trPurpose}, #{trPlace}, #{trFromDt}, #{trToDt}, #{covCode}, #{clntCnt}, #{premium});
+    </insert>
+
+    <insert id="insertApplyInsuredList">
+        insert into
+            simgotidb.applicationInsuredList (aplPk, clntPk, repYN)
+        values
+            (#{aplPk}, #{clntPk}, #{repYN});
+    </insert>
+
 </mapper>
 

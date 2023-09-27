@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <style>
+        #companion-list-btn {
+            width: 4rem;
+            font-size: 0.6rem;
+        }
+    </style>
+
+    <script>
+        let period;
+        let startDt;
+        let endDt;
+        let trPlace;
+        let cnt;
+        let totalPrem;
+
+        let clntNm;
+        let clntJumin;
+        let clntPhone;
+        let clntEmail;
+
+        let accData;
+
+        // companion-table에 값 저장하는 함수
+        function addCompanionRow(num, nm, jumin, prem) {
+            $("#companion-table").append(
+                `<tr>
+                    <td>${num}</td>
+                    <td>${nm}</td>
+                    <td>${jumin}</td>
+                    <td>${prem} 원</td>
+                </tr>`
+            )
+        }
+
+        $(document).ready(function () {
+            // 최초 결제요약정보를 불러옴
+            $.ajax({
+                url: "/api/client/summary",
+                type: "GET",
+                data: {},
+                success: (data) => {
+                    console.log(data);
+
+                    if (data == "session expired") {
+                        alertAndMove("세션이 만료되었습니다. 간편 페이지로 이동합니다.", "/simg/simgOti/calculate");
+                    }
+
+                    // 가입신청정보요약
+                    period = data.appSummaryDto.period;
+                    startDt = data.appSummaryDto.startDt;
+                    endDt = data.appSummaryDto.endDt;
+                    trPlace = data.appSummaryDto.trPlace;
+                    cnt = data.appSummaryDto.cnt;
+                    totalPrem = data.appSummaryDto.totalPrem;
+
+                    $("#period").append(`<span>${period}일</span><br>`);
+                    $("#trFromDt").append(`<span>${startDt} 부터</span><br>`);
+                    $("#trToDt").append(`<span>${endDt} 까지</span>`);
+                    $("#trPlace").append(`<span>${trPlace}</span>`);
+                    $("#applicant-count").append(`<span>${cnt} 명</span>`);
+                    $("#total-premium").append(`<span>${totalPrem} 원</span>`)
+
+                    // 가입자명단
+                    const companionList =data.companionDtoList;
+                    if(companionList.length > 0){
+                        $("#companion-list-btn-div").removeAttr("hidden");
+                        for(i in companionList){
+                            const item = companionList[i];
+                            addCompanionRow(item.companionNum,
+                                item.companionNm,
+                                item.companionJuminA + "-" + item.companionJuminB,
+                                item.prem
+                            )
+                        }
+                    }
+
+
+                    // 대표가입자정보
+                    clntNm = data.repClientDto.clntNm;
+                    clntJumin = data.repClientDto.clntJumin;
+                    clntPhone = data.repClientDto.clntPhone;
+                    clntEmail = data.repClientDto.clntEmail;
+
+                    $("#rep-client-nm").append(`<span>${clntNm}</span><br>`)
+                    $("#rep-client-jumin").append(`<span>${clntJumin}</span><br>`);
+                    $("#rep-client-phone").append(`<span>${clntPhone}</span><br>`);
+                    $("#rep-client-email").append(`<span>${clntEmail}</span>`);
+
+                    // 결제하실 금액
+                    $("#totalPrem").append(
+                        `<span>결제하실 금액 ${totalPrem} 원</span>`
+                    )
+
+                },
+                error: (err) => {
+
+                }
+            })
+
+            // 예 클릭했을때
+            $("#yes").on("click", function () {
+                $("#yes-or-no").remove();
+                $("#select-payment").removeAttr("hidden");
+            });
+
+            // 아니요 클릭했을 때
+            $("#no").on("click", function () {
+                $.ajax({
+                    url: "/api/client/allSession",
+                    type: "DELETE",
+                    data: {},
+                    success: (data) => {
+                        sessionStorage.clear();
+                        moveToCalculate();
+                    },
+                    error: (err) => {
+                    }
+                });
+            });
+
+            // 입금방법 선택했을때(무통장입금밖에없음)
+            $("#select-payment input").on("input", function () {
+                const val = $(this).val();
+                // 무통장입금 선택했을때
+                if (val == "account") {
+                    // 서버에서 은행계좌정보 가져오기
+                    $.ajax({
+                        url: "/api/client/payAccount",
+                        type: "GET",
+                        data: {},
+                        success: (data) => {
+                            accData = data;
+                            console.log(accData);
+                            $("#accBank-select").empty();
+                            for (let i in accData) {
+                                $("#accBank-select").append(
+                                    `<option value="${i}">${accData[i].accBank}</option>`
+                                )
+                            }
+                            $("#accBank-select").attr("size", accData.length)
+                            $("#account-div").removeAttr("hidden");
+                        },
+                        error: (err) => {
+
+                        }
+                    });
+
+                }
+            });
+
+            // select에서 은행 선택하면 실행됨
+            $(document).on("click", "#accBank-select option", function () {
+
+
+                // 서버랑 통신해서 db에 결제정보, 가입신청정보 저장
+                $.ajax({
+                    url: "/api/client/applyFinish",
+                    type: "POST",
+                    data: {},
+                    success: (data) => {
+                        if (data == "session expired") {
+                            // alertAndMove("세션이 만료되었습니다. 간편 페이지로 이동합니다.","/simg/simgOti/calculate");
+                        } else if (data == "ok") {
+                            console.log("가입 성공");
+
+                            const i = $("#accBank-select").val();
+                            $("#accDueDt").empty().append(`<span>입금기한: ${accData[i].accDueDt}</span>`)
+                            $("#totalPrem2").empty().append(`<span>${totalPrem} 원</span>`);
+                            $("#accBank").empty().append(`<span>${accData[i].accBank}</span>`);
+                            $("#accNum").empty().append(`<span>${accData[i].accNum}</span>`);
+                            $("#accNm").empty().append(`<span>(예금주: ${accData[i].accNm})</span>`);
+                            $("#account-div").remove();
+                            $("#account-info-div").removeAttr("hidden");
+
+                        } else {
+                            console.log(data);
+                        }
+                    },
+                    error: (err) => {
+
+                    }
+                });
+            })
+        });
+
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-1"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+            <!-- 요약 -->
+            <div class="mb-3">
+                <!-- 가입신청정보요약 -->
+                <div id="apply-summary">
+                    <table class="w-100">
+                        <colgroup>
+                            <col style="width: 20%">
+                            <col style="width: 80%">
+                        </colgroup>
+                        <tr>
+                            <td>보험기간</td>
+                            <td id="period"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="trFromDt"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="trToDt"></td>
+                        </tr>
+                        <tr>
+                            <td>여행국가</td>
+                            <td id="trPlace"></td>
+                        </tr>
+                        <tr>
+                            <td>가입인원</td>
+                            <td class="d-flex justify-content-center align-self-center">
+                                <div id="applicant-count"></div>
+                                <div id="companion-list-btn-div" class="text-start ms-2">
+                                    <button type="button" class="btn main-btn-outlined show-popup p-0" id="companion-list-btn">가입자명단</button>
+                                    <div class="popup" hidden style="z-index: 2">
+                                        <div class="popup-content d-flex justify-content-center align-items-center">
+                                            <div class="w-100">
+                                                <table id="companion-table" class="w-100">
+                                                    <colgroup>
+                                                        <col style="width: 10%">
+                                                        <col style="width: 25%">
+                                                        <col style="width: 40%">
+                                                        <col style="width: 25%">
+                                                    </colgroup>
+                                                    <tr>
+                                                        <th>번호</th>
+                                                        <th>이름</th>
+                                                        <th>주민등록번호</th>
+                                                        <th>보험료</th>
+                                                    </tr>
+                                                </table>
+                                            </div>
+
+
+                                            <div class="w-100 me-3 mt-3">
+                                                <button type="button" class="btn main-btn close-popup">확인</button>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>보험료</td>
+                            <td id="total-premium"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- (대표)가입자 -->
+                <div id="representative-client-div">
+                    <table class="w-100">
+                        <colgroup>
+                            <col style="width: 20%">
+                            <col style="width: 80%">
+                        </colgroup>
+                        <tr>
+                            <td>대표가입자</td>
+                            <td id="rep-client-nm"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="rep-client-jumin"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="rep-client-phone"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td id="rep-client-email"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="totalPrem" class="mb-3">
+            </div>
+
+
+            <!-- 신청 버튼 -->
+            <div class="d-flex flex-column" id="yes-or-no">
+                <div>
+                    <span>위 내용이 맞습니까?</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <div class="w-100 p-3">
+                        <button type="button" class="show-popup btn main-btn">아니요</button>
+                        <div class="popup" hidden style="z-index: 2">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <span>간편계산 페이지로 이동합니다.</span>
+                                <span>이동시 입력하신 정보가 초기화됩니다.</span>
+                                <span>그래도 이동하시겠습니까?</span>
+
+                                <div class="d-flex justify-content-between w-100">
+                                    <div class="w-100 me-3 mt-3">
+                                        <button type="button" class="btn main-btn close-popup" id="no">예</button>
+                                    </div>
+                                    <div class="w-100 mt-3">
+                                        <button type="button" class="btn main-btn close-popup">아니요</button>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-100 p-3">
+                        <button type="button" class="btn main-btn col-6" id="yes">예</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 결제선택 -->
+            <div id="select-payment" class="check-radio" hidden>
+                <div class="d-flex flex-column justify-content-center w-75 mx-auto">
+                    <label class="px-3 mb-2" disabled="disabled">
+                        <input type="radio" name="payType" hidden value="card" disabled="disabled">
+                        <span type="button" class="btn main-btn" disabled="disabled">신용카드/체크카드</span>
+                    </label>
+
+                    <label class="px-3 mb-2">
+                        <input type="radio" name="payType" value="account" hidden>
+                        <span type="button" class="btn main-btn">무통장입금</span>
+                    </label>
+
+                </div>
+
+            </div>
+
+            <!-- 무통장입급 은행선택 -->
+            <div id="account-div" class=" w-75 mx-auto px-3 mb-2" hidden="hidden">
+                <div class="text-select-div">
+                    <input type="text" class="form-control text-select" id="accBank-text" value="은행 선택">
+                    <select name="accBank-select" id="accBank-select"
+                            class="form-control text-option" hidden
+                            style="z-index: 1">
+                    </select>
+                </div>
+            </div>
+
+            <!-- 은행계좌번호 등 표시 -->
+            <div id="account-info-div" hidden="hidden">
+                <span id="accDueDt"></span>
+                <table class="w-100">
+                    <colgroup>
+                        <col style="width: 40%">
+                        <col style="width: 60%">
+                    </colgroup>
+                    <tr>
+                        <td>입금하실 보험료</td>
+                        <td id="totalPrem2"></td>
+                    </tr>
+                    <tr>
+                        <td>입금하실 계좌</td>
+                        <td id="accBank"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="accNum"></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td id="accNm"></td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

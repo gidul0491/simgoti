@@ -1,0 +1,35 @@
+<div class="d-flex justify-content-between align-items-end tab-container">
+            <button id="calculateTab" class="w-100 tab-btn p-2"><span>간편계산</span></button>
+
+            <button id="applyTab" class="w-100 tab-btn p-2"><span>보험가입</span></button>
+
+            <button id="myPageTab" class="w-100 tab-btn p-2"><span>마이페이지</span></button>
+
+            <button id="qnaTab" class="w-100 tab-btn p-2"><span>QnA</span></button>
+</div>
+<script>
+    $(document).ready(function (){
+        // 탭을 누르면 페이지 이동
+        $("#calculateTab").on("click", function(){
+            location.href = "/simg/simgOti/calculate";
+        });
+
+        const selectedTab = $("#tabs").attr("class").split("-")[1];
+
+        switch (selectedTab){
+            case "0":
+                $("#calculateTab").addClass("selected");
+                break;
+            case "1":
+                $("#applyTab").addClass("selected");
+                break;
+            case "2":
+                $("#myPageTab").addClass("selected");
+                break;
+            case "3":
+                $("#qnaTab").addClass("selected");
+                break;
+        }
+    });
+
+</script>

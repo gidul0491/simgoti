@@ -9,44 +9,21 @@
     <link rel="stylesheet" href="/css/simgoti.css">
 
     <script>
-        const selectClientList = () => {
-            return new Promise((resolve, reject) => {
-                const url = "/api/client/list"
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    data: {},
-                    success: (data) => {
-                        return resolve(data);
-                    },
-                    error: (err) => {
-                        reject(err);
-                    }
-                });
-            });
-        };
 
 
         $(document).ready(function () {
-            selectClientList()
-                .then((data) => {
-                    console.log(data);
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
+
         });
 
 
     </script>
 </head>
 <body>
-<div class="mainView d-flex flex-column text-center">
-    <div>
-        <h1>로고</h1>
-    </div>
-    <div>
-        <div class="margin-btn"><a href="/simg/simgOti" class="btn main-btn"><span>해외여행자보험 가입</span></a></div>
+
+<div class="mainView d-flex flex-column align-items-center text-center">
+    <img src="/img/SIMG_logo.png" id="logo"></img>
+    <div class="w-75">
+        <div class="margin-btn w-100"><a href="/simg/simgOti/calculate" class="btn main-btn"><span>해외여행자보험</span></a></div>
 <!--        <div class="margin-btn"><a class="btn main-btn"><span>보험계약 확인</span></a></div>-->
 <!--        <div class="margin-btn"><a class="btn main-btn"><span>보험금 청구</span></a></div>-->
     </div>

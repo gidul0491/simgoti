@@ -4,16 +4,13 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.simg.simgoti.mapper.CommonMapper">
-
-    <select id="getCountryList" resultType="com.simg.simgoti.dto.CountryDto">
+    <select id="selectPolNoByCovCode" resultType="java.lang.String">
         select
-            iso, krNm, cntrFreq
+            polNo
         from
-            country
+            simgotidb.policy
         where
-            useYn = "Y"
-        order by
-            cntrFreq desc, krNm asc
+            covCode = #{covCode} and useYN = 'Y';
     </select>
 
 </mapper>

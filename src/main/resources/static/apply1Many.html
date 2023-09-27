@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <style>
+        .companion-input-div {
+            background: #efefef;
+            border: 1px solid #eee;
+            border-radius: 0.4rem;
+        }
+
+        #prem-check {
+            border: 1px solid #ddd;
+            border-radius: 0.2rem;
+            padding: 0.6rem;
+        }
+        #iframe-div {
+            width: 100%;
+            padding-bottom: 150%;
+            position: relative;
+        }
+        #iframe-div iframe {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script>
+        let clntNm;
+        let clntJuminA = sessionStorage.getItem("clntBirth").substring(2) || null;
+        let clntJuminB;
+        let clntPhone;
+        let clntEmail;
+        let clntCnt = 1;
+        let companionList = [];
+        let read = [false, false, false, false, false];
+
+        let covCode = sessionStorage.getItem("covCode") || null;
+        let startDt = `${sessionStorage.getItem("startDate")} ${sessionStorage.getItem("startTime")}` || null;
+        let endDt = `${sessionStorage.getItem("endDate")} ${sessionStorage.getItem("endTime")}` || null;
+        let check0bool = false;
+
+        const regexNum = /[^0-9]/g;
+
+        // 대표가입자의 정보를 모두 변수에 저장
+        function inputAll() {
+            clntNm = $("#clntNm-text").val();
+            clntJuminB = $("#jumin-text-b").val();
+            clntPhone = $("#clntPhone-text").val().replace(regexNum, "");
+            clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
+        }
+
+        // companion-table에 값 저장하는 함수
+        function addCompanionRow(num, nm, jumin, prem) {
+            $("#companion-table").append(
+                `<tr>
+                    <td>${num}</td>
+                    <td>${nm}</td>
+                    <td>${jumin}</td>
+                    <td>${prem} 원</td>
+                </tr>`
+            )
+        }
+
+        // 동반가입자정보 입력란 추가하는 함수
+        function addCompanion() {
+            if (companionList.length < 21) {
+                clntCnt += 1;
+                const divToAdd = $("#companion")
+                const appendDiv =
+                    `<div class="companion-input-div my-3 pt-2 pb-3 px-3">
+                    <div class="d-flex justify-content-between mb-3 ">
+                        <div>
+                            <span>동반 </span><span class="companionNum-span"></span>
+                        </div>
+                        <div class="companion-delete-div">
+                        </div>
+                    </div>
+
+                    <div class="text-start mb-3">
+                        <div class="d-flex justify-content-between">
+                            <div class="w-25">
+                                <span>이름</span>
+                            </div>
+                            <div class="w-75">
+                                <input type="text" class="form-control companionNm">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="text-start">
+                        <div class="d-flex justify-content-between">
+                            <div class="w-25">
+                                <div><span>주민등록번호</span></div>
+                                <div><span><small>(외국인번호)</small></span></div>
+                            </div>
+                            <div class="w-75">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="w-100 pe-2">
+                                        <input type="text" class="form-control companionJuminA" >
+                                    </div>
+
+                                    <span>-</span>
+                                    <div class="w-100 ps-2">
+                                        <input type="text" class="form-control companionJuminB">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+                divToAdd.append(appendDiv);
+            }
+            $("#prem-check-btn").removeAttr("disabled");
+            setCompanionNumAndDelBtn();
+        }
+
+        // 동승자 입력 div 숫자 재설정 및 삭제 버튼 추가 함수
+        function setCompanionNumAndDelBtn() {
+            $(".companion-input-div").each(function (index, item) {
+                const num = index + 1;
+                $(this).find(".companionNum-span").text(num);
+                $(this).find(".companion-delete-div").empty();
+                if (clntCnt - 1 > 1) {
+                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete' value='${num}'>delete</button>`)
+                }
+                console.log(companionList.length);
+            });
+        }
+
+        // 삭제버튼 클릭시
+        $(document).on("click", ".companion-delete", function () {
+            const num = $(this).val();
+            console.log(`delete ${num}`);
+            $(".companion-input-div").each(function (index, item) {
+                if (index + 1 == num) {
+                    $(this).remove();
+                    return false;
+                }
+            });
+            clntCnt -= 1;
+            $("#prem-check-btn").removeAttr("disabled");
+            setCompanionNumAndDelBtn();
+        });
+
+        // 산출된 보험료 표시해주는 함수
+        function showPremCheckContainer(totalPrem, clntCnt) {
+            $("#prem-check-container").removeAttr("hidden");
+            $(".total-prem").text(totalPrem);
+            $(".clntCnt").text(clntCnt);
+        }
+
+        $(document).ready(function () {
+
+            addCompanion();
+
+            // 이름
+            $("#clntNm-text").on("keyup", function () {
+                clntNm = $(this).val();
+            });
+
+            // 주민 뒷자리
+            $("#jumin-text-b").on("keyup", function () {
+                clntJuminB = $(this).val();
+            });
+
+            // 주민번호 앞자리
+            if (clntJuminA == null) {
+                alert("보험료 간편계산부터 진행해 주세요.");
+            } else {
+                $("#jumin-text-a").val(clntJuminA);
+                $("#jumin-text-a").attr("disabled", "disabled");
+            }
+
+            // 폰번호 입력 관련
+            $("#clntPhone-text").on("keyup", function () {
+                // 입력된 값 중 숫자만 골라서 phone 변수에 집어넣기
+                let num = $(this).val();
+                num = num.replace(regexNum, "");
+                clntPhone = num;
+
+                // 숫자만으로 이루어진 num 변수를 하이픈이 들어간 문자열로 치환, text로 집어넣기
+                num = num.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
+                $(this).val(num);
+            });
+
+
+            // 이메일 뒷부분 입력 관련
+            $("#clntEmail-text-b").on("keyup", function () {
+                $("#clntEmail-select").attr("hidden", "hidden");
+            });
+
+
+            // 이메일 도메인 선택했을때
+            $("#clntEmail-select").on("change", function () {
+                // 직접입력 선택했을때
+                if ($("#clntEmail-select option:selected").val() == "input") {
+                    $("#clntEmail-text-b").val(null).focus();
+                }
+            })
+
+
+
+            // 보험료 산출이후에도 동반가입자 정보를 바꾸면 보험료산출버튼이 활성화됨
+            // $(document).on("keyup",".companionNm, .companionJuminA, .companionJuminB", function () {
+            $(document).on("keyup","input", function () {
+                $("#prem-check-btn").removeAttr("disabled");
+            });
+
+            // 입력된 모든 동반 가입자 정보를 변수에 저장
+            function inputAllCompanion() {
+                companionList = [];
+                $(".companion-input-div").each(function (index, item) {
+                    const nm = $(this).find(".companionNm").val();
+                    const num = index + 1;
+                    const juminA = $(this).find(".companionJuminA").val();
+                    const juminB = $(this).find(".companionJuminB").val();
+                    companionList.push({
+                        companionNum: num,
+                        companionNm: nm,
+                        companionJuminA: juminA,
+                        companionJuminB: juminB,
+                        prem: 0
+                    });
+                });
+                console.log(companionList)
+            }
+
+            // 신청 버튼 클릭
+            $("#apply-btn").on("click", function () {
+                inputAll();
+
+                if (
+                    clntNm != null &&
+                    clntJuminA != null &&
+                    clntJuminB != null &&
+                    clntPhone != null &&
+                    clntEmail != null &&
+                    startDt != null &&
+                    endDt != null
+                ) {
+
+                    $.ajax({
+                        url: "/api/client/cliInfoMany",
+                        method: "POST",
+                        data: {
+                            data: JSON.stringify(companionList),
+                            covCode: covCode,
+                            startDt: startDt,
+                            endDt: endDt,
+                            clntNm: clntNm,
+                            clntJuminA: clntJuminA,
+                            clntJuminB: clntJuminB,
+                            clntPhone: clntPhone,
+                            clntEmail: clntEmail,
+                            clntCnt: clntCnt,
+                            // clntCnt:companionList.length +1,
+                            calOrApl: "apl",
+                        },
+                        success: (data) => {
+                            if (data == "ok") {
+                                location.href = "/simg/simgOti/applyPurpose";
+                            }
+                        },
+                        error: () => {
+                        }
+                    });
+
+
+                }
+            });
+
+            // 약관 보이기
+            $(".show-btn").on("click", function(){
+                const showNum = $(this).attr("id").split("-")[2];
+                // 한번 클릭하면 true로 바뀜
+                read[showNum] = true;
+
+                // 약관버튼의 체크표시를 파란색으로 바꿈
+                if(!$("#read-"+showNum).hasClass("checked")){
+                    $("#read-"+showNum).addClass("checked");
+                }
+
+                // "모든 약관을 확인해주세요" 안내를 숨김
+                $("#hidden-alert").attr("hidden","hidden");
+
+                if(!$(this).hasClass("show")){
+                    $(this).addClass("show");
+                    $(".show-div#show-div-"+showNum).removeAttr("hidden");
+                    $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
+                    $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
+
+                    moveScrollTop(this);
+                }
+                else{
+                    $(this).removeClass("show");
+                    $(".show-div#show-div-"+showNum).attr("hidden","hidden");
+                    $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
+                    $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+                }
+
+                // 위 모든 ~ 동의합니다.  버튼이 .agree-check-disable 클래스를 가지고 있을 때
+                // read 배열의 모든 요소가 true이면 위 모든 ~ 동의합니다 버튼의 클래스를 .agree-check-disable에서 ...-able로 바꿈
+                if($("#agree-check").hasClass("agree-check-disable")){
+                    if(!read.includes(false)){
+                        $("#agree-check").removeClass("agree-check-disable").addClass("agree-check-able");
+                    }
+                }
+            });
+
+            // 약관 펼쳐졌을때  보이는 접기버튼
+            $(".close").on("click", function(){
+                const showNum = $(this).val();
+                console.log("close "+showNum);
+                $("#show-btn-"+showNum).removeClass("show");
+                $(".show-div#show-div-"+showNum).attr("hidden","hidden");
+                $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
+                $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+            });
+
+            // 약관 동의 체크
+            $(document).on("click",".agree-check-able #check-0", function () {
+                if(!check0bool){
+                    check0bool = true;
+                    $(this).addClass("checked");
+                    $("#apply-btn").removeAttr("disabled");
+                } else {
+                    check0bool = false;
+                    $(this).removeClass("checked");
+                    $("#apply-btn").attr("disabled", "disabled");
+                }
+            });
+
+            // 약관 안읽었는데 동의 체크하려고할때
+            $(document).on("click",".agree-check-disable #check-0", function () {
+                $("#hidden-alert").removeAttr("hidden");
+            });
+
+            // 보험료 산출 버튼 클릭
+            $("#prem-check-btn").on("click", function () {
+                inputAll();
+                inputAllCompanion();
+                if (
+                    covCode != null &&
+                    startDt != null &&
+                    endDt != null
+                ) {
+                    $.ajax({
+                        url: "/api/client/cliInfoMany",
+                        method: "POST",
+                        data: {
+                            data: JSON.stringify(companionList),
+                            covCode: covCode,
+                            startDt: startDt,
+                            endDt: endDt,
+                            clntNm: clntNm,
+                            clntJuminA: clntJuminA,
+                            clntJuminB: clntJuminB,
+                            clntPhone: clntPhone,
+                            clntEmail: clntEmail,
+                            clntCnt: clntCnt,
+                            // clntCnt:companionList.length +1,
+                            calOrApl: "cal",
+                        },
+                        success: (data) => {
+                            let totalPrem = 0;
+                            let companionCnt;
+                            console.log(data);
+
+                            $("#companion-table tbody").empty();
+                            for (i in data) {
+                                totalPrem += data[i].prem;
+                                addCompanionRow(data[i].companionNum,
+                                    data[i].companionNm,
+                                    data[i].companionJuminA + "-" + data[i].companionJuminB,
+                                    data[i].prem);
+                            }
+                            $("#prem-check-btn").attr("disabled", "disabled");
+                            showPremCheckContainer(totalPrem, data.length);
+                            $("#fromDt").text(startDt);
+                            $("#toDt").text(endDt);
+                        },
+                        error: () => {
+                        }
+                    });
+                }
+            });
+
+            // 동반가입자 추가 버튼
+            $("#add-companion-btn").on("click", function () {
+                addCompanion();
+            });
+
+        });
+
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-1"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+            <h5 class="text-blue text-start">대표 가입자</h5>
+            <!-- 이름 -->
+            <div class="text-start my-3" id="clntNm-div">
+                <div class="d-flex justify-content-between">
+                    <div class="w-25">
+                        <span>이름</span>
+                    </div>
+                    <div class="w-75">
+                        <input type="text" class="form-control" id="clntNm-text">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 주민번호 -->
+            <div class="text-start mb-3" id="jumin-div">
+                <div class="d-flex justify-content-between">
+                    <div class="w-25">
+                        <div><span>주민등록번호</span></div>
+                        <div><span><small>(외국인번호)</small></span></div>
+                    </div>
+                    <div class="w-75">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="w-100 pe-2">
+                                <input type="text" class="form-control" id="jumin-text-a">
+                            </div>
+
+                            <span>-</span>
+                            <div class="w-100 ms-2">
+                                <input type="text" class="form-control" id="jumin-text-b">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 휴대폰번호 -->
+            <div class="text-start mb-3" id="clntPhone-div">
+                <div class="d-flex justify-content-between">
+                    <div class="w-25">
+                        <div><span>휴대폰번호</span></div>
+                    </div>
+                    <div class="w-75">
+                        <input type="text" class="form-control" id="clntPhone-text" maxlength="13">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 이메일 -->
+            <div class="text-start mb-4" id="clntEmail-div">
+                <div class="d-flex justify-content-between">
+                    <div class="w-25">
+                        <div><span>이메일</span></div>
+                    </div>
+                    <div class="w-75">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="w-100 pe-2">
+                                <input type="text" class="form-control" id="clntEmail-text-a">
+                            </div>
+
+                            <span>@</span>
+
+                            <div class="text-select-div w-100 ms-2">
+                                <input type="text" class="form-control text-select" id="clntEmail-text-b">
+                                <select name="clntEmail-select" id="clntEmail-select"
+                                        class="form-control text-option" hidden size="6"
+                                        style="z-index: 1">
+                                    <option value="input">직접입력</option>
+                                    <option value="naver.com">naver.com</option>
+                                    <option value="daum.com">daum.net</option>
+                                    <option value="hanmail.net">hanmail.net</option>
+                                    <option value="gmail.com">gmail.com</option>
+                                    <option value="nate.com">nate.com</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 동반 가입차 입력란이 추가되는 div-->
+            <div id="companion">
+                <h5 class="text-blue text-start">동반 가입자(최대 20명)</h5>
+            </div>
+
+            <div class="w-50 mx-auto my-3" id="add-companion-div">
+                <button type="button" class="btn main-btn-outlined rounded-pill" id="add-companion-btn">동반 가입자 추가
+                </button>
+            </div>
+
+            <!-- 보험료 산출 버튼 -->
+            <button type="button" class="btn main-btn w-75" id="prem-check-btn">보험료 산출</button>
+
+            <!-- 산출된 보험료 -->
+            <!--            <div id="prem-check-container" hidden>-->
+            <div id="prem-check-container" hidden>
+                <!-- 총보험료와 가입자명단 보기 버튼-->
+                <div class="d-flex flex-column justify-content-center w-50 mx-auto my-4" id="prem-check">
+                    <table>
+                        <colgroup>
+                            <col style="width: 50%">
+                            <col style="width: 50%">
+                        </colgroup>
+                        <tr>
+                            <td class="text-end pe-3">총 보험료</td>
+                            <td class="text-start"><span class="total-prem"></span><span> 원</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-end pe-3">가입인원</td>
+                            <td class="text-start"><span class="clntCnt"></span></td>
+                        </tr>
+                    </table>
+                    <div class="mt-3">
+                        <button type="button" class="btn main-btn-outlined show-popup" id="companion-list-btn">가입자명단보기
+                        </button>
+                        <div class="popup" hidden style="z-index: 2">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <div class="w-100">
+                                    <table id="companion-table" class="w-100 table">
+                                        <colgroup>
+                                            <col style="width: 15%">
+                                            <col style="width: 20%">
+                                            <col style="width: 40%">
+                                            <col style="width: 25%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>번호</th>
+                                            <th>이름</th>
+                                            <th>주민등록번호</th>
+                                            <th>보험료</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div>
+                                    <span>여행 기간: </span>
+                                    <span id="fromDt"></span><span> 부터</span>
+                                    <span id="toDt"></span><span> 까지</span>
+                                </div>
+
+                                <div>
+                                    <span>총 가입자: </span><span class="clntCnt"></span><span> 명</span>
+                                </div>
+                                <div>
+
+                                    <span>총 보험료: </span><span class="total-prem"></span><span> 원</span>
+                                </div>
+
+                                <div class="w-100 mt-3">
+                                    <button type="button" class="btn main-btn close-popup" id="no">확인</button>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 약관 동의 -->
+                <div class="mb-3">
+                    <!--                <span>보험 가입을 위해 아래 약관을 모두 확인해 주세요.</span>-->
+                    <div class="agree-terms">
+                        <ul class="list-unstyled mb-0">
+                            <li>
+                                <button type="button" class="show-btn" id="show-btn-0">
+                                    <div>이용약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-0" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+                                <div class="show-div" id="show-div-0" hidden>
+                                <pre>
+제1조 (목적)
+이 약관은 (주)에스아이엠지인슈어런스(이하 “회사”라 합니다)가 에스아이엠지의 웹사이트 www.mibank.me와 모바일어플리케이션(이를 합하여 “플랫폼”이라 합니다) 이용자들에게 제공하는 보험서비스 등(이하 “서비스”라 합니다)과 관련하여 당사자간의 권리의무를 명확히 함을 그 목적으로 합니다.
+
+제2조 (용어의 정의)
+이 약관에서 사용되는 용어의 정의는 다음과 같습니다.
+
+가. “가입서비스”라 함은 “회원”만이 이용할 수 있는 서비스로, 보험가입 등 개인정보입력이 요구되는 서비스를 말합니다.
+나. “이용자”라 함은 플랫폼을 이용하는 자를 말하며, “회원”이라 함은 이용자 중 가입서비스의 이용을 위하여 필요한 개인정보를 입력하고 이 약관에 동의한 자를 말합니다.
+제3조 (약관의 효력 등)
+1) 이 약관은 플랫폼을 통해 이용자에게 고지됨으로써 그 효력이 생깁니다.
+2) 이 약관을 개정할 경우에는 적용일 및 개정사유를 명시하여 그 적용일의 1주 전부터 적용일의 전일까지 1)항과 같은 방법으로 고지합니다. 이 때, 그 개정약관은 그 적용일자 이후에 체결되는 계약에만 적용되고 그 이전에 이미 체결된 계약에 대해서는 개정전의 약관조항이 적용됩니다.
+3) 이용자는 서비스를 계속 이용함으로써 개정된 약관에 동의한 것으로 간주됩니다.
+4) 회원은 개정된 약관에 동의하지 않을 경우 회원 탈퇴를 요청할 수 있습니다.
+제4조 (서비스의 내용)
+플랫폼을 통해 제공되는 서비스는 다음과 같습니다.
+
+가. 보험상품정보 제공
+나. 보험료 계산
+다. 보험 상담
+라. 보험 가입
+마. 기타 금융정보 제공
+제5조 (서비스 이용)
+이용자들은 제4조의 서비스를 그 용도에 맞추어 이용할 수 있습니다. 그러나, 가입서비스 이용을 위해서는 회원가입 절차를 따라야 합니다.
+
+제6조 (회원자격 득실)
+1) 이용자는 회원가입에 필요한 개인정보를 입력하고 본 약관에 대하여 동의 여부를 묻는 박스를 클릭하여 체크표시를 함으로써 가입서비스를 이용할 수 있는 회원자격을 얻게 됩니다.
+2) 회원은 언제든지 회원에서 탈퇴할 수 있으며, 회원이 다음 각호의 1에 해당하는 경우 자격을 상실케 할 수 있습니다.
+가. 위법하게 서비스를 이용하는 경우
+나. 서비스에 가입한 후 가입서비스를 이용하지 않는 경우
+3) 플랫폼을 통해 보험에 가입한 회원은 보험만료일로부터 3년이 경과한 날과 보험개시전 취소일 중 늦은 날에 회원에서 탈퇴한 것으로 봅니다.
+제7조 (개별약관)
+1) 가입서비스의 이용료 등에 관하여는 개별약관 등에서 정하는 바에 따릅니다.
+2) 개별약관과 이 약관의 내용이 충돌하는 경우 개별약관의 효력이 이 약관에 우선합니다.
+제8조 (회사와 에스아이엠지의 의무)
+1) 회사는 보험모집과 관련하여 어떠한 업무도 에스아이엠지에 위탁하지 아니하며, 에스아이엠지는 회사가 이용자들에게 보여주고자 하는 내용 그대로를 노출합니다. 이를 위해 회사는 플랫폼 이용자가 보험서비스를 이용함에 있어서 회사의 홈페이지 영역으로 이동하여 이용하도록 하며, 동 영역에 금융소비자보호법에서 정한 고지사항을 충실히 게시합니다.
+2) 회사와 에스아이엠지는 안정적인 서비스 제공을 위하여 지속적으로 노력하며, 회사는 이용자로부터 민원이 접수되는 경우 성실히 응대합니다.
+3) 회사와 에스아이엠지는 다음 각호의 1에 해당하는 경우 서비스의 전부 또는 일부를 제한하거나 중지할 수 있습니다.
+가. 설비 보수 등
+나. 서비스의 근간이 되는 기간통신사업자의 망서비스 제공 중지
+다. 국가비상사태, 정전, 이용자의 폭주 기타 불가항력적인 경우
+4) 전항에 따라 서비스 제공을 제한하거나 중지한 때에는 그 사유 및 제한기간 등을 제3조 1)항의 방법으로 지체없이 회원에게 알립니다.
+5) 이용자는 이 약관에서 규정하는 사항과 서비스 이용안내 또는 주의사항 등 고지하는 바를 준수합니다.
+6) 회원은 개인정보의 부정사용이 발생하지 않도록 유의하여야 하며, 부정사용을 알게 된 경우 즉시 회사 또는 에스아이엠지에 알려 피해방지에 협력합니다.
+7) 회원은 서비스에 관한 권리의무의 일부 또는 전부를 제3자에게 양도하거나 담보로 제공할 수 없습니다.
+제9조 (분쟁의 해결)
+1) 당사자는 서비스와 관련하여 분쟁이 발생한 경우에 이를 원만하게 해결하기 위하여 노력합니다.
+2) 전항의 규정에도 불구하고, 당사자간 분쟁으로 인하여 소송이 제기될 경우 서울중앙지방법원을 관할법원으로 합니다.</pre>
+                                    <button type="button" class="close mx-auto my-2" value="0">[접기]</button>
+                                </div>
+                            </li>
+                            <li>
+                                <button type="button" class="show-btn" id="show-btn-1">
+                                    <div>단체규약 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-1" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+                                <div class="show-div" id="show-div-1" hidden>
+                               <pre>
+제1조 (목적)
+이 규약은 에스아이엠지㈜(이하 “에스아이엠지”라 합니다)의 웹사이트 www.mibank.me와 모바일어플리케이션(이를 합하여 “플랫폼”이라 합니다) 회원들을 위하여 제공하는 서비스 이용에 관하여 회원들간 협약사항을 규정함을 그 목적으로 합니다.
+
+제2조 (회원자격)
+1. 플랫폼상 서비스 이용약관에 동의한 회원은 이 협약의 당사자가 됩니다.
+2. 회원의 자격득실 등에 관하여는 각 이용약관에서 정하는 바에 따릅니다.
+제3조 (단체보험가입 청약 등)
+1. 에스아이엠지는 회원을 위하여 계약자로서 보험사와 단체보험계약을 체결할 수 있습니다.
+2. 에스아이엠지가 계약자인 단체보험계약에 피보험자로 가입하기를 희망하는 회원은 소정의 절차에 따라 보험가입신청(보험청약)을 합니다.
+3. 보험청약을 하고자 하는 회원은 보험약관, Q&A 등을 충분히 읽고 이해한 후 청약을 하며, 보험사와 보험대리점 ㈜에스아이엠지인슈어런스가 고지를 요구하는 사항에 대하여 성실히 답합니다.
+4. 회원이 가입하는 보험의 수익자는 보험가입자(피보험자) 본인과 그 법정상속인이 됩니다.
+제4조 (기타사항)
+1. 기존 서비스 변경, 새로운 서비스 출시, 법령의 개폐, 회원 요구 등의 사정이 있어 이 규약을 변경할 필요가 있는 경우, 에스아이엠지는 회원들을 위하여 규약을 즉시 변경합니다. 그리고 변경된 규약은 그 즉시 효력을 발합니다.
+2. 에스아이엠지는 규약변경을 위해 필요한 경우 회원들에게 의견을 구할 수 있으며, 회원들은 이에 성실히 응합니다.
+3. 규약변경을 희망하는 회원은 에스아이엠지에 그 구체적 변경안과 이유를 제시하여 규약변경을 제안할 수 있습니다. 이에 대하여는 에스아이엠지는 전항에 따라 처리합니다.
+4. 에스아이엠지는 단체보험가입 등 규약에 직접적으로 영향을 받는 서비스를 이용하는 회원에게는 개별적으로 규약적용에 부동의하는지 의견을 구합니다. 이 때 규약에 부동의하는 회원은 해당서비스를 이용하지 않거나, 회원 탈퇴를 할 수 있습니다.</pre>
+                                    <button type="button" class="close mx-auto my-2" value="1">[접기]</button>
+                                </div>
+                            </li>
+                            <li>
+                                <button type="button" class="show-btn" id="show-btn-2">
+                                    <div>개인정보수집 및 이용 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-2" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+                                <div class="show-div" id="show-div-2" hidden>
+                                <pre>
+1. 개인(신용)정보의 수집•이용 및 조회 주체
+보험대리점 ㈜에스아이엠지인슈어런스, 단체보험계약자 에스아이엠지㈜, 보험회사(DB손해보험)
+
+2. 개인(신용)정보의 수집 및 이용 목적
+㈜에스아이엠지인슈어런스를 통해 에스아이엠지㈜가 체결한 단체보험의 피보험자가 됨에 있어 보험계약 인수심사, 계약체결, 유지, 관리(갱신 포함), 보험금 등 지급/심사, 순보험요율의 산출/검증, 민원처리 및 분쟁 대응, 보험사고조사(보험사기 조사 포함), 보험모집질서 유지 및 상품/서비스 추천 등
+
+3. 수집하는 개인(신용)정보 항목 및 수집방법
+가. 수집, 이용할 개인정보의 내용
+개인식별정보(성명, 주민등록번호(외국인등록번호), 전자우편주소, 휴대폰번호) 보험계약정보, 피보험자의 질병 및 상해에 관한 정보, 보험금지급 관련 정보, 결제정보(신용카드, 계좌번호)
+나. 수집방법 : 인터넷 홈페이지, 모바일어플리케이션, 전화, 팩스, 한국신용정보원 조회서비스
+4. 개인(신용)정보의 보유 및 이용기간
+위 수집/이용 목적 달성시까지
+
+5. 조회할 개인(신용)정보
+보험계약정보, 보험금지급 관련 정보(사고정보 포함), 피보험자의 질병 및 상해 관련 정보
+
+6. 개인(신용)정보 조회목적
+보험계약의 인수심사/체결/유지/관리(갱신 포함), 보험금 등 지급/심사, 보험사고조사, 보험상품 추천안내, 기타 민원처리
+
+7. 조회동의 유효기간
+위 조회 목적 달성시까지
+
+8. 조회자[개인(신용)정보를 제공받는 자]의 개인(신용)정보의 보유, 이용기간
+정보를 제공받은 날로부터 개인(신용)정보의 조회 목적 달성시까지
+
+9. 개인(신용)정보를 제공받는 자
+보험대리점 ㈜에스아이엠지인슈어런스, 단체보험계약자 에스아이엠지㈜, 보험회사(DB손해보험), 한국신용정보원
+
+10. 개인(신용)정보를 제공받는 자의 이용목적
+보험계약의 인수심사/체결/유지/관리(갱신 포함), 보험금 등 지급/심사, 보험사고조사, 기가입 보험조회, 기타 민원처리
+
+11. 제공할 개인(신용)정보의 내용
+위 「 3. 수집하는 개인정보 항목 및 수집방법」의 정보내용과 같음
+
+12. 제공받는 자의 개인(신용)정보 보유/이용기간
+정보를 제공받은 날로부터 개인(신용)정보를 제공받는 자의 이용목적 달성시까지
+
+13. 민감정보 및 고유식별정보의 처리에 관한 사항
+당사는 개인정보보호법 제23조 및 제24조에 따라 본 계약과 관련하여 상기의 개인(신용)정보에 대한 개별 동의 사항에 대하여 다음과 같이 고객님의 민감정보(질병•상해정보) 및 고유식별정보(주민등록번호•외국인등록번호)를 처리(수집/이용, 제공 등)하고자 합니다.</pre>
+                                    <button type="button" class="close mx-auto my-2" value="2">[접기]</button>
+                                </div>
+                            </li>
+                            <li class="border-0">
+                                <button type="button" class="show-btn" id="show-btn-3">
+                                    <div>보험약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+                                <div class="show-div" id="show-div-3" hidden>
+                                    <div id="iframe-div">
+                                        <iframe src="/files/oti_insurance_terms.pdf#navpanes=0" frameborder="0"></iframe>
+                                    </div>
+                                    <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
+                                </div>
+                            </li>
+                            <li>
+                                <button type="button" class="show-btn" id="show-btn-4">
+                                    <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+                                <div class="show-div" id="show-div-4" hidden>
+                                <pre>
+보험취급자
+- 본 보험의 모집인은 보험대리점 에스아이엠지입니다.
+단체보험 계약
+- 본 보험계약은 에스아이엠지를 계약자, 에스아이엠지 회원 중 가입 고객을 피보험자, 에스아이엠지 회원 중 가입 고객 및 법정상속인을 보험수익자로 하는 단체계약입니다.
+- 본 보험계약은 단체형으로 운영하여 청약철회 및 품질보증해지 대상이 아닙니다.
+만기환급금
+본 상품은 순수보장성 상품으로 만기시 만기환급금이 없으며 또한 보험계약대출제도가 없습니다.
+
+예금자보호 안내
+이 보험계약은 예금자보호법에 따라, 예금보험공사가 보호하되, 보호 한도는 본 보험회사에 있는 귀하의 모든 예금보호 대상 금융상품의 해약환급금(또는 만기 시 보험금이나 사고보험금)에 기타 지급금을 합하여 1인당 “최고 5천만원”이며, 5천만원을 초과하는 나머지 금액은 보호하지 않습니다. 다만, 보험계약자 및 보험료 납부자가 법인인 보험계약은 예금자보호법에 따라 예금보험공사가 보호하지 않습니다.
+
+보험계약을 할 때
+보험계약시에는 보험상품명, 보험기간, 보험료, 보험료납입기간, 피보험자 등을 반드시 확인하시고, 자세한 상품내용은 반드시 보험약관을 확인하시기 바랍니다.
+
+가입자의 계약 전 알릴 의무
+계약자 또는 피보험자는 보험계약 청약 시 청약서(질문서를 포함합니다)의 질문사항에 대하여 알고 있는 내용을 반드시 사실대로 알려야 합니다. 그렇지 않은 경우 보험금의 지급이 거절되거나 보험계약이 해지될 수 있습니다.
+
+가입자의 계약 후 알릴 의무
+계약자 또는 피보험자는 보험계약을 맺은 후 보험약관에 정한 계약 후 알릴 의무사항이 발생하였을 경우 지체 없이 회사에 알려야 합니다. 그렇지 않을 경우 보험금 지급이 거절될 수 있습니다.
+
+해지환급금이 납입보험료보다 적거나 없는 이유
+해지환급금이란 보험계약이 중도에 해지될 경우에 지급되는 금액을 말하는 것으로 보험은 은행의 저축과 달리 위험보장과 저축을 겸비한 제도로 계약자가 납입한 보험료 중 일부는 불의의 사고를 당한 다른 가입자에게 지급되는 보험금으로, 또 다른 일부는 보험회사 운영에 필요한 경비로 사용되므로 중도해지 시 지급되는 해지환급금은 납입한 보험료보다 적거나 없을 수도 있습니다.
+
+계약해지 후 다른 보험 계약 시 유의사항
+보험계약자가 기존에 체결했던 보험계약을 해지하고 다른 보험계약을 체결하면 보험인수가 거절되거나 보험료가 인상되거나 보장내용이 달라질 수 있습니다.
+
+모집질서 확립 및 신고센터 안내
+- 보험계약과 관련된 보험질서 문란행위는 보험업법에 의해 처벌받을 수 있습니다.
+- 금융감독원 보험 모집질서 위반행위 신고센터 : 전화 1332 / 인터넷 www.fss.or.kr
+- 사고접수, 보험처리 등 보험계약 관련 문의(DB손해보험) : 전화 1588-0100 / 인터넷 www.idbins.com
+보험상담 및 분쟁의 해결에 관한 사항
+가입하신 보험에 관하여 상담이 필요하거나 불만사항이 있을 때에는 DB손해보험(TEL: 1588-0100 / 인터넷 www.idbins.com)으로 연락 주시면 신속히 해결해 드리겠습니다. 또한, 저희 회사의 처리결과에 이의가 있으시면 금융감독원 민원상담전화 국번없이1332, 인터넷 www.fss.or.kr에 민원 또는 분쟁조정 등을 신청하실 수 있습니다.
+
+금융감독원 보험 범죄 신고센터 안내
+- 보험범죄는 형법 제347조(사기)에 의거 10년 이하의 징역이나 2천만원 이하의 벌금에 처해지며, 보험범죄를 교사한 경우에도 동일한처벌을 받을 수 있습니다. 금융감독원 민원상담전화 국번 없이 1332, 인터넷 www.fss.or.kr</pre>
+                                    <button type="button" class="close mx-auto my-2" value="4">[접기]</button>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <div class="my-3 agree-check-disable" id="agree-check">
+                        <button class="check-btn me-3 border-0" id="check-0">
+                            <span class="text">위 모든 사항을 확인했으며 이에 동의합니다.</span>
+                            <span class="icon"><i class="bi bi-check-circle-fill"></i></span>
+                        </button>
+                        <div id="hidden-alert" class="text-danger" hidden><span>모든 약관을 확인해주세요.</span></div>
+                    </div>
+
+                </div>
+                <!-- 신청 버튼 -->
+                <button type="button" class="btn main-btn w-75" id="apply-btn" disabled="disabled">신청</button>
+            </div>
+
+
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

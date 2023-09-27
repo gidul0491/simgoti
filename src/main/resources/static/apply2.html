@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+
+    <script>
+        let check1;
+        let check2;
+        let check3;
+        let check4;
+        let trPurpose;
+        let check5 = false;
+
+        let startDate = sessionStorage.getItem("startDate") || null;
+        let startTime = sessionStorage.getItem("startTime") || null;
+        let endDate = sessionStorage.getItem("endDate") || null;
+        let endTime = sessionStorage.getItem("endTime") || null;
+        let covCode = sessionStorage.getItem("covCode") || null;
+        let trPlace = sessionStorage.getItem("trPlace") || null;
+
+        // radio, 동의체크 검사해서 확인버튼 활성화
+        function checkAll() {
+            if(check1==="f" && check2==="f" && check3==="f" && check4==="f" && check5===true && trPurpose != null){
+                $("#apply-btn").removeAttr("disabled");
+                return 'ok';
+            } else {
+                $("#apply-btn").attr("disabled","disabled");
+                return null;
+            }
+        }
+
+        // "예" 체크했을때 아래에있는 p태그에 텍스트 집어넣는 함수
+        function writeP(p, tf, text){
+            if(tf === "t"){
+                $(p).text(text);
+            }
+            else{
+                $(p).text("");
+            }
+        }
+
+        // 모든 변수에 값 대입
+        function inputAll(){
+            check1 = $("#check1 input:checked").val();
+            check2 = $("#check2 input:checked").val();
+            check3 = $("#check3 input:checked").val();
+            check4 = $("#check4 input:checked").val();
+        }
+
+        $(document).ready(function () {
+
+            // 1번-4번문항, 기왕증 확인체크 관련
+            $("#check1 input").on("input", function () {
+                check1 = $(this).val();
+                writeP("#check1-p", check1, "가입 대상이 아닙니다.");
+            });
+            $("#check2 input").on("input", function () {
+                check2 = $(this).val();
+                writeP("#check2-p", check2, "가입 대상이 아닙니다.");
+            });
+            $("#check3 input").on("input", function () {
+                check3 = $(this).val();
+                writeP("#check3-p", check3, "가입 대상이 아닙니다.");
+            });
+            $("#check4 input").on("input", function () {
+                check4 = $(this).val();
+                writeP("#check4-p", check4, "가입 대상이 아닙니다.");
+            });
+
+            // 기왕증 체크
+            $("#check5").on("click",function(){
+                inputAll();
+                if(!check5){
+                    check5 = true;
+                    $(this).addClass("checked");
+                }
+                else{
+                    check5 = false;
+                    $(this).removeClass("checked");
+                }
+            });
+
+            // 여행목적 선택
+            $("#trPurpose-select").on("click", function () {
+                trPurpose = $(this).val();
+            });
+
+            // 페이지에서 클릭이나 change 이벤트가 발생했을 때
+            $("html").on("click",function(e){
+                checkAll();
+            });
+            $("html").on("change",function(e){
+                checkAll();
+            });
+
+            // 확인버튼 클릭했을 때
+            $("#apply-btn").on("click",function(){
+                if(
+                    check1==="f" &&
+                    check2==="f" &&
+                    check3==="f" &&
+                    check4==="f" &&
+                    check5===true &&
+                    trPurpose != null &&
+                    startDate != null &&
+                    startTime != null &&
+                    endDate != null &&
+                    endTime != null &&
+                    covCode != null &&
+                    trPlace != null
+                ){
+                    $.ajax({
+                        url: "/api/client/trInfo",
+                        type: "POST",
+                        data: {
+                            trPurpose:trPurpose,
+                            startDt:`${startDate} ${startTime}`,
+                            endDt:`${endDate} ${endTime}`,
+                            covCode:covCode,
+                            trPlace:trPlace,
+                        },
+                        success: (data) => {
+                            if(data == "ok"){
+                                location.href = "/simg/simgOti/applyFinal";
+                            }
+
+                        },
+                        error: (err) => {
+
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-1"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+            <div>
+                <ol class="text-start">
+                    <li class="my-3">
+                        <p>현재 계신 곳이나 주로 거주하는 지역이 해외인가요?</p>
+                        <div class="check-radio" id="check1">
+                            <label>
+                                <input type="radio" name="liveForeign" value="t" hidden>
+                                <span type="button" class="btn main-btn-outlined">예</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="liveForeign" value="f" hidden>
+                                <span type="button" class="btn main-btn-outlined">아니요</span>
+                            </label>
+                        </div>
+                        <p class="appWarn text-center" id="check1-p"></p>
+                    </li>
+
+                    <li class="my-3">
+                        <p>해외영주권자 혹은 시민권자인가요?</p>
+                        <div class="check-radio" id="check2">
+                            <label>
+                                <input type="radio" name="citizenForeign" value="t" hidden>
+                                <span type="button" class="btn main-btn-outlined">예</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="citizenForeign" value="f" hidden>
+                                <span type="button" class="btn main-btn-outlined">아니요</span>
+                            </label>
+                        </div>
+                        <p class="appWarn text-center" id="check2-p"></p>
+                    </li>
+
+                    <li class="my-3">
+                        <p>최근 3년 내에 협심증, 심근경색, 심장판막증, 뇌출혈, 뇌경색으로 입원/수술을 받으신 적이 있으신가요?</p>
+                        <div class="check-radio" id="check3">
+                            <label>
+                                <input type="radio" name="heartDis" value="t" hidden>
+                                <span type="button" class="btn main-btn-outlined">예</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="heartDis" value="f" hidden>
+                                <span type="button" class="btn main-btn-outlined">아니요</span>
+                            </label>
+                        </div>
+                        <p class="appWarn text-center" id="check3-p"></p>
+                    </li>
+
+                    <li class="my-3">
+                        <p>위험한 운동이나 전문적인 체육활동[보기]을 위해 출국하시나요?
+                        </p>
+                        <div class="check-radio" id="check4">
+                            <label>
+                                <input type="radio" name="dangerAct" value="t" hidden>
+                                <span type="button" class="btn main-btn-outlined">예</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="dangerAct" value="f" hidden>
+                                <span type="button" class="btn main-btn-outlined">아니요</span>
+                            </label>
+                        </div>
+                        <p class="appWarn text-center" id="check4-p"></p>
+                    </li>
+
+                    <li class="my-3">
+                        <p>여행목적
+                        </p>
+                        <div class="text-select-div px-05">
+                            <input type="text" class="form-control bg-white text-select" readonly
+                                   id="trPurpose-text" value="선택">
+                            <select id="trPurpose-select"
+                                    class="form-control text-option" hidden size="3"
+                                    style="z-index: 1">
+                                <option value="301">여행/관광</option>
+                                <option value="302">업무/출장</option>
+                                <option value="303">유학/연수/캠프</option>
+                            </select>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- 약관 동의 -->
+            <div class="d-flex justify-content-between">
+                <div class="w-75 text-start">
+                    <ul>
+                        <li>
+                            <button type="button" class="border-0 bg-white p-0 m-0 show-btn show-popup" id="show-btn-0">기왕증[보기]
+                            </button>
+                            및 현장작업 중 발생된 사고는 보상되지 않습니다.
+                            <div class="popup" hidden style="z-index: 1">
+                                <div class="popup-content d-flex justify-content-center align-items-center">
+                                    <p>기왕증</p>
+                                    <p>과거의 질병이나 부상이 완치되지 않아 현재까지도 치료, 관리가 필요한 질병, 상해를 말합니다.</p>
+                                    <p>암, 백혈병, 간경화증, 당뇨병, 에이즈 및 HIV 보균, 충치, 습관성 탈구 등이 이에 해당합니다.</p>
+                                    <button type="button" class="btn main-btn close-popup">확인</button>
+                                </div>
+                            </div>
+                        </li>
+                        <li>여행금지국가 등 3단계 이상의 여행경보지역은 보장되지 않습니다. <span class="text-secondary">(외교부 해외안전여행 <a
+                                target="_blank" href="http://www.0404.go.kr">www.0404.go.kr</a> 참고)</span></li>
+                    </ul>
+                </div>
+                <div class="w-25 d-flex flex-column justify-content-center align-items-center">
+                    <button class="check-btn mx-0 border-0 d-flex flex-column align-items-center" id="check5">
+                        <span><i class="bi bi-check-circle-fill"></i></span>
+                        <span>확인</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- 신청 버튼 -->
+            <button type="button" class="btn main-btn" id="apply-btn" disabled="disabled">확인</button>
+
+
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

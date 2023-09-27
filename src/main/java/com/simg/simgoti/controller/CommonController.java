@@ -12,8 +12,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommonController {
     private final CommonService commonService;
-    @RequestMapping(value = "/countryList", method = RequestMethod.GET)
-    public Object getCountryList() throws Exception{
-        return commonService.getCountryList();
-    }
 }
