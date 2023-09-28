@@ -137,19 +137,25 @@
                 // "모든 약관을 확인해주세요" 안내를 숨김
                 $("#hidden-alert").attr("hidden","hidden");
 
-                if(!$(this).hasClass("show")){
-                    $(this).addClass("show");
-                    $(".show-div#show-div-"+showNum).removeAttr("hidden");
-                    $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
-                    $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
-
-                    moveScrollTop(this);
+                if(showNum === "4"){
+                    const option = `width=${800}, height=${600}, top=${this.clientY - 300}, left=${this.clientX + 50}`;
+                    window.open("/files/oti_insurance_terms.pdf#navpanes=0","_blank",option);
                 }
                 else{
-                    $(this).removeClass("show");
-                    $(".show-div#show-div-"+showNum).attr("hidden","hidden");
-                    $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
-                    $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+                    if(!$(this).hasClass("show")){
+                        $(this).addClass("show");
+                        $(".show-div#show-div-"+showNum).removeAttr("hidden");
+                        $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
+                        $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
+
+                        // moveScrollTop(this);
+                    }
+                    else{
+                        $(this).removeClass("show");
+                        $(".show-div#show-div-"+showNum).attr("hidden","hidden");
+                        $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
+                        $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+                    }
                 }
 
                 // 위 모든 ~ 동의합니다.  버튼이 .agree-check-disable 클래스를 가지고 있을 때
@@ -418,22 +424,10 @@
                         </li>
                         <li class="border-0">
                             <button type="button" class="show-btn" id="show-btn-3">
-                                <div>보험약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
                                 <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
                             </button>
                             <div class="show-div" id="show-div-3" hidden>
-                                <div id="iframe-div">
-                                    <iframe src="/files/oti_insurance_terms.pdf#navpanes=0" frameborder="0"></iframe>
-                                </div>
-                                <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
-                            </div>
-                        </li>
-                        <li>
-                            <button type="button" class="show-btn" id="show-btn-4">
-                                <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
-                            </button>
-                            <div class="show-div" id="show-div-4" hidden>
                                 <pre>
 보험취급자
 - 본 보험의 모집인은 보험대리점 에스아이엠지입니다.
@@ -470,8 +464,29 @@
 
 금융감독원 보험 범죄 신고센터 안내
 - 보험범죄는 형법 제347조(사기)에 의거 10년 이하의 징역이나 2천만원 이하의 벌금에 처해지며, 보험범죄를 교사한 경우에도 동일한처벌을 받을 수 있습니다. 금융감독원 민원상담전화 국번 없이 1332, 인터넷 www.fss.or.kr</pre>
-                                <button type="button" class="close mx-auto my-2" value="4">[접기]</button>
+                                <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
                             </div>
+                        </li>
+                        <li>
+
+                            <button type="button" class="show-btn" id="show-btn-4">
+                                <div>보험약관</div>
+                                <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                            </button>
+                            <!--                            <button type="button" class="show-btn" id="show-btn-3">-->
+                            <!--                                <div>보험약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>-->
+                            <!--                                <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>-->
+                            <!--                            </button>-->
+                            <!--                            <div class="show-div" id="show-div-3" hidden>-->
+                            <!--                                <object width="400" height="500" type="application/pdf" data="/files/oti_insurance_terms.pdf#navpanes=0">-->
+                            <!--                                    <a href="/files/oti_insurance_terms.pdf#navpanes=0" target="_blank">보험약관</a>-->
+                            <!--                                    <p>Insert your error message here, if the PDF cannot be displayed.</p>-->
+                            <!--                                </object>-->
+                            <!--&lt;!&ndash;                                <div id="iframe-div">&ndash;&gt;-->
+                            <!--&lt;!&ndash;                                    <iframe src="/files/oti_insurance_terms.pdf#navpanes=0"></iframe>&ndash;&gt;-->
+                            <!--&lt;!&ndash;                                </div>&ndash;&gt;-->
+                            <!--                                <button type="button" class="close mx-auto my-2" value="3">[접기]</button>-->
+                            <!--                            </div>-->
                         </li>
                     </ul>
 

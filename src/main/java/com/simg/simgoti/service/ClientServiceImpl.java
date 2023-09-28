@@ -40,7 +40,6 @@ public class ClientServiceImpl implements ClientService {
             int clntPk = -1;
             try {
                 clntPk = applyMapper.selectClientNmJumin(clntNm, clntJumin);
-                System.out.printf("insertOrUpdateClient selected clntPk : %s \n",clntPk);
                 ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, clntJumin);
                 if(clntEmail != null && clntEmail != null){
                     applyMapper.updateClientPhoneEmailByPk(dto);

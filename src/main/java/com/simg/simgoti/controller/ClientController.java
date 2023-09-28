@@ -30,12 +30,40 @@ public class ClientController{
     // calculate 페이지에서 보험료 확인 버튼을 눌렀을 때 db의 coverage 테이블에서 coverage code, 담보 한글이름, 하루당 보험료, 최소 보험료 정보인 coverageTabList와
     // 담보에 포함되는 세부담보 코드, 세부담보 이름, 세부담보 보장금액 정보인 coverageList를 result라는 변수명에 담아서 반환
     @RequestMapping(value = "/coverageList", method = RequestMethod.GET)
-    public Object selectCoverageList(@RequestParam String startDt, @RequestParam String endDt) throws Exception {
-        int travelDay = getPeriod(startDt, endDt);
-        Map<String, List> result = new HashMap<>();
-        result.put("coverageList",clientService.selectCoverageList());
-        result.put("coverageTabList", clientService.selectCoverageTypeList(travelDay));
-        return result;
+    public Object selectCoverageList(@RequestParam String startDt, @RequestParam String endDt, @RequestParam String clntBirth) throws Exception {
+        Map<String, Object> resp = new HashMap<>();
+        int insAge;
+        try{
+            insAge = commonService.calculateInsAge(clntBirth);
+        }
+        catch(Exception e){
+            resp.put("msg","생년월일을 정확히 입력해주세요.");
+            resp.put("result","error");
+            return resp;
+        }
+
+        String validateInsDate = commonService.validateInsDate(startDt, endDt);
+
+        if(insAge < 1 || insAge > 80){
+            resp.put("msg","1세부터 80세까지만 가입 가능합니다.");
+            resp.put("result","error");
+            return resp;
+        }
+        else if(!validateInsDate.equals("ok")){
+            resp.put("msg",validateInsDate);
+            resp.put("result","error");
+            return resp;
+        }
+        else{
+            int travelDay = getPeriod(startDt, endDt);
+            Map<String, List> data = new HashMap<>();
+            data.put("coverageList",clientService.selectCoverageList());
+            data.put("coverageTabList", clientService.selectCoverageTypeList(travelDay));
+
+            resp.put("data",data);
+            resp.put("result","success");
+            return resp;
+        }
     }
 
     // apply1Alone 페이지에서 확인 버튼을 누르면 실행

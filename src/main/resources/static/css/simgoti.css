@@ -126,6 +126,9 @@ select {
     -ms-user-select:none;
     user-select:none
 }
+input.disabled{
+    background: #e9ecef!important;
+}
 
 /* 팝업 */
 .popup {
@@ -182,7 +185,7 @@ optgroup option {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    padding: 0.2rem 0.6rem;
+    padding: 0.4rem 0.6rem;
 }
 .agree-terms button.close {
     border: none;
@@ -194,7 +197,7 @@ optgroup option {
     border-radius: 0.2rem;
 }
 .agree-terms div.show-div{
-    padding: 0.4rem 1rem 0 1rem;
+    padding: 0.4rem 1rem 1rem 1rem;
 }
 pre {
     white-space: pre-wrap;
