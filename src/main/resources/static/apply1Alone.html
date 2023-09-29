@@ -40,16 +40,45 @@
             clntEmail = $("#clntEmail-text-a").val() + "@" +$("#clntEmail-text-b").val();
         }
 
+        function isVarsAllNotNull(){
+            if(
+                (clntNm != "" && clntNm != null)&&
+                (clntJuminA != "" && clntJuminA != null)&&
+                (clntJuminB != "" && clntJuminB != null)&&
+                (clntPhone != "" && clntPhone != null)&&
+                (clntEmail != "" && clntEmail != null)&&
+                check0bool
+            ){
+                console.log(true);
+                return true;
+            }
+            else {
+                console.log(false);
+                return false;
+            }
+        }
+
         $(document).ready(function(){
+
+            function checkAllVars(){
+                if(isVarsAllNotNull()){
+                    $("#apply-btn").removeAttr("disabled");
+                }
+                else{
+                    $("#apply-btn").attr("disabled","disabled");
+                }
+            }
 
             // 이름
             $("#clntNm-text").on("keyup",function(){
                 clntNm = $(this).val();
+                checkAllVars();
             });
 
             // 주민 뒷자리
             $("#jumin-text-b").on("keyup",function(){
                 clntJuminB = $(this).val();
+                checkAllVars();
             });
 
             // 주민번호 앞자리
@@ -72,13 +101,16 @@
                 // 숫자만으로 이루어진 num 변수를 하이픈이 들어간 문자열로 치환, text로 집어넣기
                 num = num.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, "$1-$2-$3");
                 $(this).val(num);
+
+                checkAllVars();
             });
 
 
             // 이메일 뒷부분 입력 관련
             $("#clntEmail-text-b").on("keyup", function(){
                 $("#clntEmail-select").attr("hidden","hidden");
-
+                clntEmail = $(this).val();
+                checkAllVars();
             });
 
 
@@ -88,6 +120,10 @@
                 if($("#clntEmail-select option:selected").val() == "input"){
                     $("#clntEmail-text-b").val(null).focus();
                 }
+                else{
+                    clntEmail = $(this).val();
+                    checkAllVars();
+                }
             })
 
             // 확인 버튼 클릭
@@ -95,11 +131,7 @@
                 inputAll();
 
                 if(
-                    clntNm != null &&
-                    clntJuminA != null &&
-                    clntJuminB != null &&
-                    clntPhone != null &&
-                    clntEmail != null
+                    isVarsAllNotNull()
                 ){
                     $.ajax({
                         url: "/api/client/cliInfo",
@@ -182,12 +214,12 @@
                 if(!check0bool){
                     check0bool = true;
                     $(this).addClass("checked");
-                    $("#apply-btn").removeAttr("disabled");
+
                 } else {
                     check0bool = false;
                     $(this).removeClass("checked");
-                    $("#apply-btn").attr("disabled", "disabled");
                 }
+                checkAllVars();
             });
 
             // 약관 안읽었는데 동의 체크하려고할때
@@ -213,7 +245,7 @@
                         <span>이름</span>
                     </div>
                     <div class="w-75">
-                        <input type="text" class="form-control" id="clntNm-text">
+                        <input type="text" class="form-control" id="clntNm-text" maxlength="20">
                     </div>
                 </div>
             </div>
@@ -228,12 +260,12 @@
                     <div class="w-75">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="w-100 pe-2">
-                                <input type="text" class="form-control" id="jumin-text-a">
+                                <input type="text" class="form-control" id="jumin-text-a" maxlength="6">
                             </div>
 
                             <span>-</span>
                             <div class="w-100 ms-2">
-                                <input type="text" class="form-control" id="jumin-text-b">
+                                <input type="text" class="form-control" id="jumin-text-b" maxlength="7">
                             </div>
 
                         </div>
@@ -473,20 +505,7 @@
                                 <div>보험약관</div>
                                 <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
                             </button>
-                            <!--                            <button type="button" class="show-btn" id="show-btn-3">-->
-                            <!--                                <div>보험약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>-->
-                            <!--                                <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>-->
-                            <!--                            </button>-->
-                            <!--                            <div class="show-div" id="show-div-3" hidden>-->
-                            <!--                                <object width="400" height="500" type="application/pdf" data="/files/oti_insurance_terms.pdf#navpanes=0">-->
-                            <!--                                    <a href="/files/oti_insurance_terms.pdf#navpanes=0" target="_blank">보험약관</a>-->
-                            <!--                                    <p>Insert your error message here, if the PDF cannot be displayed.</p>-->
-                            <!--                                </object>-->
-                            <!--&lt;!&ndash;                                <div id="iframe-div">&ndash;&gt;-->
-                            <!--&lt;!&ndash;                                    <iframe src="/files/oti_insurance_terms.pdf#navpanes=0"></iframe>&ndash;&gt;-->
-                            <!--&lt;!&ndash;                                </div>&ndash;&gt;-->
-                            <!--                                <button type="button" class="close mx-auto my-2" value="3">[접기]</button>-->
-                            <!--                            </div>-->
+
                         </li>
                     </ul>
 

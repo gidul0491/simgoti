@@ -158,8 +158,33 @@
             $(".clntCnt").text(clntCnt);
         }
 
-        $(document).ready(function () {
+        function isVarsAllNotNull(){
+            if(
+                (clntNm != "" && clntNm != null)&&
+                (clntJuminA != "" && clntJuminA != null)&&
+                (clntJuminB != "" && clntJuminB != null)&&
+                (clntPhone != "" && clntPhone != null)&&
+                (clntEmail != "" && clntEmail != null)&&
+                check0bool
+            ){
+                console.log(true);
+                return true;
+            }
+            else {
+                console.log(false);
+                return false;
+            }
+        }
 
+        $(document).ready(function () {
+            function checkAllVars(){
+                if(isVarsAllNotNull()){
+                    $("#apply-btn").removeAttr("disabled");
+                }
+                else{
+                    $("#apply-btn").attr("disabled","disabled");
+                }
+            }
             addCompanion();
 
             // 이름
@@ -278,71 +303,6 @@
                 }
             });
 
-            // 약관 보이기
-            $(".show-btn").on("click", function(){
-                const showNum = $(this).attr("id").split("-")[2];
-                // 한번 클릭하면 true로 바뀜
-                read[showNum] = true;
-
-                // 약관버튼의 체크표시를 파란색으로 바꿈
-                if(!$("#read-"+showNum).hasClass("checked")){
-                    $("#read-"+showNum).addClass("checked");
-                }
-
-                // "모든 약관을 확인해주세요" 안내를 숨김
-                $("#hidden-alert").attr("hidden","hidden");
-
-                if(!$(this).hasClass("show")){
-                    $(this).addClass("show");
-                    $(".show-div#show-div-"+showNum).removeAttr("hidden");
-                    $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
-                    $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
-
-                    moveScrollTop(this);
-                }
-                else{
-                    $(this).removeClass("show");
-                    $(".show-div#show-div-"+showNum).attr("hidden","hidden");
-                    $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
-                    $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
-                }
-
-                // 위 모든 ~ 동의합니다.  버튼이 .agree-check-disable 클래스를 가지고 있을 때
-                // read 배열의 모든 요소가 true이면 위 모든 ~ 동의합니다 버튼의 클래스를 .agree-check-disable에서 ...-able로 바꿈
-                if($("#agree-check").hasClass("agree-check-disable")){
-                    if(!read.includes(false)){
-                        $("#agree-check").removeClass("agree-check-disable").addClass("agree-check-able");
-                    }
-                }
-            });
-
-            // 약관 펼쳐졌을때  보이는 접기버튼
-            $(".close").on("click", function(){
-                const showNum = $(this).val();
-                console.log("close "+showNum);
-                $("#show-btn-"+showNum).removeClass("show");
-                $(".show-div#show-div-"+showNum).attr("hidden","hidden");
-                $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
-                $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
-            });
-
-            // 약관 동의 체크
-            $(document).on("click",".agree-check-able #check-0", function () {
-                if(!check0bool){
-                    check0bool = true;
-                    $(this).addClass("checked");
-                    $("#apply-btn").removeAttr("disabled");
-                } else {
-                    check0bool = false;
-                    $(this).removeClass("checked");
-                    $("#apply-btn").attr("disabled", "disabled");
-                }
-            });
-
-            // 약관 안읽었는데 동의 체크하려고할때
-            $(document).on("click",".agree-check-disable #check-0", function () {
-                $("#hidden-alert").removeAttr("hidden");
-            });
 
             // 보험료 산출 버튼 클릭
             $("#prem-check-btn").on("click", function () {
@@ -399,6 +359,77 @@
                 addCompanion();
             });
 
+            // 약관 보이기
+            $(".show-btn").on("click", function(){
+                const showNum = $(this).attr("id").split("-")[2];
+                // 한번 클릭하면 true로 바뀜
+                read[showNum] = true;
+
+                // 약관버튼의 체크표시를 파란색으로 바꿈
+                if(!$("#read-"+showNum).hasClass("checked")){
+                    $("#read-"+showNum).addClass("checked");
+                }
+
+                // "모든 약관을 확인해주세요" 안내를 숨김
+                $("#hidden-alert").attr("hidden","hidden");
+
+                if(showNum === "4"){
+                    const option = `width=${800}, height=${600}, top=${this.clientY - 300}, left=${this.clientX + 50}`;
+                    window.open("/files/oti_insurance_terms.pdf#navpanes=0","_blank",option);
+                }
+                else{
+                    if(!$(this).hasClass("show")){
+                        $(this).addClass("show");
+                        $(".show-div#show-div-"+showNum).removeAttr("hidden");
+                        $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
+                        $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
+
+                        // moveScrollTop(this);
+                    }
+                    else{
+                        $(this).removeClass("show");
+                        $(".show-div#show-div-"+showNum).attr("hidden","hidden");
+                        $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
+                        $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+                    }
+                }
+
+                // 위 모든 ~ 동의합니다.  버튼이 .agree-check-disable 클래스를 가지고 있을 때
+                // read 배열의 모든 요소가 true이면 위 모든 ~ 동의합니다 버튼의 클래스를 .agree-check-disable에서 ...-able로 바꿈
+                if($("#agree-check").hasClass("agree-check-disable")){
+                    if(!read.includes(false)){
+                        $("#agree-check").removeClass("agree-check-disable").addClass("agree-check-able");
+                    }
+                }
+            });
+
+            // 약관 펼쳐졌을때  보이는 접기버튼
+            $(".close").on("click", function(){
+                const showNum = $(this).val();
+                console.log("close "+showNum);
+                $("#show-btn-"+showNum).removeClass("show");
+                $(".show-div#show-div-"+showNum).attr("hidden","hidden");
+                $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
+                $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+            });
+
+            // 약관 동의 체크
+            $(document).on("click",".agree-check-able #check-0", function () {
+                if(!check0bool){
+                    check0bool = true;
+                    $(this).addClass("checked");
+
+                } else {
+                    check0bool = false;
+                    $(this).removeClass("checked");
+                }
+                checkAllVars();
+            });
+
+            // 약관 안읽었는데 동의 체크하려고할때
+            $(document).on("click",".agree-check-disable #check-0", function () {
+                $("#hidden-alert").removeAttr("hidden");
+            });
         });
 
     </script>
@@ -713,22 +744,10 @@
                             </li>
                             <li class="border-0">
                                 <button type="button" class="show-btn" id="show-btn-3">
-                                    <div>보험약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
                                     <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
                                 </button>
                                 <div class="show-div" id="show-div-3" hidden>
-                                    <div id="iframe-div">
-                                        <iframe src="/files/oti_insurance_terms.pdf#navpanes=0" frameborder="0"></iframe>
-                                    </div>
-                                    <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
-                                </div>
-                            </li>
-                            <li>
-                                <button type="button" class="show-btn" id="show-btn-4">
-                                    <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                    <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
-                                </button>
-                                <div class="show-div" id="show-div-4" hidden>
                                 <pre>
 보험취급자
 - 본 보험의 모집인은 보험대리점 에스아이엠지입니다.
@@ -765,8 +784,16 @@
 
 금융감독원 보험 범죄 신고센터 안내
 - 보험범죄는 형법 제347조(사기)에 의거 10년 이하의 징역이나 2천만원 이하의 벌금에 처해지며, 보험범죄를 교사한 경우에도 동일한처벌을 받을 수 있습니다. 금융감독원 민원상담전화 국번 없이 1332, 인터넷 www.fss.or.kr</pre>
-                                    <button type="button" class="close mx-auto my-2" value="4">[접기]</button>
+                                    <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
                                 </div>
+                            </li>
+                            <li>
+
+                                <button type="button" class="show-btn" id="show-btn-4">
+                                    <div>보험약관</div>
+                                    <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                </button>
+
                             </li>
                         </ul>
 

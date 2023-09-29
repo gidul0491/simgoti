@@ -45,61 +45,56 @@
             width: 100%;
             padding: 0 1rem;
         }
+
         #trPlace #countries .popup-content {
-            padding: 1.6rem 0!important;
+            padding: 1.6rem 0 !important;
         }
+
         #trPlace #countries .popup-content i {
             color: #bbb;
         }
-        .country-btn{
+
+        .country-btn {
             width: 100%;
             height: 1.8rem;
             display: flex;
             justify-content: space-between;
             border: 0;
-            background: rgba(0,0,0,0);
+            background: rgba(0, 0, 0, 0);
             margin: 0.2rem 0;
             overflow: hidden;
             display: flex;
             align-items: center;
         }
-        .country-btn:hover{
-            font-size: large;
+
+        .country-btn:hover {
+            font-size: 1.2rem;
+            color: #0a53be !important;
+            font-weight: bolder;
         }
-        .country-btn.checked{
-            font-size: large;
-            color: #0a53be!important;
+
+        .country-btn.checked {
+            font-size: 1.2rem;
+            color: #0a53be !important;
             font-weight: bolder;
         }
 
         #trPlace .popup-content .country-btn.checked .icon {
-            color: #0a53be;
+            color: #0a53be !important;
             font-weight: 900;
         }
 
     </style>
     <script>
-        let s = {
-            startDate: sessionStorage.getItem("startDate") || null,
-            startTime: sessionStorage.getItem("startTime") || null
-            endDate : sessionStorage.getItem("endDate") || null,
-            endTime : sessionStorage.getItem("endTime") || null,
-            clntBirth : sessionStorage.getItem("clntBirth") || null,
-            clntGen : sessionStorage.getItem("clntGen") || null,
-            trPlace : sessionStorage.getItem("trPlace") || null,
-            covCode : sessionStorage.getItem("covCode") || 10120102,
-        };
-        
-        // let s.startDate = sessionStorage.getItem("s.startDate") || null;
-        // let startTime = sessionStorage.getItem("startTime") || null;
-        // let endDate = sessionStorage.getItem("endDate") || null;
-        // let endTime = sessionStorage.getItem("endTime") || null;
-        // let clntBirth = sessionStorage.getItem("clntBirth") || null;
-        // let clntGen = sessionStorage.getItem("clntGen") || null;
-        // let trPlace = sessionStorage.getItem("trPlace") || null;
-        // let covCode = sessionStorage.getItem("covCode") || 10120102;
-        
-        
+        let startDate = sessionStorage.getItem("startDate") || null;
+        let startTime = sessionStorage.getItem("startTime") || null;
+        let endDate = sessionStorage.getItem("endDate") || null;
+        let endTime = sessionStorage.getItem("endTime") || null;
+        let clntBirth = sessionStorage.getItem("clntBirth") || null;
+        let clntGen = sessionStorage.getItem("clntGen") || null;
+        let trPlace = sessionStorage.getItem("trPlace") || null;
+
+        let covCode = sessionStorage.getItem("covCode") || 10120102;
         let startDt;
         let endDt;
 
@@ -107,13 +102,13 @@
         function isAllVarsNotNull() {
             let result = false;
             if (
-                s.startDate != null &&
-                s.startTime != null &&
-                s.endDate != null &&
-                s.endTime != null &&
-                s.clntBirth != null &&
-                s.clntGen != null &&
-                s.trPlace != null
+                startDate != null &&
+                startTime != null &&
+                endDate != null &&
+                endTime != null &&
+                clntBirth != null &&
+                clntGen != null &&
+                trPlace != null
             ) {
                 result = true;
             }
@@ -122,6 +117,54 @@
 
 
         $(document).ready(function () {
+
+            function checkVars() {
+
+                // 모두 입력했을때 보험료확인 버튼 활성화, summary와 calculate-result 숨기기
+                if (isAllVarsNotNull()) {
+                    if (clntBirth.length < 8) {
+                        showHiddenAlert("생년월일 8자리를 정확히 입력해주세요.")
+                        $("#calculate-btn").attr("disabled", "disabled");
+                    } else {
+                        hideHiddenAlert();
+                        sessionStorage.clear();
+                        $("#calculate-btn").removeAttr("disabled");
+                        $("#summary, .calculate-result").attr("hidden", "hidden");
+                    }
+                } else {
+                    $("#calculate-btn").attr("disabled", "disabled");
+                }
+
+
+                // 날짜 시간 입력시 이전 날짜나 시간을 입력해야 disabled가 해제되도록
+                const startDateInput = $("#start-date");
+                // const startTimeSelect = $("#start-time-pick");
+                // const startTimeInput = $("#start-time");
+                const startTimeInput = $("#start-time-pick");
+                const endDateInput = $("#end-date");
+                const endTimeInput = $("#end-time-pick");
+
+                if (startDateInput.val() != "") {
+                    startTimeInput.removeAttr("disabled").removeClass("disabled");
+                } else {
+                    startTimeInput.attr("disabled", true).addClass("disabled");
+                }
+
+                // if(startTimeSelect.val() != null){
+                //     endDateInput.removeAttr("disabled");
+                // }
+                if (startTimeInput.val() != null) {
+                    endDateInput.removeAttr("disabled");
+                } else {
+                    endDateInput.attr("disabled", true);
+                }
+
+                if (endDateInput.val() != "") {
+                    endTimeInput.removeAttr("disabled").removeClass("disabled");
+                } else {
+                    endTimeInput.attr("disabled", true).addClass("disabled");
+                }
+            }
 
             let today = new Date();
             let todayStr = dateToStr(today);
@@ -134,32 +177,32 @@
             $("#start-date").attr("max", after3mthStr);
             // 최초 sessionStorage에서 값을 가져와 변수에 저장하여 변수들이 null이 아닌경우 input 태그에 대입
             if (isAllVarsNotNull()) {
-                $("#start-date").val(s.startDate);
-                $("#start-time-pick").val(s.startTime);
+                $("#start-date").val(startDate);
+                $("#start-time-pick").removeAttr("disabled").val(parseInt(startTime.split(":")[0]));
                 // $("#start-time").val(startTime);
-                $("#end-date").val(s.endDate);
-                $("#end-time-pick").val(s.endTime);
+                $("#end-date").removeAttr("disabled").val(endDate);
+                $("#end-time-pick").removeAttr("disabled").val(parseInt(endTime.split(":")[0]));
                 // $("#end-time").val(endTime);
-                $("#clntBirth").val(s.clntBirth);
+                $("#clntBirth").val(clntBirth);
                 $("#clntGen-pick").val(clntGen);
-                $("#clntGen").val(s.clntGen);
-                $("#trPlace-text").val(s.trPlace);
-                startDt = new Date(s.startDate + " " + s.startTime);
-                endDt = new Date(s.endDate + " " + s.endTime);
+                // $("#clntGen").val(clntGen);
+                $("#trPlace-text").val(trPlace);
+                startDt = new Date(startDate + " " + startTime);
+                endDt = new Date(endDate + " " + endTime);
                 getPremiumAndCoverage();
             }
 
             // 나라 선택시 텍스트창에 넣고 변수 country에도 대입
             $("#trPlace-select").on("change", function () {
                 const selected = $("#trPlace-select option:selected");
-                s.trPlace = selected.text();
-                $("#trPlace-text").val(s.trPlace);
+                trPlace = selected.text();
+                $("#trPlace-text").val(trPlace);
             });
 
-            // 출발일시, 종료일시 선택시 s.startDate, startTime, endDate, endTime에 값 넣기
+            // 출발일시, 종료일시 선택시 startDate, startTime, endDate, endTime에 값 넣기
 
             $("#start-date").on("input", function () {
-                s.startDate = $(this).val();
+                startDate = $(this).val();
                 $("#end-date").val(null);
                 // $("#end-time").val(null);
                 $("#end-time-pick").val(null);
@@ -168,40 +211,40 @@
                 $("#start-time-pick").empty();
                 $("#start-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
                 for (let i = 0; i < 24; i++) {
-                    $("#start-time-pick").append("<option value='"+i+"'>" + numPadding2(i) + ":00" + "</option>")
+                    $("#start-time-pick").append("<option value='" + i + "'>" + numPadding2(i) + ":00" + "</option>")
                 }
 
-                if (s.startDate != "") {
+                if (startDate != "") {
                     // 여행종료일시 최대일자를 여행출발일시로부터 3개월 후로 설정
-                    $("#end-date").attr("min", s.startDate);
-                    maxDate = new Date(s.startDate);
+                    $("#end-date").attr("min", startDate);
+                    maxDate = new Date(startDate);
                     maxDate.setMonth(maxDate.getMonth() + 3);
                     const maxDateStr = dateToStr(maxDate);
                     $("#end-date").attr("max", maxDateStr);
                 }
 
-                if (s.startDate == todayStr) {
+                if (startDate == todayStr) {
                     // 선택한 날짜가 오늘일 때 선택가능한 최소시간을 시간단위로 지금보다 1시간 뒤부터 선택가능하도록 설정
                     let nowTime = parseInt(dateTimeToStr(today).split(" ")[1].split(":")[0]);
                     $("#start-time-pick option").each(function () {
                         if ($(this).val() != '' && $(this).val() <= nowTime) {
                             $(this).remove();
-                        }
-                        else if($(this).val() != '' && $(this).val() > nowTime){
+                        } else if ($(this).val() != '' && $(this).val() > nowTime) {
                             return false;
                         }
                     });
                 }
+                checkVars();
             });
 
             $("#start-time-pick").on("input", function () {
                 startTime = $(this).find("option:selected").text();
                 // 선택한 일자가 출발일자와 같을때, 출발시간과 동일하거나 그 이전인 시간은 제거
-                if (endDate == s.startDate){
+                if (endDate == startDate) {
                     $("#end-time-pick").empty();
                     $("#end-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
                     for (let i = 0; i < 24; i++) {
-                        $("#end-time-pick").append("<option value='" + i+ "'>" + numPadding2(i) + ":00" + "</option>")
+                        $("#end-time-pick").append("<option value='" + i + "'>" + numPadding2(i) + ":00" + "</option>")
                     }
                     $("#end-time-pick option").each(function () {
 
@@ -211,7 +254,7 @@
                         }
                     });
                 }
-
+                checkVars();
             });
             $("#end-date").on("input", function () {
                 if (startTime == null) {
@@ -226,7 +269,7 @@
                 $("#end-time-pick").empty();
                 $("#end-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
                 for (let i = 0; i < 24; i++) {
-                    $("#end-time-pick").append("<option value='" + i+ "'>" + numPadding2(i) + ":00" + "</option>")
+                    $("#end-time-pick").append("<option value='" + i + "'>" + numPadding2(i) + ":00" + "</option>")
                 }
 
                 if (endDate == maxDateStr) {
@@ -238,7 +281,7 @@
                         }
                     });
                 }
-                if (endDate == s.startDate){
+                if (endDate == startDate) {
                     // 선택한 일자가 출발일자와 같을때, 출발시간과 동일하거나 그 이전인 시간은 제거
                     $("#end-time-pick option").each(function () {
                         let startTimeInt = parseInt(startTime.split(":")[0]);
@@ -247,31 +290,37 @@
                         }
                     });
                 }
+                checkVars();
             });
 
             $("#end-time-pick").on("input", function () {
                 endTime = $(this).find("option:selected").text();
+                checkVars();
             });
 
             // 생년월일, 성별 입력시 값 저장
             $("#clntBirth").on("keyup", function () {
                 clntBirth = $(this).val();
+                checkVars();
             });
 
             $("#clntGen-pick").on("change", function () {
                 clntGen = $(this).val();
                 const selected = $("#gender-pick option:selected");
                 $("#gender").val(selected.text());
+                checkVars();
             });
 
             // 국가 선택시
-            $(".country-btn").on("click",function(){
+            $(".country-btn").on("click", function () {
                 const country = $(this).text();
                 $(".country-btn").removeClass("checked");
                 $(this).addClass("checked");
                 $("#trPlace-text").val(country);
-                $(".popup").attr("hidden","hidden");
+                $(".popup").attr("hidden", "hidden");
+
                 trPlace = country;
+                checkVars();
             });
 
             // 보험료 확인을 위한 변수
@@ -294,7 +343,7 @@
 
             // 보험료 계산해서 화면에 띄우는 함수
             function getPremiumAndCoverage() {
-                startDt = new Date(s.startDate + " " + startTime);
+                startDt = new Date(startDate + " " + startTime);
                 endDt = new Date(endDate + " " + endTime);
                 // 여행 일수 구하기
                 const travelDay = Math.ceil((endDt - startDt) / (24 * 60 * 60 * 1000));
@@ -303,7 +352,7 @@
                     url: "/api/client/coverageList",
                     type: "GET",
                     data: {
-                        startDt: `${s.startDate} ${startTime}`,
+                        startDt: `${startDate} ${startTime}`,
                         endDt: `${endDate} ${endTime}`,
                         clntBirth: clntBirth,
                     },
@@ -318,7 +367,7 @@
                             const data = resp.data;
 
                             // 세션스토리지에 값 저장
-                            sessionStorage.setItem("s.startDate", s.startDate);
+                            sessionStorage.setItem("startDate", startDate);
                             sessionStorage.setItem("startTime", startTime);
                             sessionStorage.setItem("endDate", endDate);
                             sessionStorage.setItem("endTime", endTime);
@@ -386,7 +435,7 @@
                                     "<div class=''><span>" + covDNm + "</span></div>" +
                                     "<div class='text-end w-25'><span>" + numToKrUnit(covDAmt) + "원</span></div>" +
                                     "</li>"
-                                );f
+                                );
                             }
                         }
                         selectCoverage(covCode);
@@ -417,56 +466,10 @@
                 // getPremiumAndCoverage();
             });
 
-            // 문서의 모든 요소가 변할 때마다 동작
-            $("html").on("input", function () {
-                // 모두 입력했을때 보험료확인 버튼 활성화, summary와 calculate-result 숨기기
-                if (isAllVarsNotNull()) {
-                    sessionStorage.clear();
-                    $("#calculate-btn").removeAttr("disabled");
-                    $("#summary, .calculate-result").attr("hidden", "hidden");
-
-                    if(clntBirth.length < 8){
-                        showHiddenAlert("생년월일 8자리를 정확히 입력해주세요.")
-                    }
-                    else{
-                        hideHiddenAlert();
-                    }
-                } else {
-                    $("#calculate-btn").attr("disabled", "disabled");
-                }
-
-                // 날짜 시간 입력시 이전 날짜나 시간을 입력해야 disabled가 해제되도록
-                const s.startDateInput = $("#start-date");
-                // const startTimeSelect = $("#start-time-pick");
-                // const startTimeInput = $("#start-time");
-                const startTimeInput = $("#start-time-pick");
-                const endDateInput = $("#end-date");
-                const endTimeInput = $("#end-time-pick");
-
-                if(s.startDateInput.val() != ""){
-                    startTimeInput.removeAttr("disabled").removeClass("disabled");
-                }
-                else{
-                    startTimeInput.attr("disabled",true).addClass("disabled");
-                }
-
-                // if(startTimeSelect.val() != null){
-                //     endDateInput.removeAttr("disabled");
-                // }
-                if(startTimeInput.val() != null){
-                    endDateInput.removeAttr("disabled");
-                }
-                else{
-                    endDateInput.attr("disabled",true);
-                }
-
-                if(endDateInput.val() != ""){
-                    endTimeInput.removeAttr("disabled").removeClass("disabled");
-                }
-                else{
-                    endTimeInput.attr("disabled",true).addClass("disabled");
-                }
-            });
+            // // 문서의 모든 요소가 변할 때마다 동작
+            // $("html").on("input", function () {
+            //
+            // });
 
             // 담보 탭 클릭시
             $(document).on("click", ".cov-tab", function () {
@@ -528,12 +531,12 @@
                             <input type="date" class="form-control" id="start-date">
                         </div>
                         <div class="w-100 position-relative">
-<!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
-<!--                                   placeholder="시간"-->
-<!--                                   name="start-time" id="start-time" value="" disabled>-->
-<!--                            <select id="start-time-pick"-->
-<!--                                    class="form-control position-absolute top-100 text-option time-pick" hidden size="5"-->
-<!--                                    style="z-index: 1">-->
+                            <!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
+                            <!--                                   placeholder="시간"-->
+                            <!--                                   name="start-time" id="start-time" value="" disabled>-->
+                            <!--                            <select id="start-time-pick"-->
+                            <!--                                    class="form-control position-absolute top-100 text-option time-pick" hidden size="5"-->
+                            <!--                                    style="z-index: 1">-->
                             <select id="start-time-pick"
                                     class="form-control time-pick disabled" disabled>
                                 <option value='' hidden="hidden" disabled selected>시간</option>
@@ -576,12 +579,12 @@
                             <input type="date" class="form-control" id="end-date" disabled>
                         </div>
                         <div class="w-100 position-relative">
-<!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
-<!--                                   placeholder="시간"-->
-<!--                                   name="end-time" id="end-time" value="" disabled>-->
-<!--                            <select id="end-time-pick"-->
-<!--                                    class="form-control position-absolute top-100 text-option time-pick"-->
-<!--                                    hidden size="5" style="z-index: 1">-->
+                            <!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
+                            <!--                                   placeholder="시간"-->
+                            <!--                                   name="end-time" id="end-time" value="" disabled>-->
+                            <!--                            <select id="end-time-pick"-->
+                            <!--                                    class="form-control position-absolute top-100 text-option time-pick"-->
+                            <!--                                    hidden size="5" style="z-index: 1">-->
                             <select id="end-time-pick"
                                     class="form-control time-pick" disabled>
                                 <option value='' hidden="hidden" disabled selected>시간</option>
@@ -625,11 +628,11 @@
 
                         <div class="w-100 text-select-div">
 
-<!--                            <input type="text" class="form-control bg-white text-select" readonly placeholder="성별"-->
-<!--                                   id="clntGen">-->
-<!--                            <select name="clntGen-pick" id="clntGen-pick"-->
-<!--                                    class="form-control text-option" hidden size="2"-->
-<!--                                    style="z-index: 1">-->
+                            <!--                            <input type="text" class="form-control bg-white text-select" readonly placeholder="성별"-->
+                            <!--                                   id="clntGen">-->
+                            <!--                            <select name="clntGen-pick" id="clntGen-pick"-->
+                            <!--                                    class="form-control text-option" hidden size="2"-->
+                            <!--                                    style="z-index: 1">-->
                             <select name="clntGen-pick" id="clntGen-pick"
                                     class="form-control">
                                 <option value="" disabled hidden selected>성별</option>
@@ -647,253 +650,491 @@
                                    class="show-popup form-control bg-white show-popup">
                             <div id="countries" class="popup" hidden style="z-index: 1">
                                 <div class="popup-content d-flex justify-content-center align-items-center">
-<!--                                    <select name="trPlace" id="trPlace-select" class="form-select mb-4" size="17">-->
-<!--                                        </optgroup>-->
-<!--                                    </select>-->
+                                    <!--                                    <select name="trPlace" id="trPlace-select" class="form-select mb-4" size="17">-->
+                                    <!--                                        </optgroup>-->
+                                    <!--                                    </select>-->
                                     <div id="country-btns">
                                         <h5 class="ps-3">자주 찾는 여행지</h5>
-                                        <select hidden name="country" id="#country-select" value=""></select>
-                                        <button type="button" class="country-btn" value='JP'><span>일본</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ID'><span>인도네시아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SG'><span>싱가포르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='US'><span>미국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GU'><span>괌</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TW'><span>대만</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PH'><span>필리핀</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TH'><span>태국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VN'><span>베트남</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FR'><span>프랑스</span><i class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='JP'><span>일본</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ID'><span>인도네시아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SG'><span>싱가포르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='US'><span>미국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GU'><span>괌</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TW'><span>대만</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PH'><span>필리핀</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TH'><span>태국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VN'><span>베트남</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FR'><span>프랑스</span><i
+                                                class="bi bi-check icon"></i></button>
 
                                         <h5 class="ps-3 pt-3">전체 국가</h5>
-                                        <button type="button" class="country-btn" value='GH'><span>가나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GA'><span>가봉</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GY'><span>가이아나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GM'><span>감비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GP'><span>과들루프</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GT'><span>과테말라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GD'><span>그레나다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GR'><span>그리스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GL'><span>그린란드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GN'><span>기니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GW'><span>기니비사우</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NA'><span>나미비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NR'><span>나우루</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NG'><span>나이지리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AQ'><span>남극</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ZA'><span>남아프리카 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NL'><span>네덜란드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AN'><span>네덜란드령 안틸레스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NP'><span>네팔</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NO'><span>노르웨이</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NF'><span>노퍽섬</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NC'><span>누벨칼레도니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NZ'><span>뉴질랜드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NU'><span>니우에</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NE'><span>니제르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='NI'><span>니카라과</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KR'><span>대한민국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DK'><span>덴마크</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DO'><span>도미니카 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DM'><span>도미니카 연방</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DE'><span>독일</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TL'><span>동티모르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LA'><span>라오스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LR'><span>라이베리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LV'><span>라트비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='RU'><span>러시아 연방</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LB'><span>레바논</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LS'><span>레소토</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='RE'><span>레위니옹</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='RO'><span>루마니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LU'><span>룩셈부르크</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='RW'><span>르완다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LY'><span>리비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LT'><span>리투아니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LI'><span>리히텐슈타인</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MG'><span>마다가스카르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MQ'><span>마르티니크</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MH'><span>마셜 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='YT'><span>마요트</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MO'><span>마카오</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MK'><span>마케도니아 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MW'><span>말라위</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MY'><span>말레이시아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ML'><span>말리</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MX'><span>멕시코</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MC'><span>모나코</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MA'><span>모로코</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MU'><span>모리셔스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MR'><span>모리타니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MZ'><span>모잠비크</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MS'><span>몬트세랫</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MD'><span>몰도바 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MV'><span>몰디브</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MT'><span>몰타</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MN'><span>몽골</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='UM'><span>미국령 군소 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VI'><span>미국령 버진아일랜드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MM'><span>미얀마</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FM'><span>미크로네시아 연방</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VU'><span>바누아투</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BH'><span>바레인</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BB'><span>바베이도스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VA'><span>바티칸 시국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BS'><span>바하마</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BD'><span>방글라데시</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BM'><span>버뮤다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BJ'><span>베냉</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VE'><span>베네수엘라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BE'><span>벨기에</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BY'><span>벨라루스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BZ'><span>벨리즈</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BA'><span>보스니아 헤르체고비나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BW'><span>보츠와나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BO'><span>볼리비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BI'><span>부룬디</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BF'><span>부르키나파소</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BV'><span>부베섬</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BT'><span>부탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='MP'><span>북마리아나 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BG'><span>불가리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BR'><span>브라질</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='BN'><span>브루나이</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='WS'><span>사모아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SA'><span>사우디아라비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GS'><span>사우스조지아 사우스샌드위치 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SM'><span>산마리노</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ST'><span>상투메 프린시페</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PM'><span>생피에르 미클롱</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='EH'><span>서사하라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SN'><span>세네갈</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CS'><span>세르비아 몬테네그로</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SC'><span>세이셸</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LC'><span>세인트루시아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VC'><span>세인트빈센트 그레나딘</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KN'><span>세인트키츠 네비스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SH'><span>세인트헬레나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SO'><span>소말리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SB'><span>솔로몬 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SD'><span>수단</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SR'><span>수리남</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='LK'><span>스리랑카</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SJ'><span>스발바르 얀마옌 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SE'><span>스웨덴</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CH'><span>스위스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ES'><span>스페인</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SK'><span>슬로바키아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SI'><span>슬로베니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SY'><span>시리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SL'><span>시에라리온</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AE'><span>아랍에미리트</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AW'><span>아루바</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AM'><span>아르메니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AR'><span>아르헨티나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AS'><span>아메리칸사모아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IS'><span>아이슬란드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HT'><span>아이티</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IE'><span>아일랜드섬</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AZ'><span>아제르바이잔</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AF'><span>아프가니스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AD'><span>안도라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AL'><span>알바니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DZ'><span>알제리</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AO'><span>앙골라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AG'><span>앤티가 바부다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AI'><span>앵귈라</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ER'><span>에리트레아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SZ'><span>에스와티니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='EE'><span>에스토니아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='EC'><span>에콰도르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ET'><span>에티오피아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='SV'><span>엘살바도르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GB'><span>영국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='VG'><span>영국령 버진아일랜드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IO'><span>영국령 인도양 지역</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='YE'><span>예멘</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='OM'><span>오만</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AU'><span>오스트레일리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='AT'><span>오스트리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HN'><span>온두라스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='WF'><span>왈리스 퓌튀나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='JO'><span>요르단</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='UG'><span>우간다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='UY'><span>우르과이</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='UZ'><span>우즈베키스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='UA'><span>우크라이나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IQ'><span>이라크</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IR'><span>이란</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IL'><span>이스라엘</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='EG'><span>이집트</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IT'><span>이탈리아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='IN'><span>인도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='JM'><span>자메이카</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ZM'><span>잠비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GQ'><span>적도 기니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KP'><span>조선 민주주의 인민공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GE'><span>조지아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CF'><span>중앙아프리카 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CN'><span>중화인민공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='DJ'><span>지부티</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GI'><span>지브롤터</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='ZW'><span>짐바브웨</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TD'><span>차드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CZ'><span>체코</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CL'><span>칠레</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CM'><span>카메룬</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CV'><span>카보베르데</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KZ'><span>카자흐스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='QA'><span>카타르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KH'><span>캄보디아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CA'><span>캐나다</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KE'><span>케냐</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KY'><span>케이맨 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KM'><span>코모로</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CR'><span>코스타리카</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CC'><span>코코스 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CI'><span>코트디부아르</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CO'><span>콜롬비아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CG'><span>콩고</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CD'><span>콩고 민주 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CU'><span>쿠바</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KW'><span>쿠웨이트</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CK'><span>쿡 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HR'><span>크로아티아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CX'><span>크리스마스섬</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KG'><span>키르기스스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='KI'><span>키리바시</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='CY'><span>키프로스</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TJ'><span>타지키스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TZ'><span>탄자니아 공화국</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TC'><span>터크스 케이커스 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TR'><span>터키</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TG'><span>토고</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TK'><span>토켈라우</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TO'><span>통가</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TM'><span>투르크메니스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TV'><span>투발루</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TN'><span>튀니지</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TT'><span>트리니다드 토바고</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PA'><span>파나마</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PY'><span>파라과이</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PK'><span>파키스탄</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PG'><span>파푸아뉴기니</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PW'><span>팔라우</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PS'><span>팔레스타인 영토</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FO'><span>페로 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PE'><span>페루</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PT'><span>포르투칼</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FK'><span>포클랜드 제도(말비나스 군도)</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PL'><span>폴란드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PR'><span>푸에르토리코</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='GF'><span>프랑스령 기이나</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='TF'><span>프랑스령 남방 및 남극</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PF'><span>프랑스령 폴리네시아</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FJ'><span>피지</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='FI'><span>핀란드</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='PN'><span>핏케언 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HM'><span>허드 맥도널드 제도</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HU'><span>헝가리</span><i class="bi bi-check icon"></i></button>
-                                        <button type="button" class="country-btn" value='HK'><span>홍콩</span><i class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GH'><span>가나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GA'><span>가봉</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GY'><span>가이아나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GM'><span>감비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GP'><span>과들루프</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GT'><span>과테말라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GD'><span>그레나다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GR'><span>그리스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GL'><span>그린란드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GN'><span>기니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GW'><span>기니비사우</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NA'><span>나미비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NR'><span>나우루</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NG'><span>나이지리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AQ'><span>남극</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ZA'><span>남아프리카 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NL'><span>네덜란드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AN'><span>네덜란드령 안틸레스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NP'><span>네팔</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NO'><span>노르웨이</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NF'><span>노퍽섬</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NC'><span>누벨칼레도니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NZ'><span>뉴질랜드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NU'><span>니우에</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NE'><span>니제르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='NI'><span>니카라과</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KR'><span>대한민국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DK'><span>덴마크</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DO'><span>도미니카 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DM'><span>도미니카 연방</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DE'><span>독일</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TL'><span>동티모르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LA'><span>라오스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LR'><span>라이베리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LV'><span>라트비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='RU'><span>러시아 연방</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LB'><span>레바논</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LS'><span>레소토</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='RE'><span>레위니옹</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='RO'><span>루마니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LU'><span>룩셈부르크</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='RW'><span>르완다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LY'><span>리비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LT'><span>리투아니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LI'><span>리히텐슈타인</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MG'><span>마다가스카르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MQ'><span>마르티니크</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MH'><span>마셜 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='YT'><span>마요트</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MO'><span>마카오</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MK'><span>마케도니아 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MW'><span>말라위</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MY'><span>말레이시아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ML'><span>말리</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MX'><span>멕시코</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MC'><span>모나코</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MA'><span>모로코</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MU'><span>모리셔스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MR'><span>모리타니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MZ'><span>모잠비크</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MS'><span>몬트세랫</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MD'><span>몰도바 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MV'><span>몰디브</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MT'><span>몰타</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MN'><span>몽골</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='UM'><span>미국령 군소 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VI'><span>미국령 버진아일랜드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MM'><span>미얀마</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FM'><span>미크로네시아 연방</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VU'><span>바누아투</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BH'><span>바레인</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BB'><span>바베이도스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VA'><span>바티칸 시국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BS'><span>바하마</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BD'><span>방글라데시</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BM'><span>버뮤다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BJ'><span>베냉</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VE'><span>베네수엘라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BE'><span>벨기에</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BY'><span>벨라루스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BZ'><span>벨리즈</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BA'><span>보스니아 헤르체고비나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BW'><span>보츠와나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BO'><span>볼리비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BI'><span>부룬디</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BF'><span>부르키나파소</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BV'><span>부베섬</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BT'><span>부탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='MP'><span>북마리아나 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BG'><span>불가리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BR'><span>브라질</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='BN'><span>브루나이</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='WS'><span>사모아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SA'><span>사우디아라비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GS'>
+                                            <span>사우스조지아 사우스샌드위치 제도</span><i class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SM'><span>산마리노</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ST'><span>상투메 프린시페</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PM'><span>생피에르 미클롱</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='EH'><span>서사하라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SN'><span>세네갈</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CS'><span>세르비아 몬테네그로</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SC'><span>세이셸</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LC'><span>세인트루시아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VC'><span>세인트빈센트 그레나딘</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KN'><span>세인트키츠 네비스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SH'><span>세인트헬레나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SO'><span>소말리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SB'><span>솔로몬 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SD'><span>수단</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SR'><span>수리남</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='LK'><span>스리랑카</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SJ'><span>스발바르 얀마옌 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SE'><span>스웨덴</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CH'><span>스위스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ES'><span>스페인</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SK'><span>슬로바키아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SI'><span>슬로베니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SY'><span>시리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SL'><span>시에라리온</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AE'><span>아랍에미리트</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AW'><span>아루바</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AM'><span>아르메니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AR'><span>아르헨티나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AS'><span>아메리칸사모아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IS'><span>아이슬란드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HT'><span>아이티</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IE'><span>아일랜드섬</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AZ'><span>아제르바이잔</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AF'><span>아프가니스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AD'><span>안도라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AL'><span>알바니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DZ'><span>알제리</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AO'><span>앙골라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AG'><span>앤티가 바부다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AI'><span>앵귈라</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ER'><span>에리트레아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SZ'><span>에스와티니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='EE'><span>에스토니아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='EC'><span>에콰도르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ET'><span>에티오피아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='SV'><span>엘살바도르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GB'><span>영국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='VG'><span>영국령 버진아일랜드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IO'><span>영국령 인도양 지역</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='YE'><span>예멘</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='OM'><span>오만</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AU'><span>오스트레일리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='AT'><span>오스트리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HN'><span>온두라스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='WF'><span>왈리스 퓌튀나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='JO'><span>요르단</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='UG'><span>우간다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='UY'><span>우르과이</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='UZ'><span>우즈베키스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='UA'><span>우크라이나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IQ'><span>이라크</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IR'><span>이란</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IL'><span>이스라엘</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='EG'><span>이집트</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IT'><span>이탈리아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='IN'><span>인도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='JM'><span>자메이카</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ZM'><span>잠비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GQ'><span>적도 기니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KP'>
+                                            <span>조선 민주주의 인민공화국</span><i class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GE'><span>조지아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CF'><span>중앙아프리카 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CN'><span>중화인민공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='DJ'><span>지부티</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GI'><span>지브롤터</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='ZW'><span>짐바브웨</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TD'><span>차드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CZ'><span>체코</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CL'><span>칠레</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CM'><span>카메룬</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CV'><span>카보베르데</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KZ'><span>카자흐스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='QA'><span>카타르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KH'><span>캄보디아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CA'><span>캐나다</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KE'><span>케냐</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KY'><span>케이맨 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KM'><span>코모로</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CR'><span>코스타리카</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CC'><span>코코스 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CI'><span>코트디부아르</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CO'><span>콜롬비아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CG'><span>콩고</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CD'><span>콩고 민주 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CU'><span>쿠바</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KW'><span>쿠웨이트</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CK'><span>쿡 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HR'><span>크로아티아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CX'><span>크리스마스섬</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KG'><span>키르기스스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='KI'><span>키리바시</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='CY'><span>키프로스</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TJ'><span>타지키스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TZ'><span>탄자니아 공화국</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TC'><span>터크스 케이커스 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TR'><span>터키</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TG'><span>토고</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TK'><span>토켈라우</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TO'><span>통가</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TM'><span>투르크메니스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TV'><span>투발루</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TN'><span>튀니지</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TT'><span>트리니다드 토바고</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PA'><span>파나마</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PY'><span>파라과이</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PK'><span>파키스탄</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PG'><span>파푸아뉴기니</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PW'><span>팔라우</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PS'><span>팔레스타인 영토</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FO'><span>페로 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PE'><span>페루</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PT'><span>포르투칼</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FK'>
+                                            <span>포클랜드 제도(말비나스 군도)</span><i class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PL'><span>폴란드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PR'><span>푸에르토리코</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='GF'><span>프랑스령 기이나</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='TF'><span>프랑스령 남방 및 남극</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PF'><span>프랑스령 폴리네시아</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FJ'><span>피지</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='FI'><span>핀란드</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='PN'><span>핏케언 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HM'><span>허드 맥도널드 제도</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HU'><span>헝가리</span><i
+                                                class="bi bi-check icon"></i></button>
+                                        <button type="button" class="country-btn" value='HK'><span>홍콩</span><i
+                                                class="bi bi-check icon"></i></button>
 
                                     </div>
                                 </div>
@@ -923,7 +1164,7 @@
                 <!-- 보험료 계산 버튼 -->
                 <button type="button" class="btn main-btn mb-3 w-75" id="calculate-btn" disabled="disabled">보험료 확인
                 </button>
-                <div id="hidden-alert" class="text-danger my-1" hidden><span></span></div>
+                <div id="hidden-alert" class="text-danger" hidden><span></span></div>
             </div>
             <div id="after-calculate">
                 <!-- 입력정보 요약 -->

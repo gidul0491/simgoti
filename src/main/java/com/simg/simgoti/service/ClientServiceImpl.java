@@ -21,8 +21,8 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<CoverageTypeDto> selectCoverageTypeList(int day) throws Exception {
         List<CoverageTypeDto> list = applyMapper.selectCoverageTypeList();
-        for(CoverageTypeDto dto : list){
-            dto.setTotPremium(calculatePremium(dto.getCovCode(),dto.getCovPremium(), dto.getCovPremiumMin(),day));
+        for (CoverageTypeDto dto : list) {
+            dto.setTotPremium(calculatePremium(dto.getCovCode(), dto.getCovPremium(), dto.getCovPremiumMin(), day));
         }
         return list;
     }
@@ -31,38 +31,41 @@ public class ClientServiceImpl implements ClientService {
     public int getPremium(String code, int period, int cnt) throws Exception {
         int prem = 0;
         Map<String, Integer> prems = applyMapper.selectPremium(Integer.parseInt(code));
-        prem = calculatePremium(code,prems.get("covPremium"), prems.get("covPremiumMin"),period) * cnt;
+        prem = calculatePremium(code, prems.get("covPremium"), prems.get("covPremiumMin"), period) * cnt;
         return prem;
     }
 
     @Override
     public int insertOrUpdateClient(String clntNm, String clntBirth, String clntGen, String clntJumin, String clntPhone, String clntEmail) throws Exception {
-            int clntPk = -1;
-            try {
-                clntPk = applyMapper.selectClientNmJumin(clntNm, clntJumin);
-                ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, clntJumin);
-                if(clntEmail != null && clntEmail != null){
-                    applyMapper.updateClientPhoneEmailByPk(dto);
-                }
+        Aes128 aes = new Aes128("simgotiaes128key");
+        String encJumin = aes.encrypt(clntJumin);
+        int clntPk = -1;
+        try {
+            clntPk = applyMapper.selectClientNmJumin(clntNm, encJumin);
+            ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, encJumin);
+            if (clntEmail != null && clntEmail != null) {
+                applyMapper.updateClientPhoneEmailByPk(dto);
             }
-            catch(Exception e){
-                System.out.println(e);
-                ClientDto dto = new ClientDto();
-                dto.setClntNm(clntNm);
-                dto.setClntBirth(clntBirth);
-                dto.setClntGen(clntGen);
-                dto.setClntJumin(clntJumin);
-                dto.setClntPhone(clntPhone);
-                dto.setClntEmail(clntEmail);
-                applyMapper.insertRepClient(dto);
-                clntPk = dto.getClntPk();
-            }
-            return clntPk;
+        } catch (Exception e) {
+            System.out.println(e);
+            ClientDto dto = new ClientDto();
+            dto.setClntNm(clntNm);
+            dto.setClntBirth(clntBirth);
+            dto.setClntGen(clntGen);
+            dto.setClntJumin(encJumin);
+            dto.setClntPhone(clntPhone);
+            dto.setClntEmail(clntEmail);
+            applyMapper.insertRepClient(dto);
+            clntPk = dto.getClntPk();
+        }
+        return clntPk;
     }
 
     @Override
     public int selectClientNmJumin(String clntNm, String clntJumin) throws Exception {
-        return applyMapper.selectClientNmJumin(clntNm, clntJumin);
+        Aes128 aes = new Aes128("simgotiaes128key");
+        String encJumin = aes.encrypt(clntJumin);
+        return applyMapper.selectClientNmJumin(clntNm, encJumin);
     }
 
     @Override
@@ -76,7 +79,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public int insertApplyFinish(int payPk, String polNo, int comCode, int insComCode, int clntPk,
-                               int trPurpose, String trPlace, String trFromDt, String trToDt, int covCode, int clntCnt, int premium) throws Exception{
+                                 int trPurpose, String trPlace, String trFromDt, String trToDt, int covCode, int clntCnt, int premium) throws Exception {
         ApplyFinishDto dto = new ApplyFinishDto();
         dto.setPayPk(payPk);
         dto.setPolNo(polNo);
@@ -96,26 +99,24 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public int insertApplyInsuredList(int aplPk, int clntPk, Character repYN) throws Exception{
+    public int insertApplyInsuredList(int aplPk, int clntPk, Character repYN) throws Exception {
         return applyMapper.insertApplyInsuredList(aplPk, clntPk, repYN);
     }
 
 
     // 담보코드,일당 보험료, 최소 보험료, 보험일수를 이용하여 담보의 보험료를 구하는 메소드
-    public int calculatePremium(String code, int perDay, int min, int day){
+    public int calculatePremium(String code, int perDay, int min, int day) {
         int result = min;
         // cheapest 코드는 실속형 코드로 계산법이 다름;
         String cheapest = "10120101";
-        if(code.equals(cheapest) && day >= 3){
-            result += (day-2) * perDay;
-        }
-        else if(!code.equals(cheapest) && day == 3){
+        if (code.equals(cheapest) && day >= 3) {
+            result += (day - 2) * perDay;
+        } else if (!code.equals(cheapest) && day == 3) {
             result += 1 * perDay;
+        } else if (!code.equals(cheapest) && day >= 4) {
+            result += (day - 1) * perDay;
         }
-        else if(!code.equals(cheapest) && day >= 4){
-            result += (day -1 ) * perDay;
-        }
-        result = (int) (Math.floor(result/10) * 10);
+        result = (int) (Math.floor(result / 10) * 10);
         return result;
     }
 }

@@ -28,7 +28,7 @@
 /* 모바일 화면 */
 @media all and (max-aspect-ratio: 1/1){
     html {
-        font-size: 3vw;
+        font-size: 4vw;
     }
     option {
         padding: 0.2rem;

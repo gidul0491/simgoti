@@ -67,7 +67,7 @@
         set
             clntPhone = #{clntPhone}, clntEmail = #{clntEmail}, clntUdt = now()
         where
-            clntNm = #{clntNm} and clntJumin = #{clntJumin} and useYN = 'Y';
+            clntPk = #{clntPk} and useYN = 'Y';
     </update>
 
     <insert id="insertApplyPayment" useGeneratedKeys="true" keyProperty="payPk">

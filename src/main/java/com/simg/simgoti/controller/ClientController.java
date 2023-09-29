@@ -69,7 +69,7 @@ public class ClientController{
     // apply1Alone 페이지에서 확인 버튼을 누르면 실행
     // 입력한 정보를 세션에 추가, 입력한 정보를 이용하여 db에 저장 혹은 업데이트(이메일/전화번호), db에서 사용하는 pk값을 세션에 추가
     @RequestMapping(value = "/cliInfo", method = RequestMethod.POST)
-    public void addAppSession(@RequestParam String clntNm,@RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception{
+    public Object addAppSession(@RequestParam String clntNm,@RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception{
         HttpSession session = req.getSession();
         session.setAttribute("clntNm", clntNm);
         session.setAttribute("clntJuminA", clntJuminA);
@@ -89,6 +89,7 @@ public class ClientController{
 
         if(clntCnt > 1){
         }
+        return "ok";
     }
 
     // apply1Many 에서 보험료 산출 버튼, 신청 버튼을 누르면 실행

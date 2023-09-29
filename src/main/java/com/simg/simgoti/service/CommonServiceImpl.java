@@ -17,7 +17,7 @@ public class CommonServiceImpl implements CommonService {
         return commonMapper.selectPolNoByCovCode(covCode);
     }
 
-    // 생년월일 8자리를 보험나이로 변환
+    // 생년월일 8자리를 보험나이로 변환, 유효성검사도 가능
     public int calculateInsAge(String birth) throws Exception{
 
         int year = Integer.parseInt(birth.substring(0,4));
