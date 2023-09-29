@@ -38,35 +38,68 @@
             height: 100%;
             border: 1px solid #eee;
         }
+
+        #country-btns {
+            overflow-y: scroll;
+            height: 30rem;
+            width: 100%;
+            padding: 0 1rem;
+        }
+        #trPlace #countries .popup-content {
+            padding: 1.6rem 0!important;
+        }
+        #trPlace #countries .popup-content i {
+            color: #bbb;
+        }
         .country-btn{
             width: 100%;
+            height: 1.8rem;
             display: flex;
             justify-content: space-between;
             border: 0;
             background: rgba(0,0,0,0);
+            margin: 0.2rem 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
         }
-        #country-btns {
-            height: 30rem;
-            width: 100%;
+        .country-btn:hover{
+            font-size: large;
         }
-        #trPlace .popup-content {
-            overflow-y: scroll;
-            padding: 1rem 0;
+        .country-btn.checked{
+            font-size: large;
+            color: #0a53be!important;
+            font-weight: bolder;
         }
-        #trPlace .popup-content i {
-            color: #bbb;
+
+        #trPlace .popup-content .country-btn.checked .icon {
+            color: #0a53be;
+            font-weight: 900;
         }
+
     </style>
     <script>
-        let startDate = sessionStorage.getItem("startDate") || null;
-        let startTime = sessionStorage.getItem("startTime") || null;
-        let endDate = sessionStorage.getItem("endDate") || null;
-        let endTime = sessionStorage.getItem("endTime") || null;
-        let clntBirth = sessionStorage.getItem("clntBirth") || null;
-        let clntGen = sessionStorage.getItem("clntGen") || null;
-        let trPlace = sessionStorage.getItem("trPlace") || null;
-
-        let covCode = sessionStorage.getItem("covCode") || 10120102;
+        let s = {
+            startDate: sessionStorage.getItem("startDate") || null,
+            startTime: sessionStorage.getItem("startTime") || null
+            endDate : sessionStorage.getItem("endDate") || null,
+            endTime : sessionStorage.getItem("endTime") || null,
+            clntBirth : sessionStorage.getItem("clntBirth") || null,
+            clntGen : sessionStorage.getItem("clntGen") || null,
+            trPlace : sessionStorage.getItem("trPlace") || null,
+            covCode : sessionStorage.getItem("covCode") || 10120102,
+        };
+        
+        // let s.startDate = sessionStorage.getItem("s.startDate") || null;
+        // let startTime = sessionStorage.getItem("startTime") || null;
+        // let endDate = sessionStorage.getItem("endDate") || null;
+        // let endTime = sessionStorage.getItem("endTime") || null;
+        // let clntBirth = sessionStorage.getItem("clntBirth") || null;
+        // let clntGen = sessionStorage.getItem("clntGen") || null;
+        // let trPlace = sessionStorage.getItem("trPlace") || null;
+        // let covCode = sessionStorage.getItem("covCode") || 10120102;
+        
+        
         let startDt;
         let endDt;
 
@@ -74,13 +107,13 @@
         function isAllVarsNotNull() {
             let result = false;
             if (
-                startDate != null &&
-                startTime != null &&
-                endDate != null &&
-                endTime != null &&
-                clntBirth != null &&
-                clntGen != null &&
-                trPlace != null
+                s.startDate != null &&
+                s.startTime != null &&
+                s.endDate != null &&
+                s.endTime != null &&
+                s.clntBirth != null &&
+                s.clntGen != null &&
+                s.trPlace != null
             ) {
                 result = true;
             }
@@ -101,32 +134,32 @@
             $("#start-date").attr("max", after3mthStr);
             // 최초 sessionStorage에서 값을 가져와 변수에 저장하여 변수들이 null이 아닌경우 input 태그에 대입
             if (isAllVarsNotNull()) {
-                $("#start-date").val(startDate);
-                $("#start-time-pick").val(startTime);
+                $("#start-date").val(s.startDate);
+                $("#start-time-pick").val(s.startTime);
                 // $("#start-time").val(startTime);
-                $("#end-date").val(endDate);
-                $("#end-time-pick").val(endTime);
+                $("#end-date").val(s.endDate);
+                $("#end-time-pick").val(s.endTime);
                 // $("#end-time").val(endTime);
-                $("#clntBirth").val(clntBirth);
+                $("#clntBirth").val(s.clntBirth);
                 $("#clntGen-pick").val(clntGen);
-                $("#clntGen").val(clntGen);
-                $("#trPlace-text").val(trPlace);
-                startDt = new Date(startDate + " " + startTime);
-                endDt = new Date(endDate + " " + endTime);
+                $("#clntGen").val(s.clntGen);
+                $("#trPlace-text").val(s.trPlace);
+                startDt = new Date(s.startDate + " " + s.startTime);
+                endDt = new Date(s.endDate + " " + s.endTime);
                 getPremiumAndCoverage();
             }
 
             // 나라 선택시 텍스트창에 넣고 변수 country에도 대입
             $("#trPlace-select").on("change", function () {
                 const selected = $("#trPlace-select option:selected");
-                trPlace = selected.text();
-                $("#trPlace-text").val(trPlace);
+                s.trPlace = selected.text();
+                $("#trPlace-text").val(s.trPlace);
             });
 
-            // 출발일시, 종료일시 선택시 startDate, startTime, endDate, endTime에 값 넣기
+            // 출발일시, 종료일시 선택시 s.startDate, startTime, endDate, endTime에 값 넣기
 
             $("#start-date").on("input", function () {
-                startDate = $(this).val();
+                s.startDate = $(this).val();
                 $("#end-date").val(null);
                 // $("#end-time").val(null);
                 $("#end-time-pick").val(null);
@@ -138,16 +171,16 @@
                     $("#start-time-pick").append("<option value='"+i+"'>" + numPadding2(i) + ":00" + "</option>")
                 }
 
-                if (startDate != "") {
+                if (s.startDate != "") {
                     // 여행종료일시 최대일자를 여행출발일시로부터 3개월 후로 설정
-                    $("#end-date").attr("min", startDate);
-                    maxDate = new Date(startDate);
+                    $("#end-date").attr("min", s.startDate);
+                    maxDate = new Date(s.startDate);
                     maxDate.setMonth(maxDate.getMonth() + 3);
                     const maxDateStr = dateToStr(maxDate);
                     $("#end-date").attr("max", maxDateStr);
                 }
 
-                if (startDate == todayStr) {
+                if (s.startDate == todayStr) {
                     // 선택한 날짜가 오늘일 때 선택가능한 최소시간을 시간단위로 지금보다 1시간 뒤부터 선택가능하도록 설정
                     let nowTime = parseInt(dateTimeToStr(today).split(" ")[1].split(":")[0]);
                     $("#start-time-pick option").each(function () {
@@ -157,22 +190,35 @@
                         else if($(this).val() != '' && $(this).val() > nowTime){
                             return false;
                         }
-
                     });
                 }
             });
 
-            $("#start-time-pick").on("change", function () {
+            $("#start-time-pick").on("input", function () {
                 startTime = $(this).find("option:selected").text();
+                // 선택한 일자가 출발일자와 같을때, 출발시간과 동일하거나 그 이전인 시간은 제거
+                if (endDate == s.startDate){
+                    $("#end-time-pick").empty();
+                    $("#end-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
+                    for (let i = 0; i < 24; i++) {
+                        $("#end-time-pick").append("<option value='" + i+ "'>" + numPadding2(i) + ":00" + "</option>")
+                    }
+                    $("#end-time-pick option").each(function () {
+
+                        let startTimeInt = parseInt(startTime.split(":")[0]);
+                        if ($(this).val() != '' && $(this).val() <= startTimeInt) {
+                            $(this).remove();
+                        }
+                    });
+                }
 
             });
-            $("#end-date").on("change", function () {
+            $("#end-date").on("input", function () {
                 if (startTime == null) {
                     showPopup("출발 시각을 먼저 입력해주세요.")
                     $(this).val(null);
                 }
                 endDate = $(this).val();
-                // $("#end-time").val(null);
                 $("#end-time-pick").val(null);
 
                 let maxDateStr = dateToStr(maxDate);
@@ -192,18 +238,18 @@
                         }
                     });
                 }
-                if (endDate == startDate){
+                if (endDate == s.startDate){
                     // 선택한 일자가 출발일자와 같을때, 출발시간과 동일하거나 그 이전인 시간은 제거
                     $("#end-time-pick option").each(function () {
                         let startTimeInt = parseInt(startTime.split(":")[0]);
-                        if ($(this).val() <= startTimeInt) {
+                        if ($(this).val() != '' && $(this).val() <= startTimeInt) {
                             $(this).remove();
                         }
                     });
                 }
             });
 
-            $("#end-time-pick").on("change", function () {
+            $("#end-time-pick").on("input", function () {
                 endTime = $(this).find("option:selected").text();
             });
 
@@ -216,6 +262,16 @@
                 clntGen = $(this).val();
                 const selected = $("#gender-pick option:selected");
                 $("#gender").val(selected.text());
+            });
+
+            // 국가 선택시
+            $(".country-btn").on("click",function(){
+                const country = $(this).text();
+                $(".country-btn").removeClass("checked");
+                $(this).addClass("checked");
+                $("#trPlace-text").val(country);
+                $(".popup").attr("hidden","hidden");
+                trPlace = country;
             });
 
             // 보험료 확인을 위한 변수
@@ -238,7 +294,7 @@
 
             // 보험료 계산해서 화면에 띄우는 함수
             function getPremiumAndCoverage() {
-                startDt = new Date(startDate + " " + startTime);
+                startDt = new Date(s.startDate + " " + startTime);
                 endDt = new Date(endDate + " " + endTime);
                 // 여행 일수 구하기
                 const travelDay = Math.ceil((endDt - startDt) / (24 * 60 * 60 * 1000));
@@ -247,7 +303,7 @@
                     url: "/api/client/coverageList",
                     type: "GET",
                     data: {
-                        startDt: `${startDate} ${startTime}`,
+                        startDt: `${s.startDate} ${startTime}`,
                         endDt: `${endDate} ${endTime}`,
                         clntBirth: clntBirth,
                     },
@@ -262,7 +318,7 @@
                             const data = resp.data;
 
                             // 세션스토리지에 값 저장
-                            sessionStorage.setItem("startDate", startDate);
+                            sessionStorage.setItem("s.startDate", s.startDate);
                             sessionStorage.setItem("startTime", startTime);
                             sessionStorage.setItem("endDate", endDate);
                             sessionStorage.setItem("endTime", endTime);
@@ -274,7 +330,7 @@
                             $("#summary").removeAttr("hidden");
                             $("#sum-period").text(travelDay + "일");
                             $("#sum-age").text(calculateInsAge(clntBirth));
-                            $("#sum-clntGen").text($("#clntGen").val());
+                            $("#sum-clntGen").text($("#clntGen-pick option:selected").val());
                             $("#sum-trPlace").text($("#trPlace-text").val());
 
                             // calculate-result 보이게
@@ -330,7 +386,7 @@
                                     "<div class=''><span>" + covDNm + "</span></div>" +
                                     "<div class='text-end w-25'><span>" + numToKrUnit(covDAmt) + "원</span></div>" +
                                     "</li>"
-                                );
+                                );f
                             }
                         }
                         selectCoverage(covCode);
@@ -354,7 +410,7 @@
                 else if (validateBirth == "age") {
                     showPopup("1세부터 80세까지만 가입 가능합니다.")
                 } else if (validateBirth == "length") {
-                    showPopup("생년월일 8자리를 입력해주세요.")
+                    showPopup("생년월일 8자리를 정확히 입력해주세요.")
                 } else if (validateBirth == "invalid") {
                     showPopup("생년월일을 정확히 입력해주세요.")
                 }
@@ -362,25 +418,32 @@
             });
 
             // 문서의 모든 요소가 변할 때마다 동작
-            $("html").on("change", function () {
+            $("html").on("input", function () {
                 // 모두 입력했을때 보험료확인 버튼 활성화, summary와 calculate-result 숨기기
                 if (isAllVarsNotNull()) {
                     sessionStorage.clear();
                     $("#calculate-btn").removeAttr("disabled");
                     $("#summary, .calculate-result").attr("hidden", "hidden");
+
+                    if(clntBirth.length < 8){
+                        showHiddenAlert("생년월일 8자리를 정확히 입력해주세요.")
+                    }
+                    else{
+                        hideHiddenAlert();
+                    }
                 } else {
                     $("#calculate-btn").attr("disabled", "disabled");
                 }
 
                 // 날짜 시간 입력시 이전 날짜나 시간을 입력해야 disabled가 해제되도록
-                const startDateInput = $("#start-date");
+                const s.startDateInput = $("#start-date");
                 // const startTimeSelect = $("#start-time-pick");
                 // const startTimeInput = $("#start-time");
                 const startTimeInput = $("#start-time-pick");
                 const endDateInput = $("#end-date");
                 const endTimeInput = $("#end-time-pick");
 
-                if(startDateInput.val() != ""){
+                if(s.startDateInput.val() != ""){
                     startTimeInput.removeAttr("disabled").removeClass("disabled");
                 }
                 else{
@@ -582,12 +645,14 @@
                         <div class="w-100">
                             <input type="text" placeholder="여행 국가 선택" id="trPlace-text" readonly
                                    class="show-popup form-control bg-white show-popup">
-                            <div class="popup" hidden style="z-index: 1">
+                            <div id="countries" class="popup" hidden style="z-index: 1">
                                 <div class="popup-content d-flex justify-content-center align-items-center">
 <!--                                    <select name="trPlace" id="trPlace-select" class="form-select mb-4" size="17">-->
 <!--                                        </optgroup>-->
 <!--                                    </select>-->
                                     <div id="country-btns">
+                                        <h5 class="ps-3">자주 찾는 여행지</h5>
+                                        <select hidden name="country" id="#country-select" value=""></select>
                                         <button type="button" class="country-btn" value='JP'><span>일본</span><i class="bi bi-check icon"></i></button>
                                         <button type="button" class="country-btn" value='ID'><span>인도네시아</span><i class="bi bi-check icon"></i></button>
                                         <button type="button" class="country-btn" value='SG'><span>싱가포르</span><i class="bi bi-check icon"></i></button>
@@ -599,7 +664,7 @@
                                         <button type="button" class="country-btn" value='VN'><span>베트남</span><i class="bi bi-check icon"></i></button>
                                         <button type="button" class="country-btn" value='FR'><span>프랑스</span><i class="bi bi-check icon"></i></button>
 
-
+                                        <h5 class="ps-3 pt-3">전체 국가</h5>
                                         <button type="button" class="country-btn" value='GH'><span>가나</span><i class="bi bi-check icon"></i></button>
                                         <button type="button" class="country-btn" value='GA'><span>가봉</span><i class="bi bi-check icon"></i></button>
                                         <button type="button" class="country-btn" value='GY'><span>가이아나</span><i class="bi bi-check icon"></i></button>
@@ -858,6 +923,7 @@
                 <!-- 보험료 계산 버튼 -->
                 <button type="button" class="btn main-btn mb-3 w-75" id="calculate-btn" disabled="disabled">보험료 확인
                 </button>
+                <div id="hidden-alert" class="text-danger my-1" hidden><span></span></div>
             </div>
             <div id="after-calculate">
                 <!-- 입력정보 요약 -->

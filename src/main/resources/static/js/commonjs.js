@@ -1,8 +1,19 @@
 $(document).ready(function () {
     $("#tabs").load("/tabs.html");
     $("#header").load("/header.html");
-});
 
+
+});
+// 숨겨진 경고문
+function showHiddenAlert(text){
+    const alert = $("#hidden-alert");
+    alert.removeAttr("hidden");
+    alert.text(text);
+}
+function hideHiddenAlert() {
+    const alert = $("#hidden-alert");
+    alert.attr("hidden","hidden");
+}
 // 경고팝업 띄워주는 함수
 function showPopup(msg){
     $("#warn-popup").removeAttr("hidden");
@@ -14,6 +25,7 @@ function showPopup(msg){
 function numPadding2(number) {
     return number < 10 ? "0" + number : number.toString();
 }
+
 
 
 // 페이지 이동 함수
