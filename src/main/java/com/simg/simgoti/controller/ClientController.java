@@ -336,6 +336,7 @@ public class ClientController {
 //            NaverApiService naver = new NaverApiService();
 //            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
             session.setAttribute("checkNum", "012345");
+            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
 
 
             session.setMaxInactiveInterval(301);
