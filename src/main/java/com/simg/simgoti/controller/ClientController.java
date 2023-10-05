@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -23,7 +22,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/client")
 @RequiredArgsConstructor
-public class ClientController{
+public class ClientController {
     private final ClientService clientService;
     private final CommonService commonService;
 
@@ -33,35 +32,32 @@ public class ClientController{
     public Object selectCoverageList(@RequestParam String startDt, @RequestParam String endDt, @RequestParam String clntBirth) throws Exception {
         Map<String, Object> resp = new HashMap<>();
         int insAge;
-        try{
+        try {
             insAge = commonService.calculateInsAge(clntBirth);
-        }
-        catch(Exception e){
-            resp.put("msg","생년월일을 정확히 입력해주세요.");
-            resp.put("result","error");
+        } catch (Exception e) {
+            resp.put("msg", "생년월일을 정확히 입력해주세요.");
+            resp.put("result", "error");
             return resp;
         }
 
         String validateInsDate = commonService.validateInsDate(startDt, endDt);
 
-        if(insAge < 1 || insAge > 80){
-            resp.put("msg","1세부터 80세까지만 가입 가능합니다.");
-            resp.put("result","error");
+        if (insAge < 1 || insAge > 80) {
+            resp.put("msg", "1세부터 80세까지만 가입 가능합니다.");
+            resp.put("result", "error");
             return resp;
-        }
-        else if(!validateInsDate.equals("ok")){
-            resp.put("msg",validateInsDate);
-            resp.put("result","error");
+        } else if (!validateInsDate.equals("ok")) {
+            resp.put("msg", validateInsDate);
+            resp.put("result", "error");
             return resp;
-        }
-        else{
-            int travelDay = getPeriod(startDt, endDt);
+        } else {
+            int travelDay = commonService.getPeriod(startDt, endDt);
             Map<String, List> data = new HashMap<>();
-            data.put("coverageList",clientService.selectCoverageList());
+            data.put("coverageList", clientService.selectCoverageList());
             data.put("coverageTabList", clientService.selectCoverageTypeList(travelDay));
 
-            resp.put("data",data);
-            resp.put("result","success");
+            resp.put("data", data);
+            resp.put("result", "success");
             return resp;
         }
     }
@@ -69,7 +65,7 @@ public class ClientController{
     // apply1Alone 페이지에서 확인 버튼을 누르면 실행
     // 입력한 정보를 세션에 추가, 입력한 정보를 이용하여 db에 저장 혹은 업데이트(이메일/전화번호), db에서 사용하는 pk값을 세션에 추가
     @RequestMapping(value = "/cliInfo", method = RequestMethod.POST)
-    public Object addAppSession(@RequestParam String clntNm,@RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception{
+    public Object addAppSession(@RequestParam String clntNm, @RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         session.setAttribute("clntNm", clntNm);
         session.setAttribute("clntJuminA", clntJuminA);
@@ -79,15 +75,14 @@ public class ClientController{
         session.setAttribute("clntCnt", clntCnt);
         session.setMaxInactiveInterval(1800);
 
-        String clntGen = clntJuminB.substring(0,1);
-        // 주민번호 암호화
+        String clntGen = clntJuminB.substring(0, 1);
+        // 주민번호
         String clntJumin = clntJuminA + clntJuminB;
 
         int clntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntGen, clntJumin, clntPhone, clntEmail);
         session.setAttribute("clntPk", clntPk);
-        System.out.printf("clntPk : %s \n",clntPk);
 
-        if(clntCnt > 1){
+        if (clntCnt > 1) {
         }
         return "ok";
     }
@@ -101,28 +96,29 @@ public class ClientController{
         List<CompanionDto> list = new ArrayList<>();
         JSONParser jsonParser = new JSONParser();
         JSONArray jsonArray = null;
-        try{
+        try {
             jsonArray = (JSONArray) jsonParser.parse(data);
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             e.printStackTrace();
             return "json parsing failed";
         }
         // 대표가입자의 주민번호
         String repClntJumin = clntJuminA + clntJuminB;
 
-        int period = getPeriod(startDt, endDt);
+        int period = commonService.getPeriod(startDt, endDt);
         int repPrem = clientService.getPremium(covCode, period, 1); // 대표가입자의 보험료
 
+        // 대표가입자 처리
         CompanionDto rep = new CompanionDto();
-        if(calOrApl.equals("cal")){
-            rep = new CompanionDto("대표",clntNm, clntJuminA, clntJuminB.substring(0,1)+"******", repPrem, 0);
-        }
-        else if(calOrApl.equals("apl")){
+        if (calOrApl.equals("cal")) {
+            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, 0);
+        } else if (calOrApl.equals("apl")) {
             // 대표가입자 정보를 db에 저장/업데이트
-            int repClntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntJuminB.substring(0,1), repClntJumin, clntPhone, clntEmail);
-            rep = new CompanionDto("대표",clntNm, clntJuminA, clntJuminB.substring(0,1)+"******", repPrem, repClntPk);
-            session.setAttribute("clntPk",repClntPk);
+            int repClntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntJuminB.substring(0, 1), repClntJumin, clntPhone, clntEmail);
+
+            // 대표가입자 정보를 세션의 동반가입자 리스트에 추가
+            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, repClntPk);
+            session.setAttribute("clntPk", repClntPk);
             session.setAttribute("clntNm", clntNm);
             session.setAttribute("clntJuminA", clntJuminA);
             session.setAttribute("clntJuminB", clntJuminB);
@@ -133,36 +129,35 @@ public class ClientController{
         }
         list.add(rep);
 
-
-        for(int i=0; i<jsonArray.size(); i++) {
-
+        // 동반가입자 처리
+        for (int i = 0; i < jsonArray.size(); i++) {
             JSONObject item = (JSONObject) jsonArray.get(i);
-            System.out.println("동반가입자");
-            System.out.println(item);
+            System.out.println("동반가입자 "+ item);
             String num = item.get("companionNum").toString();
             String nm = item.get("companionNm").toString();
             String juminA = item.get("companionJuminA").toString();
             String juminB = item.get("companionJuminB").toString();
 
-            int prem = clientService.getPremium(covCode, period, 1);
+            int prem = clientService.getPremium(covCode, period, 1); // 동반가입자의 보험료
 
-            String gen = juminB.substring(0,1);
+            String gen = juminB.substring(0, 1);
             String jumin = juminA + juminB;
 
             CompanionDto dto = new CompanionDto();
-            if(calOrApl.equals("cal")){
-                dto = new CompanionDto(num, nm, juminA, juminB.substring(0,1)+"******", prem, 0);
-            }
-            else if(calOrApl.equals("apl")){
-                // 동반가입자 정보를 db에 저장
+            if (calOrApl.equals("cal")) {
+                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******", prem, 0);
+            } else if (calOrApl.equals("apl")) {
+                // 동반가입자 정보를 db에 저장후 pk 반환
                 int clntPk = clientService.insertOrUpdateClient(nm, juminA, gen, jumin, null, null);
-                dto = new CompanionDto(num, nm, juminA, juminB.substring(0,1)+"******", prem, clntPk);
-            };
+
+                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******", prem, clntPk);
+            }
+            ;
             list.add(dto);
         }
 
-        if(calOrApl.equals("apl")){
-            session.setAttribute("companion",list);
+        if (calOrApl.equals("apl")) {
+            session.setAttribute("companion", list);
             return "ok";
         }
 
@@ -172,7 +167,7 @@ public class ClientController{
     // apply2 페이지에서 모두 아니오 체크 후 여행지 선택하고 확인버튼 클릭시 실행됨
     // 여행목적, 여행출발/종료일시, 담보코드, 여행지를 세션에 저장
     @RequestMapping(value = "/trInfo", method = RequestMethod.POST)
-    public String addPurposeSession(@RequestParam String trPurpose, @RequestParam String startDt,@RequestParam String endDt,@RequestParam String covCode,@RequestParam String trPlace, HttpServletRequest req){
+    public String addPurposeSession(@RequestParam String trPurpose, @RequestParam String startDt, @RequestParam String endDt, @RequestParam String covCode, @RequestParam String trPlace, HttpServletRequest req) {
         HttpSession session = req.getSession();
         session.setAttribute("trPurpose", trPurpose);
         session.setAttribute("startDt", startDt);
@@ -204,12 +199,16 @@ public class ClientController{
         ApplyFinalCheckDto applyFinalCheckDto = new ApplyFinalCheckDto();
         try {
             int clntCnt = (int) session.getAttribute("clntCnt");
-            int period = getPeriod(session.getAttribute("startDt").toString(), session.getAttribute("endDt").toString());
+            int period = commonService.getPeriod(session.getAttribute("startDt").toString(), session.getAttribute("endDt").toString());
+
+            // 총 보험료
+            // 세션에서 동승자 리스트를 불러와 for문으로 모든 동승자 보험료의 합을 대입하는 로직으로 변경가능
             int totalPrem = clientService.getPremium(session.getAttribute("covCode").toString(), period, clntCnt);
             session.setAttribute("totalPrem", totalPrem);
+
             session.setMaxInactiveInterval(1800);
 
-            // 결제페이지에서 보여주는 정보 중 보험계약정보
+            // 결제페이지에 표시될 보험계약정보를 dto에 추가
             ApplySummaryDto appSummaryDto = new ApplySummaryDto(
                     period,
                     session.getAttribute("startDt").toString(),
@@ -221,15 +220,15 @@ public class ClientController{
             );
             applyFinalCheckDto.setAppSummaryDto(appSummaryDto);
 
-            // 결제페이지의 보험계약정보중 동승자가 있을때 추가되는 동승자명단
+            // 결제페이지에 표시될 동승자 명단을 dto에 추가, 동승자가 2인 이상일시 추가됨
             List<CompanionDto> companionDtoList = new ArrayList<>();
-            if (session.getAttribute("companion") != null && (int) session.getAttribute("clntCnt") >1 ) {
+            if (session.getAttribute("companion") != null && (int) session.getAttribute("clntCnt") > 1) {
                 companionDtoList = (ArrayList<CompanionDto>) session.getAttribute("companion");
                 applyFinalCheckDto.setCompanionDtoList(companionDtoList);
             }
             applyFinalCheckDto.setCompanionDtoList(companionDtoList);
 
-            // 결제페이지의 대표가입자정보
+            // 결제페이지에 표시될 대표가입자정보를 dto에 추가
             ClientDto repClientDto = new ClientDto();
             repClientDto.setClntNm(session.getAttribute("clntNm").toString());
             String resi = session.getAttribute("clntJuminA") + session.getAttribute("clntJuminB").toString().substring(0, 1) + "******";
@@ -237,8 +236,7 @@ public class ClientController{
             repClientDto.setClntPhone(session.getAttribute("clntPhone").toString());
             repClientDto.setClntEmail(session.getAttribute("clntEmail").toString());
             applyFinalCheckDto.setRepClientDto(repClientDto);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return e;
         }
         return applyFinalCheckDto;
@@ -255,7 +253,7 @@ public class ClientController{
         LocalDateTime dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String dueDtStr = dueDt.format(formatter);
-        session.setAttribute("dueDt",dueDtStr);
+        session.setAttribute("dueDt", dueDtStr);
 
         AccDto acc1 = new AccDto("하나은행", "2579106828397", "박준호", dueDtStr);
         accDtoList.add(acc1);
@@ -275,6 +273,7 @@ public class ClientController{
     }
 
     // apply3 페이지에서 무통장입금 선택 후 은행까지 선택하면 실행됨
+    // 결제데이터, 가입자명단데이터, 가입신청데이터를 db에 저장
     @RequestMapping(value = "/applyFinish", method = RequestMethod.POST)
     public Object applyFinish(HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
@@ -295,39 +294,116 @@ public class ClientController{
             String trToDt = session.getAttribute("endDt").toString();
             int clntCnt = Integer.parseInt(session.getAttribute("clntCnt").toString());
             int premium = Integer.parseInt(session.getAttribute("totalPrem").toString());
-            int aplPk = clientService.insertApplyFinish(payPk, polNo, comCode, insComCode, clntPk, trPurpose, trPlace,trFromDt, trToDt, covCode, clntCnt, premium);
+            int aplPk = clientService.insertApplyFinish(payPk, polNo, comCode, insComCode, clntPk, trPurpose, trPlace, trFromDt, trToDt, covCode, clntCnt, premium);
 
             // 가입자명단정보 저장
-            // 대표가입자
-            clientService.insertApplyInsuredList(aplPk, clntPk, 'Y');
-            // 동승자
-            if(session.getAttribute("companion") != null){
+            // 동승자가 있는경우
+            if (session.getAttribute("companion") != null) {
                 List<CompanionDto> companionDtoList = (ArrayList<CompanionDto>) session.getAttribute("companion");
-                for(int i = 1;i<companionDtoList.size(); i++){
+                for (int i = 0; i < companionDtoList.size(); i++) {
                     int comClntPk = companionDtoList.get(i).getClntPk();
-                    clientService.insertApplyInsuredList(aplPk, comClntPk, 'N');
+                    int prem = companionDtoList.get(i).getPrem();
+                    char repYN = 'N';
+                    if(i == 0){
+                        repYN = 'Y';
+                    }
+                    clientService.insertApplyInsuredList(aplPk, comClntPk, prem, repYN);
                 }
+            }
+            // 동승자가 없는 경우 - 대표가입자만
+            else{
+                clientService.insertApplyInsuredList(aplPk, clntPk, totalPrem, 'Y');
             }
 
             return "ok";
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             return e;
         }
     }
 
+    @RequestMapping(value = "/checkNum", method = RequestMethod.POST)
+    public String checkNum(@RequestParam String phone, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
 
-    public int getPeriod(String startDt, String endDt){
-        int result = 0;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime startLdt = LocalDateTime.parse(startDt, formatter);
-        LocalDateTime endLdt = LocalDateTime.parse(endDt, formatter);
-        Duration duration = Duration.between(startLdt, endLdt);
-        long seconds = duration.getSeconds();
 
-        result = (int) Math.ceil(((double) seconds / ((long) (24 * 60 * 60))));
+        if (phone.length() == 11) {
 
+//            Random random = new Random();
+//            int num = random.nextInt(1000000);
+//            String numStr = String.format("%06d",num);
+//            session.setAttribute("checkNum",numStr);
+//            NaverApiService naver = new NaverApiService();
+//            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
+            session.setAttribute("checkNum", "012345");
+
+
+            session.setMaxInactiveInterval(301);
+            return "success";
+        } else {
+            return "fail";
+        }
+
+    }
+
+    @RequestMapping(value = "/checkNumCheck", method = RequestMethod.POST)
+    public String checkNumCheck(@RequestParam String checkNum, @RequestParam String clntJuminA, @RequestParam String clntPhone, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        String num = (String) session.getAttribute("checkNum");
+        int clntPk = clientService.selectClientJuminAPhone(clntJuminA, clntPhone);
+
+        if (num != null && num.equals(checkNum)) {
+            if (session.getAttribute("checkNum") != null) {
+                session.invalidate();
+                session = req.getSession();
+            }
+            session.setAttribute("myPageClntPk", clntPk);
+            session.setMaxInactiveInterval(1800);
+            return "success";
+        } else if (num == null) {
+            return "session timeout";
+        } else {
+            return "fail";
+        }
+    }
+
+    @RequestMapping(value = "/insList", method = RequestMethod.GET)
+    public Object insList(HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        Map<String, Object> result = new HashMap<>();
+        if (session.getAttribute("myPageClntPk") != null) {
+            result.put("result", "success");
+            int clntPk = (int) session.getAttribute("myPageClntPk");
+            result.put("insList", clientService.selectInsSummaryDtoList(clntPk));
+            result.put("clntPk",clntPk);
+            return result;
+        } else {
+            result.put("result", "error");
+            result.put("msg", "session timeout");
+            return result;
+        }
+    }
+
+    @RequestMapping(value = "/insDetail", method = RequestMethod.GET)
+    public Object insDetail(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        Map<String, Object> result = new HashMap<>();
+        if ((int) session.getAttribute("myPageClntPk") == clntPk) {
+            result.put("result","success");
+
+            MyPageInsSummaryDto myPageInsSummaryDto = clientService.selectInsSummaryDto(aplPk);
+            List<MyPageCompanionDto> companionDtoList = clientService.selectCompanionDtoList(aplPk);
+            MyPageClientDto repClientDto = clientService.selectClientByAplPk(aplPk);
+            MyPageInsDetailDto insDetailDto = new MyPageInsDetailDto();
+            insDetailDto.setInsSummary(myPageInsSummaryDto);
+            insDetailDto.setCompanionList(companionDtoList);
+            insDetailDto.setRepClient(repClientDto);
+            result.put("insDetail",insDetailDto);
+
+        } else {
+            result.put("result", "error");
+            result.put("msg", "session timeout");
+        }
         return result;
     }
 }

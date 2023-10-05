@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+
+    <script>
+        let clntJuminA;
+        let clntPhone;
+        let checkNum;
+
+        $(document).ready(function(){
+            $("#jumin-text-a").on("input",function(){
+                clntJuminA = $(this).val();
+            });
+            $("#clntPhone-text").on("keyup",function(){
+                clntPhone = $(this).val();
+                $("#checkNum-send-btn").text("인증번호 받기");
+                $("#checkNum-div").attr("hidden","hidden");
+            });
+            $("#checkNum-send-btn").on("click",function (){
+                if (clntPhone != "" && clntPhone != null && clntPhone.length == 11){
+                    $.ajax({
+                        url:"/api/client/checkNum",
+                        method:"POST",
+                        data: {phone: clntPhone},
+                        success:(data)=>{
+                            if(data == "success"){
+                                console.log("인증요청 성공");
+                                $("#checkNum-send-btn").text("재전송");
+                                $("#checkNum-div").removeAttr("hidden");
+                                $("#checkNum-text").val(null).focus();
+                            }
+                            else if(data=="fail"){
+                                console.log("인증요청 실패");
+                            }
+                        },
+                        error:(e)=>{}
+                    });
+                }
+            });
+            $("#checkNum-text").on("keyup",function (){
+                checkNum = $(this).val();
+            });
+
+            $("#checkNum-btn").on("click", function (){
+                if(checkNum != null && checkNum.length === 6){
+                    $.ajax({
+                        url:"/api/client/checkNumCheck",
+                        method:"POST",
+                        data: {
+                            checkNum:checkNum,
+                            clntJuminA: clntJuminA,
+                            clntPhone: clntPhone,
+                        },
+                        success:(data)=>{
+                            console.log(data);
+                            if(data == "success"){
+                                location.href = "/simg/simgOti/myPage";
+                            }
+                            else if (data == "session timeout"){
+                                alert("세션이 만료되었습니다.");
+                            }
+                            else if(data == "fail"){
+                                alert("인증번호를 정확히 입력해주세요.");
+                            }
+                        },
+                        error:(e)=>{}
+                    });
+                }
+            });
+        });
+    </script>
+
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-2"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+
+            <!-- 주민번호 -->
+            <div class="text-start mb-3" id="jumin-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="w-25">
+                        <div><span>생년월일</span></div>
+                    </div>
+                    <div class="w-75">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="w-100 pe-2">
+                                <input type="text" class="form-control" id="jumin-text-a" maxlength="6">
+                            </div>
+
+                            <div class="w-100 ms-2">
+                                <!--                                <input type="text" class="form-control" id="jumin-text-b" maxlength="7">-->
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 휴대폰번호 -->
+            <div class="text-start mb-3" id="clntPhone-div">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="w-25">
+                        <div><span>휴대폰번호</span></div>
+                    </div>
+                    <div class="w-75 d-flex justify-content-between align-items-center">
+                        <div class="w-100 pe-2">
+                            <input type="text" class="form-control" id="clntPhone-text" maxlength="13">
+                        </div>
+                        <div class="w-100 ms-2">
+                            <button type="button" class="btn main-btn-outlined" id="checkNum-send-btn">인증번호 받기</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 인증번호 -->
+            <div class="text-start mb-3" id="checkNum-div" hidden>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="w-25">
+                        <div><span>인증번호</span></div>
+                    </div>
+                    <div class="w-75 d-flex justify-content-between align-items-center">
+                        <div class="w-100 pe-2">
+                            <input type="text" class="form-control" id="checkNum-text" maxlength="13">
+                        </div>
+                        <div class="w-100 ms-2">
+                            <button type="button" class="btn main-btn" id="checkNum-btn">확인</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

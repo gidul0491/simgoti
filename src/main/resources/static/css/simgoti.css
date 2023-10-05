@@ -14,13 +14,7 @@
     width: 16rem;
     margin-bottom: 1rem;
 }
-#product {
-    background: #0a53be;
-    color: white;
-    margin-bottom: 0;
-    padding: 0.6rem;
-    border-radius: 0.4rem 0.4rem 0 0;
-}
+
 .footer{
     height: 10rem;
 }
@@ -33,12 +27,29 @@
     option {
         padding: 0.2rem;
     }
+    .mainView {
+        padding:0;
+    }
+    #product {
+        background: #0a53be;
+        color: white;
+        margin-bottom: 0;
+        padding: 0.6rem;
+    }
 }
 /* pc 화면 */
 @media all and (min-aspect-ratio:1/1) and (min-width: 720px){
     .mainView {
+        padding:1.5rem;
         width: 540px;
         margin: auto;
+    }
+    #product {
+        background: #0a53be;
+        color: white;
+        margin-bottom: 0;
+        padding: 0.6rem;
+        border-radius: 0.4rem 0.4rem 0 0;
     }
 }
 
@@ -56,17 +67,13 @@
 
 #content {
     border: 1px solid #eee;
-    padding: 0.4rem;
+    padding: 1rem 1.5rem;
 }
 
 .tab-btn.selected {
     background: white;
     color: #0a53be;
     border-radius: 0.2rem 0.2rem 0 0;
-}
-
-.mainView {
-    padding:1.5rem;
 }
 
 .main-btn {

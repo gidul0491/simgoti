@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.simg.simgoti.mapper.ClientMapper">
+
+    <select id="selectClientList" resultType="com.simg.simgoti.dto.ClientDto">
+        select
+            *
+        from
+            client
+        where
+            useYN = "Y";
+    </select>
+
+    <select id="selectCoverageList" resultType="com.simg.simgoti.dto.CoverageDto">
+        select
+            c.covCode, c.covNm, c.covPremium, c.covPremiumMin, d.covDCode, covDNm, covDAmt
+        from
+            simgotidb.coverage c
+        join
+            simgotidb.coverageDetail d
+        on
+            c.covCode = d.covCode
+        where
+            c.useYN = 'Y' and d.useYN = 'Y'
+        order by
+            d.covDCode asc;
+    </select>
+
+    <select id="selectCoverageTypeList" resultType="com.simg.simgoti.dto.CoverageTypeDto">
+        select
+            covCode, covNm, covPremium, covPremiumMin
+        from
+            simgotidb.coverage
+        where
+            useYN = 'Y';
+    </select>
+
+    <select id="selectPremium" resultType="Map">
+        select
+            covPremium, covPremiumMin
+        from
+            simgotidb.coverage
+        where
+            covCode = #{covCode} and useYN = 'Y';
+    </select>
+
+    <insert id="insertRepClient" useGeneratedKeys="true" keyProperty="clntPk">
+        insert into
+            simgotidb.client (clntNm, clntBirth, clntGen, clntJumin, clntPhone, clntEmail)
+        values
+            (#{clntNm}, #{clntBirth}, #{clntGen}, #{clntJumin}, #{clntPhone}, #{clntEmail})
+    </insert>
+
+    <select id="selectClientNmJuminPhone" resultType="int">
+        select
+            clntPk
+        from
+            simgotidb.client
+        where
+            clntNm = #{clntNm} and clntJumin = #{clntJumin} and clntPhone = #{clntPhone} and useYN = 'Y';
+    </select>
+
+    <update id="updateClientPhoneEmailByPk" >
+        update
+            simgotidb.client
+        set
+            clntEmail = #{clntEmail}, clntUdt = now()
+        where
+            clntPk = #{clntPk} and useYN = 'Y';
+    </update>
+
+    <insert id="insertApplyPayment" useGeneratedKeys="true" keyProperty="payPk">
+        insert into
+            simgotidb.payment (premium, payDueDt)
+        values
+            (#{premium}, #{payDueDt});
+    </insert>
+
+    <insert id="insertApplyFinish" useGeneratedKeys="true" keyProperty="aplPk">
+        insert into
+            simgotidb.application (payPk, polNo, comCode, insComCode, clntPk, trPurpose, trPlace, trFromDt, trToDt, covCode, clntCnt, premium)
+        values
+            (#{payPk}, #{polNo}, #{comCode}, #{insComCode}, #{clntPk}, #{trPurpose}, #{trPlace}, #{trFromDt}, #{trToDt}, #{covCode}, #{clntCnt}, #{premium});
+    </insert>
+
+    <insert id="insertApplyInsuredList">
+        insert into
+            simgotidb.applicationInsuredList (aplPk, clntPk, premium, repYN)
+        values
+            (#{aplPk}, #{clntPk}, #{prem}, #{repYN});
+    </insert>
+
+    <select id="selectClientJuminAPhone" resultType="int">
+        select
+            clntPk
+        from
+            simgotidb.client
+        where
+            clntBirth = #{clntJuminA} and clntPhone = #{clntPhone} and useYN = 'Y';
+    </select>
+
+    <select id="selectApplySummaryList" resultType="com.simg.simgoti.dto.MyPageInsSummaryDto">
+        select
+            aplPk, trFromDt, trToDt, trPlace, aplStateCode
+        from
+            simgotidb.application
+        where
+            clntPk = #{clntPk} and useYN = 'Y'
+        order by
+            aplPk desc;
+    </select>
+
+    <select id="selectInsSummaryDto" resultType="com.simg.simgoti.dto.MyPageInsSummaryDto">
+        select
+            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, a.aplStateCode, a.clntCnt, a.premium, c.covNm
+        from
+            simgotidb.application a join simgotidb.coverage c on a.covCode = c.covCode
+        where
+            a.aplPk = #{aplPk} and a.useYN ='Y' and c.useYN = 'Y';
+    </select>
+    <select id="selectCompanionDtoList" resultType="com.simg.simgoti.dto.MyPageCompanionDto">
+        select
+            c.clntNm, c.clntBirth, c.clntGen, l.premium, l.repYN
+        from
+            simgotidb.applicationInsuredList l
+        join
+            simgotidb.client c
+        on
+            l.clntPk = c.clntPk
+        where
+            l.aplPk = #{aplPk} and l.useYN = 'Y' and c.useYN = 'Y'
+        order by
+            l.repYn desc;
+    </select>
+
+    <select id="selectClientByAplPk" resultType="com.simg.simgoti.dto.MyPageClientDto">
+        select
+            c.clntNm, c.clntBirth, c.clntGen, c.clntPhone, c.clntEmail
+        from
+            simgotidb.applicationInsuredList l
+        join
+            simgotidb.client c
+        on
+            l.clntPk = c.clntPk
+        where
+            l.aplPk = 36 and l.repYN = 'Y' and l.useYN = 'Y' and c.useYN = 'Y';
+    </select>
+
+    <select id="selectCoverageDetailList" resultType="com.simg.simgoti.dto.MyPageCoverageDetailDto">
+        select
+            d.covDCode, d.covDNm, d.covDAmt
+        from
+            simgotidb.application a join simgotidb.coverageDetail d
+        on
+            a.covCode = d.covCode
+        where
+            a.aplPk = 36 and a.useYN = 'Y' and d.useYN = 'Y'
+        order by
+            d.covDCode asc;
+    </select>
+</mapper>
+

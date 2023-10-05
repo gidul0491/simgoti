@@ -1,28 +1,30 @@
 package com.simg.simgoti.service;
 
 import com.simg.simgoti.dto.*;
-import com.simg.simgoti.mapper.ApplyMapper;
+import com.simg.simgoti.mapper.ClientMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
-    private final ApplyMapper applyMapper;
+    private final ClientMapper clientMapper;
+    private final CommonService commonService;
 
     @Override
     public List<CoverageDto> selectCoverageList() throws Exception {
-        return applyMapper.selectCoverageList();
+        return clientMapper.selectCoverageList();
     }
 
     @Override
     public List<CoverageTypeDto> selectCoverageTypeList(int day) throws Exception {
-        List<CoverageTypeDto> list = applyMapper.selectCoverageTypeList();
+        List<CoverageTypeDto> list = clientMapper.selectCoverageTypeList();
         for (CoverageTypeDto dto : list) {
-            dto.setTotPremium(calculatePremium(dto.getCovCode(), dto.getCovPremium(), dto.getCovPremiumMin(), day));
+            dto.setTotPremium(commonService.calculatePremium(dto.getCovCode(), dto.getCovPremium(), dto.getCovPremiumMin(), day));
         }
         return list;
     }
@@ -30,24 +32,26 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public int getPremium(String code, int period, int cnt) throws Exception {
         int prem = 0;
-        Map<String, Integer> prems = applyMapper.selectPremium(Integer.parseInt(code));
-        prem = calculatePremium(code, prems.get("covPremium"), prems.get("covPremiumMin"), period) * cnt;
+        Map<String, Integer> prems = clientMapper.selectPremium(Integer.parseInt(code));
+        prem = commonService.calculatePremium(code, prems.get("covPremium"), prems.get("covPremiumMin"), period) * cnt;
         return prem;
     }
 
     @Override
     public int insertOrUpdateClient(String clntNm, String clntBirth, String clntGen, String clntJumin, String clntPhone, String clntEmail) throws Exception {
-        Aes128 aes = new Aes128("simgotiaes128key");
+        Aes128Service aes = new Aes128Service("simgotiaes128key");
         String encJumin = aes.encrypt(clntJumin);
+        System.out.printf("encJumin : %s \n",encJumin);
         int clntPk = -1;
         try {
-            clntPk = applyMapper.selectClientNmJumin(clntNm, encJumin);
+            clntPk = clientMapper.selectClientNmJuminPhone(clntNm, encJumin, clntPhone).get(0);
             ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, encJumin);
-            if (clntEmail != null && clntEmail != null) {
-                applyMapper.updateClientPhoneEmailByPk(dto);
+            System.out.println(dto);
+            if (clntPhone != null && clntEmail != null) {
+                clientMapper.updateClientPhoneEmailByPk(dto);
             }
         } catch (Exception e) {
-            System.out.println(e);
+//            e.printStackTrace();
             ClientDto dto = new ClientDto();
             dto.setClntNm(clntNm);
             dto.setClntBirth(clntBirth);
@@ -55,25 +59,25 @@ public class ClientServiceImpl implements ClientService {
             dto.setClntJumin(encJumin);
             dto.setClntPhone(clntPhone);
             dto.setClntEmail(clntEmail);
-            applyMapper.insertRepClient(dto);
+            clientMapper.insertRepClient(dto);
             clntPk = dto.getClntPk();
         }
         return clntPk;
     }
 
-    @Override
-    public int selectClientNmJumin(String clntNm, String clntJumin) throws Exception {
-        Aes128 aes = new Aes128("simgotiaes128key");
-        String encJumin = aes.encrypt(clntJumin);
-        return applyMapper.selectClientNmJumin(clntNm, encJumin);
-    }
+//    @Override
+//    public int selectClientNmJumin(String clntNm, String clntJumin) throws Exception {
+//        Aes128Service aes = new Aes128Service("simgotiaes128key");
+//        String encJumin = aes.encrypt(clntJumin);
+//        return clientMapper.selectClientNmJuminPhone(clntNm, encJumin).get(0);
+//    }
 
     @Override
     public int insertApplyPayment(int premium, String payDueDt) throws Exception {
         ApplyPaymentDto dto = new ApplyPaymentDto();
         dto.setPremium(premium);
         dto.setPayDueDt(payDueDt);
-        applyMapper.insertApplyPayment(dto);
+        clientMapper.insertApplyPayment(dto);
         return dto.getPayPk();
     }
 
@@ -93,30 +97,60 @@ public class ClientServiceImpl implements ClientService {
         dto.setCovCode(covCode);
         dto.setClntCnt(clntCnt);
         dto.setPremium(premium);
-        applyMapper.insertApplyFinish(dto);
+        clientMapper.insertApplyFinish(dto);
         System.out.println(dto);
         return dto.getAplPk();
     }
 
     @Override
-    public int insertApplyInsuredList(int aplPk, int clntPk, Character repYN) throws Exception {
-        return applyMapper.insertApplyInsuredList(aplPk, clntPk, repYN);
+    public int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN) throws Exception {
+        return clientMapper.insertApplyInsuredList(aplPk, clntPk, prem, repYN);
     }
 
+    @Override
+    public int selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception {
+        return clientMapper.selectClientJuminAPhone(clntJuminA, clntPhone);
+    }
 
-    // 담보코드,일당 보험료, 최소 보험료, 보험일수를 이용하여 담보의 보험료를 구하는 메소드
-    public int calculatePremium(String code, int perDay, int min, int day) {
-        int result = min;
-        // cheapest 코드는 실속형 코드로 계산법이 다름;
-        String cheapest = "10120101";
-        if (code.equals(cheapest) && day >= 3) {
-            result += (day - 2) * perDay;
-        } else if (!code.equals(cheapest) && day == 3) {
-            result += 1 * perDay;
-        } else if (!code.equals(cheapest) && day >= 4) {
-            result += (day - 1) * perDay;
+    @Override
+    public List<MyPageInsSummaryDto> selectInsSummaryDtoList(int clntPk) throws Exception {
+        List<MyPageInsSummaryDto> list = new ArrayList<>();
+        list = clientMapper.selectApplySummaryList(clntPk);
+        for(int i = 0; i < list.size(); i++){
+            String trFromDt =  list.get(i).getTrFromDt().substring(0,16);
+            String trToDt = list.get(i).getTrToDt().substring(0,16);
+            int period = commonService.getPeriod(trFromDt, trToDt);
+            list.get(i).setPeriod(period);
+            list.get(i).setTrFromDt(trFromDt);
+            list.get(i).setTrToDt(trToDt);
         }
-        result = (int) (Math.floor(result / 10) * 10);
-        return result;
+        return list;
+    }
+
+    @Override
+    public MyPageInsSummaryDto selectInsSummaryDto(int aplPk) throws Exception {
+        MyPageInsSummaryDto dto = clientMapper.selectInsSummaryDto(aplPk);
+        String trFromDt = dto.getTrFromDt().substring(0,16);
+        String trToDt = dto.getTrToDt().substring(0,16);
+        int period = commonService.getPeriod(trFromDt, trToDt);
+        dto.setPeriod(period);
+        dto.setTrFromDt(trFromDt);
+        dto.setTrToDt(trToDt);
+        return dto;
+    }
+
+    @Override
+    public List<MyPageCompanionDto> selectCompanionDtoList(int aplPk) throws Exception {
+        List<MyPageCompanionDto> myPageCompanionDtoList = clientMapper.selectCompanionDtoList(aplPk);
+        // aplPk를 이용해서 myPageCompanionDtoList에 covDList 추가하기
+        for(int i = 0;i < myPageCompanionDtoList.size(); i++){
+            myPageCompanionDtoList.get(i).setCovDList(clientMapper.selectCoverageDetailList(aplPk));
+        }
+        return myPageCompanionDtoList;
+    }
+
+    @Override
+    public MyPageClientDto selectClientByAplPk(int aplPk) throws Exception {
+        return clientMapper.selectClientByAplPk(aplPk);
     }
 }

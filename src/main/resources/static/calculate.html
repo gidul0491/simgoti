@@ -86,10 +86,14 @@
 
     </style>
     <script>
-        let startDate = sessionStorage.getItem("startDate") || null;
-        let startTime = sessionStorage.getItem("startTime") || null;
-        let endDate = sessionStorage.getItem("endDate") || null;
-        let endTime = sessionStorage.getItem("endTime") || null;
+        // let startDate = sessionStorage.getItem("startDate") || null;
+        // let startTime = sessionStorage.getItem("startTime") || null;
+        // let endDate = sessionStorage.getItem("endDate") || null;
+        // let endTime = sessionStorage.getItem("endTime") || null;
+        let startDate;
+        let startTime;
+        let endDate;
+        let endTime;
         let clntBirth = sessionStorage.getItem("clntBirth") || null;
         let clntGen = sessionStorage.getItem("clntGen") || null;
         let trPlace = sessionStorage.getItem("trPlace") || null;
@@ -1212,20 +1216,20 @@
         </div>
     </div>
 
-    <!-- 안내 팝업-->
-    <div class="popup" id="warn-popup" style="z-index: 2" hidden>
-        <div class="popup-content d-flex justify-content-center align-items-center">
-            <div class="mb-2">
-                <h5>안내</h5>
-            </div>
-            <div class="text-start">
-                <span id="warn-popup-content"></span>
-            </div>
-            <div class="w-100 mt-3">
-                <button type="button" class="btn main-btn close-popup" id="no">확인</button>
-            </div>
-        </div>
-    </div>
+<!--    &lt;!&ndash; 안내 팝업&ndash;&gt;-->
+<!--    <div class="popup" id="warn-popup" style="z-index: 2" hidden>-->
+<!--        <div class="popup-content d-flex justify-content-center align-items-center">-->
+<!--            <div class="mb-2">-->
+<!--                <h5>안내</h5>-->
+<!--            </div>-->
+<!--            <div class="text-start">-->
+<!--                <span id="warn-popup-content"></span>-->
+<!--            </div>-->
+<!--            <div class="w-100 mt-3">-->
+<!--                <button type="button" class="btn main-btn close-popup" id="no">확인</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 </div>
 <div class="footer">
 </div>

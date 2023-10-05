@@ -2,6 +2,7 @@ package com.simg.simgoti.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,4 +43,15 @@ public class MainController {
         return "/apply3.html";
     }
 
+    @RequestMapping(value = "/simgOti/myPage", method = RequestMethod.GET)
+    public String myPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        HttpSession session = req.getSession();
+        if(session.getAttribute("myPageClntPk") != null){
+            return "/myPage2.html";
+        }
+        else{
+            return "/myPage1.html";
+        }
+
+    }
 }

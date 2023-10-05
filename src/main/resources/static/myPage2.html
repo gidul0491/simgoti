@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <style>
+        .coverage-detail-popup{
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .coverage-detail{
+            height: 30rem;
+            overflow-y: scroll;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .coverage-detail-close-div{
+            padding: 0.5rem 1rem 0 1rem;
+        }
+    </style>
+
+    <script>
+        let insList = [];
+        let clntPk;
+
+        $(document).ready(function () {
+            let ul = $("#ins-ul");
+            getInsList();
+
+            function addAppCard(stateCode, period, fromDt, toDt, trPlace, aplPk) {
+                let state = stateCodeToStr(stateCode);
+                ul.append(
+                    `
+                <li>
+                        <div class="appCard text-start d-flex flex-column">
+                            <div class="state"><span>${state}</span></div>
+                            <div class="trPlace"><span>${trPlace}</span></div>
+                            <div class="bottom d-flex justify-content-between">
+                                <div>
+                                    <span class="fromDt">${fromDt} 부터</span> <br>
+                                    <span class="toDt">${toDt} 까지 </span>
+                                    <span class="period">(${period}일)</span>
+                                </div>
+                                <div class="detail-btn-div align-self-end">
+                                    <button type="button" value="${aplPk}" class="detail-btn border-0 text-secondary bg-white">자세히 <i class="bi bi-caret-right-fill"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                `
+                )
+            }
+
+            function getInsList(){
+                $.ajax({
+                    url: "/api/client/insList",
+                    method: "GET",
+                    data: {},
+                    success: (data) => {
+                        if (data.result == "success") {
+                            clntPk = data.clntPk;
+                            insList = data.insList;
+                            console.log(insList);
+                            $("#ins-detail-div").attr("hidden","hidden");
+                            ul.empty();
+                            insList.map(function (item) {
+                                addAppCard(item.aplStateCode, item.period, item.trFromDt, item.trToDt, item.trPlace, item.aplPk);
+                            });
+                            $("#ins-detail-div").attr("hidden","hidden");
+
+                        } else {
+
+                        }
+                    },
+                    error: () => {
+                    }
+                });
+            }
+            function addCompanionTableTr(num, name, jumin, prem,covNm, covList){
+                let number = num;
+                if(num == "0"){
+                    number = "대표"
+                }
+                $("#companion-table").append(`
+<tr>
+    <td>${number}</td>
+    <td>${name}</td>
+    <td>${jumin}</td>
+    <td>${putComma(prem)}원</td>
+    <td>
+        <button type="button" class="btn main-btn-outlined show-popup p-0">보장내용</button>
+        <div class="popup" hidden style="z-index: 2">
+            <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
+                ${coverageDetail(covNm, covList)}
+            </div>
+        </div>
+    </td>
+</tr>
+                `);
+            }
+
+            function coverageDetail(covNm, covList){
+                const result = `
+                <span>${covNm}</span>
+                <div class="w-100 d-flex flex-column coverage-detail">
+                ${covList.map((item)=>{
+                    return `
+                    <div class="d-flex justify-content-between">
+                        <div><span>${item.covDNm}</span></div>
+                        <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
+                    </div>
+                    `
+                }).join('')}
+                </div>
+                <div class="w-100 coverage-detail-close-div">
+                    <button type="button" class="btn main-btn coverage-detail-close">확인</button>
+                </div>
+                `;
+                return result;
+            }
+
+            function setInsDetail(summary, companion, rep){
+                $("#ins-detail-state").empty().append(`<span>${stateCodeToStr(summary.aplStateCode)}</span>`);
+                $("#ins-detail-trPlace").empty().append(`<span>${summary.trPlace}</span>`);
+                $("#ins-detail-fromDt").empty().text(`${summary.trFromDt} 부터`);
+                $("#ins-detail-toDt").empty().text(`${summary.trToDt} 까지 `);
+                $("#ins-detail-period").empty().text(`(${summary.period}일)`);
+                $("#clntCnt").empty().append(`<span>${summary.clntCnt}명</span>`);
+                $("#companion-table").empty();
+                if(companion.length > 1){
+                    $("#coverage-list-div").attr("hidden","hidden");
+                    $("#companion-list-div").removeAttr("hidden");
+                    for(let i = 0;i < companion.length; i++){
+                        addCompanionTableTr(i, companion[i].clntNm, `${companion[i].clntBirth}-${companion[i].clntGen}******`, companion[i].premium, summary.covNm, companion[i].covDList)
+                    }
+                }
+                else{
+                    $("#companion-list-div").attr("hidden","hidden");
+                    $("#coverage-list-div").removeAttr("hidden");
+                    $("#coverage-detail-alone").empty().append(coverageDetail(summary.covNm, companion[0].covDList));
+                }
+
+                $("#ins-detail-prem").empty().append(`<span>${putComma(summary.premium)}원</span>`);
+                $("#rep-client-nm").empty().append(`<span>${rep.clntNm}</span>`);
+                $("#rep-client-jumin").empty().append(`<span>${rep.clntBirth}-${rep.clntGen}******</span>`);
+                $("#rep-client-phone").empty().append(`<span>${rep.clntPhone}</span>`);
+                $("#rep-client-email").empty().append(`<span>${rep.clntEmail}</span>`);
+
+            }
+
+            $("html").on("click",".coverage-detail-close", function(){
+                $(".popup").attr("hidden","hidden");
+                $("#companion-list-popup").removeAttr("hidden");
+            });
+
+
+            $("html").on("click",".detail-btn", function(){
+                let aplPk = $(this).val();
+                $.ajax({
+                    url: "/api/client/insDetail",
+                    method: "GET",
+                    data: {clntPk:clntPk, aplPk:aplPk},
+                    success: (data) => {
+                        if(data.result == "success"){
+                            console.log(data.insDetail);
+                            setInsDetail(data.insDetail.insSummary, data.insDetail.companionList, data.insDetail.repClient);
+                            $("#ins-ul").empty();
+                            $("#ins-detail-div").removeAttr("hidden");
+                            $("#ins-list-div").attr("hidden","hidden");
+                        }
+                    },
+                    error: () => {
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-2"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+
+            <!-- 신청한 보험 리스트 -->
+            <div id="ins-list-div">
+                <ul class="list-unstyled" id="ins-ul">
+                </ul>
+            </div>
+
+            <!-- 신청한 보험 자세히 -->
+            <div id="ins-detail-div" class="">
+                <div class="d-flex flex-column text-start" hidden>
+                    <div id="ins-detail-state"></div>
+                    <div id="ins-detail-trPlace"></div>
+                    <div id="ins-detail-date" class="">
+                        <span id="ins-detail-fromDt"></span> <br>
+                        <span id="ins-detail-toDt"></span>
+                        <span id="ins-detail-period"></span>
+                    </div>
+                    <div id="ins-detail-companion" class="d-flex justify-content-start align-items-center">
+                        <div id="clntCnt"></div>
+                        <div id="companion-list-div" hidden>
+                            <button type="button" class="btn main-btn-outlined show-popup p-0" id="companion-list-btn">가입자명단</button>
+                            <div class="popup" hidden style="z-index: 2" id="companion-list-popup">
+                                <div class="popup-content d-flex justify-content-center align-items-center">
+                                    <div class="w-100">
+                                        <table id="companion-table" class="w-100">
+                                            <colgroup>
+                                                <col style="width: 10%">
+                                                <col style="width: 20%">
+                                                <col style="width: 40%">
+                                                <col style="width: 20%">
+                                                <col style="width: 10%">
+                                            </colgroup>
+                                            <tr>
+                                                <th>번호</th>
+                                                <th>이름</th>
+                                                <th>주민등록번호</th>
+                                                <th>보험료</th>
+                                                <th>보장</th>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="w-100 me-3 mt-3">
+                                        <button type="button" class="btn main-btn close-popup">확인</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="coverage-list-div" hidden>
+                            <button type="button" class="btn main-btn-outlined show-popup p-0" >보장내용</button>
+                            <div class="popup" hidden style="z-index: 2">
+                                <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup" id="coverage-detail-alone">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="ins-detail-prem">
+
+                    </div>
+
+                    <hr>
+
+                    <div id="ins-detail-rep-client">
+                        <table class="w-100">
+                            <colgroup>
+                                <col style="width: 20%">
+                                <col style="width: 80%">
+                            </colgroup>
+                            <tr>
+                                <td>대표가입자</td>
+                                <td id="rep-client-nm"></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td id="rep-client-jumin"></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td id="rep-client-phone"></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td id="rep-client-email"></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td id="rep-client-email-update">
+                                    <button type="button" class="show-popup">이메일 변경</button>
+                                    <div class="popup" hidden style="z-index: 2">
+                                        <div class="popup-content d-flex justify-content-center align-items-center">
+                                            <div class="w-100">
+                                                <span>이메일 변경</span>
+                                            </div>
+
+
+                                            <div class="w-100 me-3 mt-3">
+                                                <button type="button" class="btn main-btn close-popup">확인</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                </div>
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

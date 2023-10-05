@@ -106,6 +106,24 @@ function alertAndMove(msg, url) {
     location.href = url;
 }
 
+// 상태코드 해석 함수
+function stateCodeToStr(code){
+    let str;
+    switch(code) {
+        case "401": str="신청";break;
+        case "402": str="가입";break;
+        case "403": str="가입취소";break;
+        case "404": str="가입취소";break;
+        case "405": str="만료";break;
+        case "406": str="중도해지";break;
+        case "407": str="중도해지";break;
+        default: str="신청";
+    }
+    return str;
+}
+
+//
+
 // 1000단위로 끊는 함수
 function putComma(text) {
     const regex = /\B(?=(\d{3})+(?!\d))/g;

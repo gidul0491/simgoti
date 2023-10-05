@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class Aes128 {
+public class Aes128Service {
 
     private static final Charset ENCODING_TYPE = StandardCharsets.UTF_8;
 
@@ -23,7 +23,7 @@ public class Aes128 {
 
     private IvParameterSpec ivParameterSpec;
 
-    public Aes128(final String key) {
+    public Aes128Service(final String key) {
         validation(key);
         try {
             byte[] keyBytes = key.getBytes(ENCODING_TYPE);

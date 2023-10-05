@@ -130,7 +130,7 @@
                 $(this).find(".companionNum-span").text(num);
                 $(this).find(".companion-delete-div").empty();
                 if (clntCnt - 1 > 1) {
-                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete' value='${num}'>delete</button>`)
+                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete text-secondary border-0 bg-white' value='${num}'><i class="bi bi-x-circle"></i></button>`)
                 }
                 console.log(companionList.length);
             });

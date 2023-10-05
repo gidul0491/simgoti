@@ -4,8 +4,10 @@ import com.simg.simgoti.mapper.CommonMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -77,5 +79,36 @@ public class CommonServiceImpl implements CommonService {
         }
 
         return "ok";
+    }
+
+    @Override
+    public int calculatePremium(String code, int perDay, int min, int day) {
+        int result = min;
+        // cheapest 코드는 실속형 코드로 계산법이 다름;
+        String cheapest = "10120101";
+        if (code.equals(cheapest) && day >= 3) {
+            result += (day - 2) * perDay;
+        } else if (!code.equals(cheapest) && day == 3) {
+            result += 1 * perDay;
+        } else if (!code.equals(cheapest) && day >= 4) {
+            result += (day - 1) * perDay;
+        }
+        result = (int) (Math.floor(result / 10) * 10);
+        return result;
+    }
+
+    @Override
+    public int getPeriod(String startDt, String endDt) {
+        int result = 1;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        if(startDt.length() > 16){
+            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        }
+        LocalDateTime startLdt = LocalDateTime.parse(startDt, formatter);
+        LocalDateTime endLdt = LocalDateTime.parse(endDt, formatter);
+        Duration duration = Duration.between(startLdt, endLdt);
+        long seconds = duration.getSeconds();
+        result = (int) Math.ceil( (double) seconds / ((24 * 60 * 60)) );
+        return result;
     }
 }
