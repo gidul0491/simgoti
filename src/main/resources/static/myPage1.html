@@ -61,7 +61,8 @@
                         success:(data)=>{
                             console.log(data);
                             if(data == "success"){
-                                location.href = "/simg/simgOti/myPage";
+                                // location.href = "/simg/simgOti/myPage";
+                                location.replace("/simg/simgOti/myPage");
                             }
                             else if (data == "session timeout"){
                                 alert("세션이 만료되었습니다.");
