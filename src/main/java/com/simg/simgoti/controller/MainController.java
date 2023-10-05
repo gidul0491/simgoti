@@ -46,7 +46,9 @@ public class MainController {
     @RequestMapping(value = "/simgOti/myPage", method = RequestMethod.GET)
     public String myPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         HttpSession session = req.getSession();
+        
         if(session.getAttribute("myPageClntPk") != null){
+            System.out.println("session clntPk : " + session.getAttribute("myPageClntPk"));
             return "/myPage2.html";
         }
         else{
