@@ -45,6 +45,10 @@ public class MainController {
 
     @RequestMapping(value = "/simgOti/myPage", method = RequestMethod.GET)
     public String myPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+        // url이 같은 경우 웹브라우저에서 자체적으로 캐시를 사용하여 이전에 사용했던 html파일을 그대로 사용하는 경우가 있음
+        // 그러면 myPage2.html을 반환해야 하는경우에 myPage1.html을 반환하여 로그인이 안됨
+        // 그래서 response로 캐시를 사용하지말라는 의미로 아래 헤더를 설정함
         resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         resp.setHeader("Pragma", "no-cache");
         resp.setHeader("Expires", "0");

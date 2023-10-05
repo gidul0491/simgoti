@@ -153,4 +153,8 @@ public class ClientServiceImpl implements ClientService {
     public MyPageClientDto selectClientByAplPk(int aplPk) throws Exception {
         return clientMapper.selectClientByAplPk(aplPk);
     }
+    @Override
+    public int updateClntEmail(int clntPk, String clntEmail) throws Exception{
+        return clientMapper.updateClntEmail(clntPk, clntEmail);
+    }
 }

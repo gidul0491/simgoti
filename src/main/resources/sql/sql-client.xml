@@ -161,5 +161,14 @@
         order by
             d.covDCode asc;
     </select>
+
+    <update id="updateClntEmail">
+        update
+            simgotidb.client
+        set
+            clntEmail = #{clntEmail}
+        where
+            clntPk = #{clntPk} and useYN = 'Y';
+    </update>
 </mapper>
 

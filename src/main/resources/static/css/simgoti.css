@@ -22,7 +22,7 @@
 /* 모바일 화면 */
 @media all and (max-aspect-ratio: 1/1){
     html {
-        font-size: 4vw;
+        font-size: 3.6vw;
     }
     option {
         padding: 0.2rem;
@@ -62,8 +62,6 @@
     color: white;
     border: none;
 }
-
-
 
 #content {
     border: 1px solid #eee;

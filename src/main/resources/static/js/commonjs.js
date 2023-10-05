@@ -122,8 +122,6 @@ function stateCodeToStr(code){
     return str;
 }
 
-//
-
 // 1000단위로 끊는 함수
 function putComma(text) {
     const regex = /\B(?=(\d{3})+(?!\d))/g;

@@ -407,4 +407,21 @@ public class ClientController {
         }
         return result;
     }
+
+    @RequestMapping(value = "/email", method = RequestMethod.PUT)
+    public Object editEmail(HttpServletRequest req, @RequestParam int clntPk, @RequestParam String email) throws Exception {
+        HttpSession session = req.getSession();
+        Map<String,Object> result = new HashMap<>();
+        if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
+            clientService.updateClntEmail(clntPk, email);
+            result.put("result","success");
+            result.put("msg","email updated successfully");
+            return result;
+        }
+        else{
+            result.put("result","error");
+            result.put("msg","세션이 만료되었습니다.");
+            return result;
+        }
+    }
 }

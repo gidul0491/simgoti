@@ -21,4 +21,5 @@ public interface ClientService {
     MyPageInsSummaryDto selectInsSummaryDto(int aplPk) throws Exception;
     List<MyPageCompanionDto> selectCompanionDtoList(int aplPk) throws Exception;
     MyPageClientDto selectClientByAplPk(int aplPk) throws Exception;
+    int updateClntEmail(int clntPk, String clntEmail) throws Exception;
 }
