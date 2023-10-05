@@ -45,6 +45,10 @@ public class MainController {
 
     @RequestMapping(value = "/simgOti/myPage", method = RequestMethod.GET)
     public String myPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setHeader("Expires", "0");
+
         HttpSession session = req.getSession();
 
         if(session.getAttribute("myPageClntPk") != null){
