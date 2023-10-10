@@ -1,5 +1,9 @@
 package com.simg.simgoti.service;
 
+import com.simg.simgoti.dto.MyPageInsSummaryDto;
+import com.simg.simgoti.dto.PdfInsInfoDto;
+import com.simg.simgoti.mapper.ClientMapper;
+import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -19,10 +23,12 @@ import java.util.Properties;
 
 
 @Service
+@RequiredArgsConstructor
 public class PdfServiceImpl implements PdfService {
+    private final ClientMapper clientMapper;
+
     @Override
     public PDDocument createPdfKr(int aplPk) throws Exception {
-//        String path = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator;
         // 새로운 PDF 문서 생성
         PDDocument document = new PDDocument();
         PDType0Font nanumGothic = PDType0Font.load(document, getClass().getResourceAsStream("/static/fonts/NanumGothicCoding.ttf"));
@@ -30,9 +36,9 @@ public class PdfServiceImpl implements PdfService {
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
 
+        // pk값으로 계약서 정보 가져오기
+        PdfInsInfoDto dto = clientMapper.selectInsForPdf(aplPk);
         try {
-
-
             // 페이지 컨텐츠 스트림 생성
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
             // 텍스트 추가
@@ -48,7 +54,7 @@ public class PdfServiceImpl implements PdfService {
             float yStart = page.getMediaBox().getHeight() - margin;
             float tableWidth = page.getMediaBox().getWidth() - 2 * margin;
             float yPosition = yStart;
-            int rows = 5;
+            int rows = 9;
             int cols = 2;
             float rowHeight = 20f;
             float tableHeight = rowHeight * rows;
@@ -64,14 +70,23 @@ public class PdfServiceImpl implements PdfService {
 //            }
             content[0][0] = "계약번호";
             content[0][1] = String.valueOf(aplPk);
-            content[1][0] = "보험종류";
-            content[1][1] = "해외여행자보험";
-            content[2][0] = "보험종료일시";
-            content[2][1] = "20XX-XX-XX XX:XX";
-            content[3][0] = "보험시작일시";
-            content[3][1] = "20XX-XX-XX XX:XX";
-            content[4][0] = "담보";
-            content[4][1] = " ";
+            content[1][0] = "이름";
+            content[1][1] = dto.getClntNm();
+            content[2][0] = "보험료";
+            content[2][1] = String.valueOf(dto.getPremium())+"원";
+            content[3][0] = "보험종류";
+            content[3][1] = "해외여행자보험";
+            content[4][0] = "보험시작일시";
+            content[4][1] = dto.getTrFromDt();
+            content[5][0] = "보험종료일시";
+            content[5][1] = dto.getTrToDt();
+            content[6][0] = "여행국가";
+            content[6][1] = dto.getTrPlace();
+            content[7][0] = "담보유형";
+            content[7][1] = dto.getCovNm();
+            content[8][0] = "여행인원";
+            content[8][1] = String.valueOf(dto.getClntCnt());
+
 
             // 표 그리기
             float tableY = yPosition;

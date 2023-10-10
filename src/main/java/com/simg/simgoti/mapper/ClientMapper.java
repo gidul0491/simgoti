@@ -27,5 +27,5 @@ public interface ClientMapper {
     MyPageClientDto selectClientByAplPk(int aplPk) throws Exception;
     List<MyPageCoverageDetailDto> selectCoverageDetailList(int aplPk) throws Exception;
     int updateClntEmail(int clntPk, String clntEmail) throws Exception;
-
+    PdfInsInfoDto selectInsForPdf(int aplPk) throws Exception;
 }

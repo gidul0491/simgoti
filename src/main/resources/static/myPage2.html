@@ -264,22 +264,22 @@
                 });
             }
 
-            // 가입증명서 다운
+            // 가입증명서 이메일로 받기
             $("#download-pdf-kr").on("click", function(){
                 const aplPk = $(this).val();
-                // $.ajax({
-                //     url:"/api/client/applicationPdfKr",
-                //     method:"GET",
-                //     data:{
-                //         aplPk:aplPk,
-                //         clntPk:clntPk,
-                //     },
-                //     success:(data)=>{
-                //         console.log("success");
-                //     },
-                //     error:()=>{}
-                // });
-                location.href = `/api/client/applicationPdfKr?aplPk=${aplPk}&clntPk=${clntPk}`;
+                $.ajax({
+                    url:"/api/client/applicationPdfKrEmail",
+                    method:"GET",
+                    data:{
+                        aplPk:aplPk,
+                        clntPk:clntPk,
+                    },
+                    success:(data)=>{
+                        console.log("success");
+                    },
+                    error:()=>{}
+                });
+                // location.href = `/api/client/applicationPdfKrEmail?aplPk=${aplPk}&clntPk=${clntPk}`;
             });
         });
     </script>

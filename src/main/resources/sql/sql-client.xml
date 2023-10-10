@@ -170,6 +170,17 @@
         where
             clntPk = #{clntPk} and useYN = 'Y';
     </update>
-
+    <select id="selectInsForPdf" resultType="com.simg.simgoti.dto.PdfInsInfoDto">
+        select
+            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, a.clntCnt, a.premium, c.covNm, cl.clntNm
+        from
+            simgotidb.application a
+        join
+            simgotidb.coverage c on a.covCode = c.covCode
+        join
+            simgotidb.client cl on a.clntPk = cl.clntPk
+        where
+            a.aplPk = #{aplPk} and a.useYN ='Y' and c.useYN = 'Y';
+    </select>
 </mapper>
 
