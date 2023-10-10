@@ -104,20 +104,20 @@
 
     <select id="selectApplySummaryList" resultType="com.simg.simgoti.dto.MyPageInsSummaryDto">
         select
-            aplPk, trFromDt, trToDt, trPlace, aplStateCode
+            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, cd.codeNm as aplState
         from
-            simgotidb.application
+            simgotidb.application a join simgotidb.code cd on a.aplStateCode = cd.codePk
         where
-            clntPk = #{clntPk} and useYN = 'Y'
+            a.clntPk = #{clntPk} and a.useYN = 'Y' and cd.useYN = 'Y'
         order by
-            aplPk desc;
+            a.aplPk desc;
     </select>
 
     <select id="selectInsSummaryDto" resultType="com.simg.simgoti.dto.MyPageInsSummaryDto">
         select
-            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, a.aplStateCode, a.clntCnt, a.premium, c.covNm
+            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, cd.codeNm as aplState, a.clntCnt, a.premium, c.covNm
         from
-            simgotidb.application a join simgotidb.coverage c on a.covCode = c.covCode
+            simgotidb.application a join simgotidb.coverage c on a.covCode = c.covCode join simgotidb.code cd on a.aplStateCode = cd.codePk
         where
             a.aplPk = #{aplPk} and a.useYN ='Y' and c.useYN = 'Y';
     </select>
@@ -166,9 +166,10 @@
         update
             simgotidb.client
         set
-            clntEmail = #{clntEmail}
+            clntEmail = #{clntEmail}, clntUdt = now()
         where
             clntPk = #{clntPk} and useYN = 'Y';
     </update>
+
 </mapper>
 

@@ -61,6 +61,12 @@ public class MainController {
         else{
             return "/myPage1.html";
         }
-
     }
+
+    @RequestMapping(value = "/simgOti/admin", method = RequestMethod.GET)
+    public String admin() throws Exception {
+        return "/admin/adminMain.html";
+    }
+
+
 }

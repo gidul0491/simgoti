@@ -9,18 +9,31 @@
     <script src="/js/jquery-3.7.0.js"></script>
     <link rel="stylesheet" href="/css/simgoti.css">
     <style>
-        .coverage-detail-popup{
+        .coverage-detail-popup {
             padding-left: 0;
             padding-right: 0;
         }
-        .coverage-detail{
+
+        .coverage-detail {
             height: 30rem;
             overflow-y: scroll;
             padding-left: 1rem;
             padding-right: 1rem;
         }
-        .coverage-detail-close-div{
+
+        .coverage-detail-close-div {
             padding: 0.5rem 1rem 0 1rem;
+        }
+
+        .detail-btn {
+            margin-right: 0.2rem;
+        }
+
+        .appCard {
+            border: 1px solid #ddd;
+            border-radius: 0.4rem;
+            margin: 1rem 0rem;
+            padding: 0.6rem;
         }
     </style>
 
@@ -32,8 +45,8 @@
             let ul = $("#ins-ul");
             getInsList();
 
-            function addAppCard(stateCode, period, fromDt, toDt, trPlace, aplPk) {
-                let state = stateCodeToStr(stateCode);
+            function addAppCard(state, period, fromDt, toDt, trPlace, aplPk) {
+                // let stateStr = stateCodeToStr(state);
                 ul.append(
                     `
                 <li>
@@ -56,7 +69,7 @@
                 )
             }
 
-            function getInsList(){
+            function getInsList() {
                 $.ajax({
                     url: "/api/client/insList",
                     method: "GET",
@@ -66,12 +79,12 @@
                             clntPk = data.clntPk;
                             insList = data.insList;
                             console.log(insList);
-                            $("#ins-detail-div").attr("hidden","hidden");
+                            $("#ins-detail-div").attr("hidden", "hidden");
                             ul.empty();
                             insList.map(function (item) {
-                                addAppCard(item.aplStateCode, item.period, item.trFromDt, item.trToDt, item.trPlace, item.aplPk);
+                                addAppCard(item.aplState, item.period, item.trFromDt, item.trToDt, item.trPlace, item.aplPk);
                             });
-                            $("#ins-detail-div").attr("hidden","hidden");
+                            $("#ins-detail-div").attr("hidden", "hidden");
 
                         } else {
 
@@ -81,9 +94,10 @@
                     }
                 });
             }
-            function addCompanionTableTr(num, name, jumin, prem,covNm, covList){
+
+            function addCompanionTableTr(num, name, jumin, prem, covNm, covList) {
                 let number = num;
-                if(num == "0"){
+                if (num == "0") {
                     number = "대표"
                 }
                 $("#companion-table").append(`
@@ -104,11 +118,11 @@
                 `);
             }
 
-            function coverageDetail(covNm, covList){
+            function coverageDetail(covNm, covList) {
                 const result = `
                 <span>${covNm}</span>
                 <div class="w-100 d-flex flex-column coverage-detail">
-                ${covList.map((item)=>{
+                ${covList.map((item) => {
                     return `
                     <div class="d-flex justify-content-between">
                         <div><span>${item.covDNm}</span></div>
@@ -124,8 +138,8 @@
                 return result;
             }
 
-            function setInsDetail(summary, companion, rep){
-                $("#ins-detail-state").empty().append(`<span>${stateCodeToStr(summary.aplStateCode)}</span>`);
+            function setInsDetail(summary, companion, rep) {
+                $("#ins-detail-state").empty().append(`<span>${summary.aplState}</span>`);
                 $("#ins-detail-trPlace").empty().append(`<span>${summary.trPlace}</span>`);
                 $("#ins-detail-fromDt").empty().text(`${summary.trFromDt} 부터`);
                 $("#ins-detail-toDt").empty().text(`${summary.trToDt} 까지 `);
@@ -146,15 +160,14 @@
                     <th>보험료</th>
                     <th>보장</th>
                 </tr>`);
-                if(companion.length > 1){
-                    $("#coverage-list-div").attr("hidden","hidden");
+                if (companion.length > 1) {
+                    $("#coverage-list-div").attr("hidden", "hidden");
                     $("#companion-list-div").removeAttr("hidden");
-                    for(let i = 0;i < companion.length; i++){
+                    for (let i = 0; i < companion.length; i++) {
                         addCompanionTableTr(i, companion[i].clntNm, `${companion[i].clntBirth}-${companion[i].clntGen}******`, companion[i].premium, summary.covNm, companion[i].covDList)
                     }
-                }
-                else{
-                    $("#companion-list-div").attr("hidden","hidden");
+                } else {
+                    $("#companion-list-div").attr("hidden", "hidden");
                     $("#coverage-list-div").removeAttr("hidden");
                     $("#coverage-detail-alone").empty().append(coverageDetail(summary.covNm, companion[0].covDList));
                 }
@@ -173,25 +186,26 @@
 
             }
 
-            $("html").on("click",".coverage-detail-close", function(){
-                $(".popup").attr("hidden","hidden");
+            $("html").on("click", ".coverage-detail-close", function () {
+                $(".popup").attr("hidden", "hidden");
                 $("#companion-list-popup").removeAttr("hidden");
             });
 
-
-            $("html").on("click",".detail-btn", function(){
+            // 자세히보기 클릭
+            $("html").on("click", ".detail-btn", function () {
                 let aplPk = $(this).val();
                 $.ajax({
                     url: "/api/client/insDetail",
                     method: "GET",
-                    data: {clntPk:clntPk, aplPk:aplPk},
+                    data: {clntPk: clntPk, aplPk: aplPk},
                     success: (data) => {
-                        if(data.result == "success"){
+                        if (data.result == "success") {
                             console.log(data.insDetail);
                             setInsDetail(data.insDetail.insSummary, data.insDetail.companionList, data.insDetail.repClient);
-                            $("#ins-ul").empty();
+                            // $("#ins-ul").empty();
                             $("#ins-detail-div").removeAttr("hidden");
-                            $("#ins-list-div").attr("hidden","hidden");
+                            $("#ins-list-div").attr("hidden", "hidden");
+                            $("#download-pdf-kr").val(aplPk);
                         }
                     },
                     error: () => {
@@ -199,30 +213,35 @@
                 });
             });
 
+            // 자세히 보기에서 이전 버튼 클릭시
+            $("#prev").on("click", function () {
+                $("#ins-detail-div").attr("hidden", "hidden");
+                $("#ins-list-div").removeAttr("hidden");
+            });
+
             // 이메일 입력 관련
-            $("#clntEmail-text-b").on("keyup", function(){
-                $("#clntEmail-select").attr("hidden","hidden");
+            $("#clntEmail-text-b").on("keyup", function () {
+                $("#clntEmail-select").attr("hidden", "hidden");
             });
 
 
             // 이메일 도메인 선택했을때
-            $("#clntEmail-select").on("change", function(){
+            $("#clntEmail-select").on("change", function () {
                 // 직접입력 선택했을때
-                if($("#clntEmail-select option:selected").val() == "input"){
+                if ($("#clntEmail-select option:selected").val() == "input") {
                     $("#clntEmail-text-b").val(null).focus();
-                }
-                else{
+                } else {
                     clntEmail = $(this).val();
                 }
             })
 
             // 이메일 변경 확인버튼 클릭시
-            $("#edit-email").on("click",function (){
+            $("#edit-email").on("click", function () {
                 const emailA = $("#clntEmail-text-a").val();
                 const emailB = $("#clntEmail-text-b").val();
                 let email;
                 // emailA, emailB 유효성 검증
-                if(emailA != "" && emailB != ""){
+                if (emailA != "" && emailB != "") {
                     email = emailA + "@" + emailB;
                     editEmail(clntPk, email);
                 }
@@ -232,18 +251,36 @@
                 $.ajax({
                     url: "/api/client/email",
                     method: "PUT",
-                    data:{clntPk: clntPk, email: email},
-                    success:(data)=>{
-                        if(data.result == "success"){
+                    data: {clntPk: clntPk, email: email},
+                    success: (data) => {
+                        if (data.result == "success") {
                             showPopup("이메일이 변경되었습니다.");
-                        }
-                        else if(data.result == "error"){
+                        } else if (data.result == "error") {
                             showPopup(data.msg);
                         }
                     },
-                    error:()=>{}
+                    error: () => {
+                    }
                 });
             }
+
+            // 가입증명서 다운
+            $("#download-pdf-kr").on("click", function(){
+                const aplPk = $(this).val();
+                // $.ajax({
+                //     url:"/api/client/applicationPdfKr",
+                //     method:"GET",
+                //     data:{
+                //         aplPk:aplPk,
+                //         clntPk:clntPk,
+                //     },
+                //     success:(data)=>{
+                //         console.log("success");
+                //     },
+                //     error:()=>{}
+                // });
+                location.href = `/api/client/applicationPdfKr?aplPk=${aplPk}&clntPk=${clntPk}`;
+            });
         });
     </script>
 </head>
@@ -264,6 +301,9 @@
             <!-- 신청한 보험 자세히 -->
             <div id="ins-detail-div" class="">
                 <div class="d-flex flex-column text-start" hidden>
+                    <div>
+                        <button type="button" class="btn border-0 text-secondary p-0" id="prev">이전</button>
+                    </div>
                     <div id="ins-detail-state"></div>
                     <div id="ins-detail-trPlace"></div>
                     <div id="ins-detail-date" class="">
@@ -274,7 +314,9 @@
                     <div id="ins-detail-companion" class="d-flex justify-content-start align-items-center">
                         <div id="clntCnt"></div>
                         <div id="companion-list-div" hidden>
-                            <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 ms-1" id="companion-list-btn">가입자명단</button>
+                            <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 ms-1"
+                                    id="companion-list-btn">가입자명단
+                            </button>
                             <div class="popup" hidden style="z-index: 2" id="companion-list-popup">
                                 <div class="popup-content d-flex justify-content-center align-items-center">
                                     <div class="mb-2">
@@ -307,9 +349,10 @@
                         </div>
 
                         <div id="coverage-list-div" hidden>
-                            <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 ms-1" >보장내용</button>
+                            <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 ms-1">보장내용</button>
                             <div class="popup" hidden style="z-index: 2">
-                                <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup" id="coverage-detail-alone">
+                                <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup"
+                                     id="coverage-detail-alone">
 
                                 </div>
                             </div>
@@ -346,42 +389,46 @@
                             <tr>
                                 <td></td>
                                 <td id="rep-client-email-update">
-                                    <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 w-auto">이메일 변경</button>
+                                    <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 w-auto">이메일
+                                        변경
+                                    </button>
                                     <div class="popup" hidden style="z-index: 2">
                                         <div class="popup-content d-flex justify-content-center align-items-center">
                                             <!-- 이메일 -->
-                                                <div class="mb-2">
-                                                    <h5>이메일 변경</h5>
-                                                </div>
+                                            <div class="mb-2">
+                                                <h5>이메일 변경</h5>
+                                            </div>
 
-                                                    <div class="w-100">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div  class="w-100 pe-2">
-                                                                <input type="text" class="form-control" id="clntEmail-text-a">
-                                                            </div>
-
-                                                            <span>@</span>
-
-                                                            <div class="text-select-div w-100 ms-2">
-                                                                <input type="text" class="form-control text-select" id="clntEmail-text-b">
-                                                                <select name="clntEmail-select" id="clntEmail-select"
-                                                                        class="form-control text-option" hidden size="6"
-                                                                        style="z-index: 1">
-                                                                    <option value="input">직접입력</option>
-                                                                    <option value="naver.com">naver.com</option>
-                                                                    <option value="daum.com">daum.net</option>
-                                                                    <option value="hanmail.net">hanmail.net</option>
-                                                                    <option value="gmail.com">gmail.com</option>
-                                                                    <option value="nate.com">nate.com</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
+                                            <div class="w-100">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="w-100 pe-2">
+                                                        <input type="text" class="form-control" id="clntEmail-text-a">
                                                     </div>
 
+                                                    <span>@</span>
+
+                                                    <div class="text-select-div w-100 ms-2">
+                                                        <input type="text" class="form-control text-select"
+                                                               id="clntEmail-text-b">
+                                                        <select name="clntEmail-select" id="clntEmail-select"
+                                                                class="form-control text-option" hidden size="6"
+                                                                style="z-index: 1">
+                                                            <option value="input">직접입력</option>
+                                                            <option value="naver.com">naver.com</option>
+                                                            <option value="daum.com">daum.net</option>
+                                                            <option value="hanmail.net">hanmail.net</option>
+                                                            <option value="gmail.com">gmail.com</option>
+                                                            <option value="nate.com">nate.com</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
 
 
                                             <div class="w-100 me-3 mt-3">
-                                                <button type="button" class="btn main-btn close-popup" id="edit-email">확인</button>
+                                                <button type="button" class="btn main-btn close-popup" id="edit-email">
+                                                    확인
+                                                </button>
                                             </div>
 
                                         </div>
@@ -390,8 +437,11 @@
                             </tr>
                         </table>
                     </div>
+                    <div>
+                        <button type="button" class="btn main-btn-outlined mt-3" id="download-pdf-kr">가입증명서</button>
+                    </div>
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 

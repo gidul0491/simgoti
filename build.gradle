@@ -30,6 +30,19 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+
+    // https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox
+//    implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.0'
+    implementation 'org.apache.pdfbox:pdfbox:2.0.28'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation 'commons-io:commons-io:2.6'
+
+    implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2'
+    // https://mvnrepository.com/artifact/javax.mail/javax.mail-api
+    implementation 'javax.mail:javax.mail-api:1.6.2'
+
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.2'
     compileOnly 'org.projectlombok:lombok'

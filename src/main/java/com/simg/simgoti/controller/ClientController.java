@@ -3,18 +3,33 @@ package com.simg.simgoti.controller;
 import com.simg.simgoti.dto.*;
 import com.simg.simgoti.service.ClientService;
 import com.simg.simgoti.service.CommonService;
+import com.simg.simgoti.service.NaverApiService;
+import com.simg.simgoti.service.PdfService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriUtils;
 
+import java.io.File;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.MalformedInputException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -25,6 +40,7 @@ import java.util.*;
 public class ClientController {
     private final ClientService clientService;
     private final CommonService commonService;
+    private final PdfService pdfService;
 
     // calculate 페이지에서 보험료 확인 버튼을 눌렀을 때 db의 coverage 테이블에서 coverage code, 담보 한글이름, 하루당 보험료, 최소 보험료 정보인 coverageTabList와
     // 담보에 포함되는 세부담보 코드, 세부담보 이름, 세부담보 보장금액 정보인 coverageList를 result라는 변수명에 담아서 반환
@@ -329,14 +345,17 @@ public class ClientController {
 
         if (phone.length() == 11) {
 
-//            Random random = new Random();
-//            int num = random.nextInt(1000000);
-//            String numStr = String.format("%06d",num);
-//            session.setAttribute("checkNum",numStr);
-//            NaverApiService naver = new NaverApiService();
-//            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
-            session.setAttribute("checkNum", "012345");
-            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
+            // 문자 발송
+            Random random = new Random();
+            int num = random.nextInt(1000000);
+            String numStr = String.format("%06d",num);
+            session.setAttribute("checkNum",numStr);
+            NaverApiService naver = new NaverApiService();
+            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
+
+            // 테스트
+//            session.setAttribute("checkNum", "012345");
+//            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
 
 
             session.setMaxInactiveInterval(301);
@@ -422,6 +441,55 @@ public class ClientController {
             result.put("result","error");
             result.put("msg","세션이 만료되었습니다.");
             return result;
+        }
+    }
+
+    @RequestMapping(value = "/applicationPdfKrDownload", method = RequestMethod.GET)
+    public void applicationPdfKrDownload(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        HttpSession session = req.getSession();
+
+        if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
+
+            String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
+            PDDocument document = pdfService.createPdfKr(aplPk);
+            document.save(filePath);
+            document.close();
+            byte[] files = FileUtils.readFileToByteArray(new File(filePath));
+
+            resp.setContentType("application/octet-stream");
+            resp.setContentLength(files.length);
+            resp.setHeader("Content-Disposition","attachment;fileName=\""+ URLEncoder.encode("가입증명서.pdf","UTF-8")+"\"");
+
+            resp.getOutputStream().write(files);
+            resp.getOutputStream().flush();
+            resp.getOutputStream().close();
+
+            // 생성한 PDF 파일 삭제
+            File generatedPdf = new File(filePath);
+            if (generatedPdf.exists()) {
+                generatedPdf.delete();
+            }
+        }
+    }
+
+    @RequestMapping(value = "/applicationPdfKrEmail", method = RequestMethod.GET)
+    public void applicationPdfKr(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        HttpSession session = req.getSession();
+
+        if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
+
+            String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
+            PDDocument document = pdfService.createPdfKr(aplPk);
+            document.save(filePath);
+            document.close();
+
+            pdfService.sendMail(aplPk,"pol0258@naver.com", filePath);
+
+            // 생성한 PDF 파일 삭제
+            File generatedPdf = new File(filePath);
+            if (generatedPdf.exists()) {
+                generatedPdf.delete();
+            }
         }
     }
 }

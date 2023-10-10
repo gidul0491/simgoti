@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.simg.simgoti.mapper.AdminMapper">
+   <select id="selectAdminInsSumDtoList" resultType="com.simg.simgoti.dto.AdminInsSumDto">
+      select
+         a.aplPk, cl.clntNm , a.covCode, cv.covNm, a.clntCnt, p.premium, a.aplCdt, a.aplStateCode, cd.codeNm as aplState, p.payedYN
+      from
+         simgotidb.application a
+      inner join
+         simgotidb.client cl on a.clntPk = cl.clntPk
+      inner join
+         simgotidb.payment p on a.payPk = p.payPk
+      inner join
+         simgotidb.code cd on a.aplStateCode = cd.codePk
+      inner join
+         simgotidb.coverage cv on a.covCode = cv.covCode
+      where
+         a.useYN = #{useYN} and p.useYN = 'Y' and cd.useYN = 'Y'
+      <if test="orderBy != null">
+         order by ${orderBy}
+      </if>
+      <if test="start != null and size != null">
+         limit #{start}, #{size}
+      </if>
+   </select>
+   <select id="selectAdminInsSumDto" resultType="com.simg.simgoti.dto.AdminInsSumDto">
+      select
+         a.aplPk, cl.clntNm , a.covCode, cv.covNm, a.clntCnt, p.premium, a.aplCdt, a.aplStateCode, cd.codeNm as aplState, p.payedYN
+      from
+         simgotidb.application a
+      inner join
+         simgotidb.client cl on a.clntPk = cl.clntPk
+      inner join
+         simgotidb.payment p on a.payPk = p.payPk
+      inner join
+         simgotidb.code cd on a.aplStateCode = cd.codePk
+      inner join
+         simgotidb.coverage cv on a.covCode = cv.covCode
+      where
+         a.aplPk = #{aplPk} and a.useYN = #{useYN} and p.useYN = 'Y' and cd.useYN = 'Y'
+   </select>
+
+   <update id="updateInsPayedYN">
+      update
+         simgotidb.application a
+      inner join
+         simgotidb.payment p on a.payPk = p.payPk
+      set
+         p.payedYN = #{payedYN}, p.payUdt = now(), a.aplStateCode = #{aplStateCode}, a.aplUdt = now()
+      <choose>
+         <when test="payedYN == 'Y'">, p.payedDt = now()</when>
+         <when test="payedYN == 'N'">, p.payedDt = null</when>
+         <otherwise> </otherwise>
+      </choose>
+      where
+         a.aplPK = #{aplPk} and a.useYN = 'Y'
+   </update>
+</mapper>

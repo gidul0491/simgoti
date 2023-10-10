@@ -3,6 +3,7 @@ package com.simg.simgoti.mapper;
 import com.simg.simgoti.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Map;
 
@@ -26,4 +27,5 @@ public interface ClientMapper {
     MyPageClientDto selectClientByAplPk(int aplPk) throws Exception;
     List<MyPageCoverageDetailDto> selectCoverageDetailList(int aplPk) throws Exception;
     int updateClntEmail(int clntPk, String clntEmail) throws Exception;
+
 }

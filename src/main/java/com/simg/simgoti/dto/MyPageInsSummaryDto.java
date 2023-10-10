@@ -10,7 +10,7 @@ public class MyPageInsSummaryDto {
     private String trFromDt;
     private String trToDt;
     private String trPlace;
-    private String aplStateCode;
+    private String aplState;
     private int clntCnt;
     private int premium;
 }
