@@ -37,16 +37,6 @@ function moveToCalculate() {
 // html을 클릭했을 때, 뭐가 나타나고 뭐가 사라지고 그런거
 $("html").on("click", function (e) {
 
-    // .text-option 이외의 요소를 클릭하면 .text-option을 숨김
-    if (!$(e.target).hasClass("text-option")) {
-        $(".text-option").attr("hidden", "hidden");
-    }
-
-    // .text-select를 클릭하면 다음 select요소를 보이게 함
-    if ($(e.target).hasClass("text-select")) {
-        $(e.target).next("select").removeAttr("hidden");
-    }
-
     // .show-popup를 클릭하면 바로뒤의 div.popup 을 보이게 함
     if ($(e.target).hasClass("show-popup")) {
         $(e.target).next("div.popup").removeAttr("hidden");
@@ -63,14 +53,9 @@ $("html").on("click", function (e) {
     }
 });
 
-// input text의 클래스를 text-select, 바로 뒤 요소인 select의 클래스를 text-option이라고 하면
-// select값 변경시 이전 요소인 input text에 text값을 집어넣고 select요소가 사라짐
-$('.text-option').on("click", function () {
-    if ($(this).val() != "input") {
-        $(this).prev("input").val($(this).prev("input").next("select").children("option:selected").text());
-    }
-    $(this).attr("hidden", "hidden");
-});
+// 이메일 관련
+const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
+
 
 // 스크롤 이동하는 함수
 function moveScrollTop(item) {

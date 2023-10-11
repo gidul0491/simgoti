@@ -108,7 +108,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public int selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception {
+    public List<Integer> selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception {
         return clientMapper.selectClientJuminAPhone(clntJuminA, clntPhone);
     }
 

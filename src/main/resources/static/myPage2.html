@@ -40,6 +40,7 @@
     <script>
         let insList = [];
         let clntPk;
+        let email;
 
         $(document).ready(function () {
             let ul = $("#ins-ul");
@@ -172,14 +173,15 @@
                     $("#coverage-detail-alone").empty().append(coverageDetail(summary.covNm, companion[0].covDList));
                 }
 
+                email = rep.clntEmail
                 $("#ins-detail-prem").empty().append(`<span>${putComma(summary.premium)}원</span>`);
                 $("#rep-client-nm").empty().append(`<span>${rep.clntNm}</span>`);
                 $("#rep-client-jumin").empty().append(`<span>${rep.clntBirth}-${rep.clntGen}******</span>`);
                 $("#rep-client-phone").empty().append(`<span>${rep.clntPhone}</span>`);
-                $("#rep-client-email").empty().append(`<span>${rep.clntEmail}</span>`);
+                $("#rep-client-email").empty().append(`<span>${email}</span>`);
 
-                const emailA = rep.clntEmail.split("@")[0];
-                const emailB = rep.clntEmail.split("@")[1];
+                const emailA = email.split("@")[0];
+                const emailB = email.split("@")[1];
 
                 $("#clntEmail-text-a").val(emailA);
                 $("#clntEmail-text-b").val(emailB);
@@ -191,9 +193,8 @@
                 $("#companion-list-popup").removeAttr("hidden");
             });
 
-            // 자세히보기 클릭
-            $("html").on("click", ".detail-btn", function () {
-                let aplPk = $(this).val();
+            // 계약 상세정보를 불러와 화면에 그리는 함수
+            function showInsDetail(aplPk){
                 $.ajax({
                     url: "/api/client/insDetail",
                     method: "GET",
@@ -205,12 +206,32 @@
                             // $("#ins-ul").empty();
                             $("#ins-detail-div").removeAttr("hidden");
                             $("#ins-list-div").attr("hidden", "hidden");
-                            $("#download-pdf-kr").val(aplPk);
+                            $("#email-pdf-kr").val(aplPk);
+                            // 가입증명서 버튼 색상, 텍스트 초기화
+                            const emailPdfBtn = $("#email-pdf-kr-popup-btn");
+                            if(emailPdfBtn.hasClass("main-btn")){
+                                $("#email-pdf-kr-popup-btn").removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서");
+                            }
+                            $("#clntEmail-select").empty();
+                            emailDomain.map((item)=>{
+                                let selected = "";
+                                if(email != null && email.split("@")[1] == item){
+                                    selected = "selected";
+                                    $("#clntEmail-text-b").attr("hidden","hidden");
+                                }
+                                $("#clntEmail-select").append(`<option value='${item}' ${selected}>${item}</option>>`);
+                            });
                         }
                     },
                     error: () => {
                     }
                 });
+            }
+
+            // 자세히보기 클릭
+            $("html").on("click", ".detail-btn", function () {
+                let aplPk = $(this).val();
+                showInsDetail(aplPk);
             });
 
             // 자세히 보기에서 이전 버튼 클릭시
@@ -219,19 +240,18 @@
                 $("#ins-list-div").removeAttr("hidden");
             });
 
-            // 이메일 입력 관련
-            $("#clntEmail-text-b").on("keyup", function () {
-                $("#clntEmail-select").attr("hidden", "hidden");
-            });
-
 
             // 이메일 도메인 선택했을때
-            $("#clntEmail-select").on("change", function () {
+            $("#clntEmail-select").on("input", function () {
+                const selected = $("#clntEmail-select option:selected").val();
+                const emailB = $("#clntEmail-text-b");
                 // 직접입력 선택했을때
-                if ($("#clntEmail-select option:selected").val() == "input") {
-                    $("#clntEmail-text-b").val(null).focus();
-                } else {
-                    clntEmail = $(this).val();
+                if (selected == "직접입력") {
+                    emailB.removeAttr("hidden");
+                    emailB.val(null).focus();
+                }else{
+                    emailB.val(selected);
+                    emailB.attr("hidden","hidden");
                 }
             })
 
@@ -239,7 +259,7 @@
             $("#edit-email").on("click", function () {
                 const emailA = $("#clntEmail-text-a").val();
                 const emailB = $("#clntEmail-text-b").val();
-                let email;
+
                 // emailA, emailB 유효성 검증
                 if (emailA != "" && emailB != "") {
                     email = emailA + "@" + emailB;
@@ -255,6 +275,7 @@
                     success: (data) => {
                         if (data.result == "success") {
                             showPopup("이메일이 변경되었습니다.");
+                            $("#rep-client-email").empty().append(`<span>${email}</span>`);
                         } else if (data.result == "error") {
                             showPopup(data.msg);
                         }
@@ -263,9 +284,14 @@
                     }
                 });
             }
+            // 가입증명서 버튼 관련
+            $("#email-pdf-kr-popup-btn").on("click",function(){
+                $("#popup-email").empty().append(email);
+            });
 
             // 가입증명서 이메일로 받기
-            $("#download-pdf-kr").on("click", function(){
+            $("#email-pdf-kr").on("click", function(){
+                $("#email-pdf-kr-popup-btn").removeClass("main-btn-outlined").addClass("main-btn").text("가입증명서 전송중..");
                 const aplPk = $(this).val();
                 $.ajax({
                     url:"/api/client/applicationPdfKrEmail",
@@ -276,11 +302,14 @@
                     },
                     success:(data)=>{
                         console.log("success");
+                        $("#email-pdf-kr-popup-btn").text("가입증명서 전송 완료");
                     },
-                    error:()=>{}
+                    error:()=>{
+                        $("#email-pdf-kr-popup-btn").text("네트워크 연결이 원활하지 않습니다.");
+                    }
                 });
-                // location.href = `/api/client/applicationPdfKrEmail?aplPk=${aplPk}&clntPk=${clntPk}`;
             });
+
         });
     </script>
 </head>
@@ -353,7 +382,6 @@
                             <div class="popup" hidden style="z-index: 2">
                                 <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup"
                                      id="coverage-detail-alone">
-
                                 </div>
                             </div>
                         </div>
@@ -400,7 +428,7 @@
                                             </div>
 
                                             <div class="w-100">
-                                                <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex justify-content-between align-items-top">
                                                     <div class="w-100 pe-2">
                                                         <input type="text" class="form-control" id="clntEmail-text-a">
                                                     </div>
@@ -411,14 +439,8 @@
                                                         <input type="text" class="form-control text-select"
                                                                id="clntEmail-text-b">
                                                         <select name="clntEmail-select" id="clntEmail-select"
-                                                                class="form-control text-option" hidden size="6"
+                                                                class="form-control text-option"
                                                                 style="z-index: 1">
-                                                            <option value="input">직접입력</option>
-                                                            <option value="naver.com">naver.com</option>
-                                                            <option value="daum.com">daum.net</option>
-                                                            <option value="hanmail.net">hanmail.net</option>
-                                                            <option value="gmail.com">gmail.com</option>
-                                                            <option value="nate.com">nate.com</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -438,7 +460,18 @@
                         </table>
                     </div>
                     <div>
-                        <button type="button" class="btn main-btn-outlined mt-3" id="download-pdf-kr">가입증명서</button>
+                        <button type="button" class="btn main-btn-outlined mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입증명서</button>
+                        <div class="popup" hidden style="z-index: 1">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <h5>가입증명서</h5>
+                                <span>아래의 이메일로 가입 증명서가 전송됩니다.</span>
+                                <span id="popup-email"></span>
+                                <div class="d-flex justify-content-between w-100 mt-3">
+                                    <div class="w-100 pe-2"><button type="button" class="btn main-btn-outlined close-popup">취소</button></div>
+                                    <div class="w-100 ps-2"><button type="button" class="btn main-btn close-popup" id="email-pdf-kr">확인</button></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

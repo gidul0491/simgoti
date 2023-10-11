@@ -266,7 +266,13 @@ public class ClientController {
         List<AccDto> accDtoList = new ArrayList<>();
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime dueDt;
+        if(now.getHour() >= 22){
+            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0).plusDays(1);
+        }
+        else{
+            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0);
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         String dueDtStr = dueDt.format(formatter);
         session.setAttribute("dueDt", dueDtStr);
@@ -346,16 +352,16 @@ public class ClientController {
         if (phone.length() == 11) {
 
             // 문자 발송
-            Random random = new Random();
-            int num = random.nextInt(1000000);
-            String numStr = String.format("%06d",num);
-            session.setAttribute("checkNum",numStr);
-            NaverApiService naver = new NaverApiService();
-            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
+//            Random random = new Random();
+//            int num = random.nextInt(1000000);
+//            String numStr = String.format("%06d",num);
+//            session.setAttribute("checkNum",numStr);
+//            NaverApiService naver = new NaverApiService();
+//            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
 
             // 테스트
-//            session.setAttribute("checkNum", "012345");
-//            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
+            session.setAttribute("checkNum", "000000");
+            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
 
 
             session.setMaxInactiveInterval(301);
@@ -370,16 +376,30 @@ public class ClientController {
     public String checkNumCheck(@RequestParam String checkNum, @RequestParam String clntJuminA, @RequestParam String clntPhone, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         String num = (String) session.getAttribute("checkNum");
-        int clntPk = clientService.selectClientJuminAPhone(clntJuminA, clntPhone);
+        List<Integer> clntPk = clientService.selectClientJuminAPhone(clntJuminA, clntPhone);
 
         if (num != null && num.equals(checkNum)) {
+            // 세션에 저장된 인증번호 제거
             if (session.getAttribute("checkNum") != null) {
                 session.invalidate();
                 session = req.getSession();
             }
-            session.setAttribute("myPageClntPk", clntPk);
-            session.setMaxInactiveInterval(1800);
-            return "success";
+            if(clntPk.size() >=2){
+                session.setAttribute("clntJuminA",clntJuminA);
+                session.setAttribute("clntPhone",clntPhone);
+                return "dataOver1";
+            }
+            else{
+                try{
+                    session.setAttribute("myPageClntPk", clntPk.get(0));
+                    session.setMaxInactiveInterval(1800);
+                }
+                catch (Exception e){
+                    session.setAttribute("myPageClntPk", -1);
+                    session.setMaxInactiveInterval(1800);
+                }
+                return "success";
+            }
         } else if (num == null) {
             return "session timeout";
         } else {

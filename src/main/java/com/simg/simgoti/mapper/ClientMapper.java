@@ -20,7 +20,7 @@ public interface ClientMapper {
     int insertApplyPayment(ApplyPaymentDto dto) throws Exception;
     int insertApplyFinish(ApplyFinishDto dto) throws Exception;
     int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN) throws Exception;
-    int selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception;
+    List<Integer> selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception;
     List<MyPageInsSummaryDto> selectApplySummaryList(int clntPk) throws Exception;
     MyPageInsSummaryDto selectInsSummaryDto(int aplPk) throws Exception;
     List<MyPageCompanionDto> selectCompanionDtoList(int aplPk) throws Exception;

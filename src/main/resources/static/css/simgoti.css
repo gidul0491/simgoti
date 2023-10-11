@@ -125,12 +125,12 @@ select {
     overflow: auto;
 }
 /* 드래그 방지 - 왜안됨 */
-.text-select {
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none
-}
+/*.text-select {*/
+/*    -webkit-user-select:none;*/
+/*    -moz-user-select:none;*/
+/*    -ms-user-select:none;*/
+/*    user-select:none*/
+/*}*/
 input.disabled{
     background: #e9ecef!important;
 }
@@ -168,13 +168,13 @@ optgroup option {
 }
 
 /* 텍스트 셀렉트 세트 */
-.text-select-div {
-    position: relative;
-}
-.text-option {
-    position: absolute;
-    top: 100%;
-}
+/*.text-select-div {*/
+/*    position: relative;*/
+/*}*/
+/*.text-option {*/
+/*    position: absolute;*/
+/*    top: 100%;*/
+/*}*/
 
 /* 약관 */
 .agree-terms {

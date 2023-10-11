@@ -105,25 +105,32 @@
                 checkAllVars();
             });
 
+            // 이메일 select 옵션 넣기
+            emailDomain.map((item)=>{
+                $("#clntEmail-select").append(`<option value='${item}'>${item}</option>`);
+            });
 
-            // 이메일 뒷부분 입력 관련
-            $("#clntEmail-text-b").on("keyup", function(){
-                $("#clntEmail-select").attr("hidden","hidden");
-                clntEmail = $(this).val();
+            // 이메일 직접입력
+            $("#clntEmail-text-b").on("keyup",function(){
+                clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
                 checkAllVars();
             });
 
-
             // 이메일 도메인 선택했을때
-            $("#clntEmail-select").on("change", function(){
+            $("#clntEmail-select").on("input", function () {
+                const selected = $("#clntEmail-select option:selected").val();
+                const emailB = $("#clntEmail-text-b");
                 // 직접입력 선택했을때
-                if($("#clntEmail-select option:selected").val() == "input"){
-                    $("#clntEmail-text-b").val(null).focus();
+                if (selected == "직접입력") {
+                    clntEmail = null;
+                    emailB.removeAttr("hidden");
+                    emailB.val(null).focus();
+                }else{
+                    emailB.val(selected);
+                    emailB.attr("hidden","hidden");
+                    clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
                 }
-                else{
-                    clntEmail = $(this).val();
-                    checkAllVars();
-                }
+                checkAllVars();
             })
 
             // 확인 버튼 클릭
@@ -292,7 +299,7 @@
                         <div><span>이메일</span></div>
                     </div>
                     <div class="w-75">
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-top">
                             <div  class="w-100 pe-2">
                                 <input type="text" class="form-control" id="clntEmail-text-a">
                             </div>
@@ -300,16 +307,11 @@
                             <span>@</span>
 
                             <div class="text-select-div w-100 ms-2">
-                                <input type="text" class="form-control text-select" id="clntEmail-text-b">
+                                <input type="text" class="form-control text-select"
+                                       id="clntEmail-text-b">
                                 <select name="clntEmail-select" id="clntEmail-select"
-                                        class="form-control text-option" hidden size="6"
+                                        class="form-control text-option"
                                         style="z-index: 1">
-                                    <option value="input">직접입력</option>
-                                    <option value="naver.com">naver.com</option>
-                                    <option value="daum.com">daum.net</option>
-                                    <option value="hanmail.net">hanmail.net</option>
-                                    <option value="gmail.com">gmail.com</option>
-                                    <option value="nate.com">nate.com</option>
                                 </select>
                             </div>
                         </div>

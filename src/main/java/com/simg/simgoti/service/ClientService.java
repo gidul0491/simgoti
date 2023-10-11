@@ -16,7 +16,7 @@ public interface ClientService {
     int insertApplyFinish(int payPk, String polNo, int comCode, int insComCode, int clntPk,
                         int trPurpose, String trPlace, String trFromDt, String trToDt, int covCode, int clntCnt, int premium) throws Exception;
     int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN) throws Exception;
-    int selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception;
+    List<Integer> selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception;
     List<MyPageInsSummaryDto> selectInsSummaryDtoList(int clntPk) throws Exception;
     MyPageInsSummaryDto selectInsSummaryDto(int aplPk) throws Exception;
     List<MyPageCompanionDto> selectCompanionDtoList(int aplPk) throws Exception;
