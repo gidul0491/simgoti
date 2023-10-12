@@ -106,7 +106,7 @@
             });
 
             // 이메일 select 옵션 넣기
-            emailDomain.map((item)=>{
+            emailDomain.map(function(item){
                 $("#clntEmail-select").append(`<option value='${item}'>${item}</option>`);
             });
 
@@ -307,10 +307,10 @@
                             <span>@</span>
 
                             <div class="text-select-div w-100 ms-2">
-                                <input type="text" class="form-control text-select"
+                                <input type="text" class="form-control"
                                        id="clntEmail-text-b">
                                 <select name="clntEmail-select" id="clntEmail-select"
-                                        class="form-control text-option"
+                                        class="form-control"
                                         style="z-index: 1">
                                 </select>
                             </div>
