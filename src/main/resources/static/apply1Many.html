@@ -31,6 +31,10 @@
             width: 100%;
             height: 100%;
         }
+
+        .companion-delete {
+            background: rgba(0,0,0,0);
+        }
     </style>
     <script>
         let clntNm;
@@ -71,7 +75,7 @@
 
         // 동반가입자정보 입력란 추가하는 함수
         function addCompanion() {
-            if (companionList.length < 21) {
+            if (clntCnt < 21) {
                 clntCnt += 1;
                 const divToAdd = $("#companion")
                 const appendDiv =
@@ -118,6 +122,9 @@
                     </div>
                 </div>`
                 divToAdd.append(appendDiv);
+                if(clntCnt > 20){
+                    $("#add-companion-btn").attr("hidden","hidden");
+                }
             }
             $("#prem-check-btn").removeAttr("disabled");
             setCompanionNumAndDelBtn();
@@ -130,9 +137,12 @@
                 $(this).find(".companionNum-span").text(num);
                 $(this).find(".companion-delete-div").empty();
                 if (clntCnt - 1 > 1) {
-                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete text-secondary border-0 bg-white' value='${num}'><i class="bi bi-x-circle"></i></button>`)
+                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete text-secondary border-0' value='${num}'><i class="bi bi-x-circle"></i></button>`)
                 }
-                console.log(companionList.length);
+                if(clntCnt <21){
+                    $("#add-companion-btn").removeAttr("hidden");
+                }
+                console.log(clntCnt);
             });
         }
 
