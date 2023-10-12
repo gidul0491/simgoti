@@ -31,35 +31,35 @@
                 $(".timePick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")
             }
 
-            $("#startTime").on("click", function () {
-                $("#startTimePick").removeAttr("hidden");
-            });
+            // $("#startTime").on("click", function () {
+            //     $("#startTimePick").removeAttr("hidden");
+            // });
 
             $("#startTimePick").on("change", function () {
-                $("#startTimePick").attr("hidden", "hidden");
+                // $("#startTimePick").attr("hidden", "hidden");
                 startTime = $(this).val();
-                $("#startTime").val(startTime);
+                // $("#startTime").val(startTime);
             });
 
-            $("#startTimePick").on("blur", function () {
-                $("#startTimePick").attr("hidden", "hidden");
-                $("#startTime").val($(this).val());
-            });
+            // $("#startTimePick").on("blur", function () {
+            //     $("#startTimePick").attr("hidden", "hidden");
+            //     $("#startTime").val($(this).val());
+            // });
 
-            $("#endTime").on("click", function () {
-                $("#endTimePick").removeAttr("hidden");
-            });
+            // $("#endTime").on("click", function () {
+            //     $("#endTimePick").removeAttr("hidden");
+            // });
 
             $("#endTimePick").on("change", function () {
-                $("#endTimePick").attr("hidden", "hidden");
+                // $("#endTimePick").attr("hidden", "hidden");
                 endTime = $(this).val();
-                $("#endTime").val(endTime);
+                // $("#endTime").val(endTime);
             });
 
-            $("#endTimePick").on("blur", function () {
-                $("#endTimePick").attr("hidden", "hidden");
-                $("#endTime").val($(this).val());
-            });
+            // $("#endTimePick").on("blur", function () {
+            //     $("#endTimePick").attr("hidden", "hidden");
+            //     $("#endTime").val($(this).val());
+            // });
 
             $("#next").on("click", function () {
                 if (startTime == null || startDate == null || endDate == null || endTime == null) {
