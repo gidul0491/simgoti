@@ -438,6 +438,8 @@ public class ClientController {
             insDetailDto.setInsSummary(myPageInsSummaryDto);
             insDetailDto.setCompanionList(companionDtoList);
             insDetailDto.setRepClient(repClientDto);
+            System.out.println("clntPk : "+clntPk);
+            System.out.println("repClientDto : "+repClientDto);
             result.put("insDetail",insDetailDto);
 
         } else {

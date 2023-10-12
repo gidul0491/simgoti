@@ -146,7 +146,7 @@
         on
             l.clntPk = c.clntPk
         where
-            l.aplPk = 36 and l.repYN = 'Y' and l.useYN = 'Y' and c.useYN = 'Y';
+            l.aplPk = #{aplPk} and l.repYN = 'Y' and l.useYN = 'Y' and c.useYN = 'Y';
     </select>
 
     <select id="selectCoverageDetailList" resultType="com.simg.simgoti.dto.MyPageCoverageDetailDto">
