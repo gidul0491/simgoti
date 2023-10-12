@@ -53,8 +53,8 @@ $("html").on("click", function (e) {
     }
 });
 
-// 이메일 관련
-const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
+// // 이메일 관련
+// const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
 
 
 // 스크롤 이동하는 함수
