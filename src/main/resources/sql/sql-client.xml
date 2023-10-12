@@ -157,7 +157,7 @@
         on
             a.covCode = d.covCode
         where
-            a.aplPk = 36 and a.useYN = 'Y' and d.useYN = 'Y'
+            a.aplPk = #{aplPk} and a.useYN = 'Y' and d.useYN = 'Y'
         order by
             d.covDCode asc;
     </select>
