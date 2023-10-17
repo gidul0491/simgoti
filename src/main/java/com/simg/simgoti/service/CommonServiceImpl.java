@@ -8,28 +8,47 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CommonServiceImpl implements CommonService {
     private final CommonMapper commonMapper;
+    private final HanaPremium hanaPremium;
 
     public String selectPolNoByCovCode(int covCode) throws Exception {
         return commonMapper.selectPolNoByCovCode(covCode);
     }
 
-    // 생년월일 8자리를 보험나이로 변환, 유효성검사도 가능
+    // 생년월일 8자리를 보험나이로 변환, 유효성검사도 가능  + 6자리를 입력했을때도 변환가능하게 기능추가
     public int calculateInsAge(String birth) throws Exception{
 
-        int year = Integer.parseInt(birth.substring(0,4));
-        int mth = Integer.parseInt(birth.substring(4,6));
-        int dt = Integer.parseInt(birth.substring(6,8));
+        int year=1997;
+        int mth=12;
+        int dt=5;
+        LocalDate now = LocalDate.now();
+        if(birth.length() == 8){
+            year = Integer.parseInt(birth.substring(0,4));
+            mth = Integer.parseInt(birth.substring(4,6));
+            dt = Integer.parseInt(birth.substring(6,8));
+        }
+        else if(birth.length()==6){
+            int yr = Integer.parseInt(birth.substring(0,2));
+            int nowYr = now.getYear() % 100;
+            int nowCentury = now.getYear() - nowYr;
+            if(yr > nowYr){
+                year = nowCentury + yr;
+            }
+            else{
+                year = nowCentury -100 + yr;
+            }
+            mth = Integer.parseInt(birth.substring(2,4));
+            dt = Integer.parseInt(birth.substring(4,6));
+        }
 
         LocalDate birthday = LocalDate.of(year, mth, dt);
 
-        // 보험나이는 오늘을 6개월 이후의 하루 전날로 계산한 만나이와 동일함
-        LocalDate now = LocalDate.now();
+        // 보험나이는 오늘을 6개월 이후의 하루 전날로 계산한 만나이와 동일함(또는 생년월일에 -6개월을 한 뒤 구한 만나이)
+
         now = now.plusMonths(6);
 
         int insAge = now.getYear() - birthday.getYear();
@@ -82,22 +101,6 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public int calculatePremium(String code, int perDay, int min, int day) {
-        int result = min;
-        // cheapest 코드는 실속형 코드로 계산법이 다름;
-        String cheapest = "10120101";
-        if (code.equals(cheapest) && day >= 3) {
-            result += (day - 2) * perDay;
-        } else if (!code.equals(cheapest) && day == 3) {
-            result += 1 * perDay;
-        } else if (!code.equals(cheapest) && day >= 4) {
-            result += (day - 1) * perDay;
-        }
-        result = (int) (Math.floor(result / 10) * 10);
-        return result;
-    }
-
-    @Override
     public int getPeriod(String startDt, String endDt) {
         int result = 1;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -110,5 +113,10 @@ public class CommonServiceImpl implements CommonService {
         long seconds = duration.getSeconds();
         result = (int) Math.ceil( (double) seconds / ((24 * 60 * 60)) );
         return result;
+    }
+
+    @Override
+    public char getGen(String clntJuminB){
+        return 'M';
     }
 }

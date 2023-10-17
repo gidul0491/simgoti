@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface AdminService {
     List<AdminInsSumDto> selectAdminInsSumDtoList(Character useYN, Pageable pageable) throws Exception;
-    AdminInsSumDto selectAdminInsSumDto(int aplPk, Character useYN) throws Exception;
+    AdminInsSumDto selectAdminInsSumDto(int aplPk) throws Exception;
     int updateInsPayedYN(int aplPk, Character payedYN) throws Exception;
+    int updateInsStateCode(int aplPk, int aplStateCode) throws Exception;
 }

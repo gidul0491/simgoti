@@ -141,11 +141,11 @@
 
             function setInsDetail(summary, companion, rep) {
                 $("#ins-detail-state").empty().append(`<span>${summary.aplState}</span>`);
-                $("#ins-detail-trPlace").empty().append(`<span>${summary.trPlace}</span>`);
+                $("#ins-detail-trPlace").empty().append(`<span>여행국가 ${summary.trPlace}</span>`);
                 $("#ins-detail-fromDt").empty().text(`${summary.trFromDt} 부터`);
                 $("#ins-detail-toDt").empty().text(`${summary.trToDt} 까지 `);
                 $("#ins-detail-period").empty().text(`(${summary.period}일)`);
-                $("#clntCnt").empty().append(`<span>${summary.clntCnt}명</span>`);
+                $("#clntCnt").empty().append(`<span>가입인원 ${summary.clntCnt}명</span>`);
                 $("#companion-table").empty().append(`
                 <colgroup>
                     <col style="width: 10%">
@@ -174,7 +174,7 @@
                 }
 
                 email = rep.clntEmail
-                $("#ins-detail-prem").empty().append(`<span>${putComma(summary.premium)}원</span>`);
+                $("#ins-detail-prem").empty().append(`<span>보험료 ${putComma(summary.premium)}원</span>`);
                 $("#rep-client-nm").empty().append(`<span>${rep.clntNm}</span>`);
                 $("#rep-client-jumin").empty().append(`<span>${rep.clntBirth}-${rep.clntGen}******</span>`);
                 $("#rep-client-phone").empty().append(`<span>${rep.clntPhone}</span>`);
@@ -186,6 +186,22 @@
                 $("#clntEmail-text-a").val(emailA);
                 $("#clntEmail-text-b").val(emailB);
 
+                // 계약 상태가 만기해지가 아닐때 계약취소버튼 추가
+                $("#application-cancel-div").empty();
+                if(summary.aplstateCode != 405){
+                    $("#application-cancel-div").append(`
+                        <button type="button" class="btn main-btn-outlined-red mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입취소</button>
+                        <div class="popup" hidden style="z-index: 1">
+                            <div class="popup-content d-flex justify-content-center align-items-center">
+                                <span class="my-3">보험 가입을 취소하시겠습니까?</span>
+                                <div class="d-flex justify-content-between w-100 mt-3">
+                                    <div class="w-100 pe-2"><button type="button" class="btn main-btn-outlined close-popup">아니오</button></div>
+                                    <div class="w-100 ps-2"><button type="button" class="btn main-btn close-popup" id="application-cancel" value="${summary.aplPk}">예</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
             }
 
             $("html").on("click", ".coverage-detail-close", function () {
@@ -209,8 +225,9 @@
                             $("#email-pdf-kr").val(aplPk);
                             // 가입증명서 버튼 색상, 텍스트 초기화
                             const emailPdfBtn = $("#email-pdf-kr-popup-btn");
+                            emailPdfBtn.val(aplPk);
                             if(emailPdfBtn.hasClass("main-btn")){
-                                $("#email-pdf-kr-popup-btn").removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서");
+                                emailPdfBtn.removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서");
                             }
                             $("#clntEmail-select").empty();
                             emailDomain.map((item)=>{
@@ -293,14 +310,16 @@
 
             // 가입증명서 이메일로 받기
             $("#email-pdf-kr").on("click", function(){
-                $("#email-pdf-kr-popup-btn").removeClass("main-btn-outlined").addClass("main-btn").text("가입증명서 전송중..");
                 const aplPk = $(this).val();
+                $("#email-pdf-kr-popup-btn").removeClass("main-btn-outlined").addClass("main-btn").text("가입증명서 전송중..");
+
                 $.ajax({
                     url:"/api/client/applicationPdfKrEmail",
                     method:"GET",
                     data:{
                         aplPk:aplPk,
                         clntPk:clntPk,
+                        clntEmail:email,
                     },
                     success:(data)=>{
                         console.log("success");
@@ -312,6 +331,134 @@
                 });
             });
 
+            // 가입취소 예 클릭시
+            $("html").on("click","#application-cancel",function(){
+                const aplPk = $(this).val();
+                $.ajax({
+                    url:"/api/client/applicationCancel",
+                    method:"PUT",
+                    data:{
+                        clntPk:clntPk,
+                        aplPk:aplPk,
+                    },
+                    success:(data)=>{
+                        console.log(data);
+                        if(data.result == "error"){
+                            showPopup(data.msg);
+                        }
+                        else if(data.result=="success"){
+                            console.log(data.msg);
+                            if(data.msg == "deleted"){
+
+                                showPopup("가입이 취소되었습니다.","warn-popup-apply-cancel-btn");
+                                $("html").on("click","#warn-popup-apply-cancel-btn",function(){
+                                    location.reload();
+                                });
+
+                            }
+                            else if(data.msg == "account required"){
+                                showAccInputPopup(data.aplPk);
+                            }
+                        }
+                    },
+                    error:(err)=>{}
+                });
+            });
+
+            function showAccInputPopup(aplPk){
+                const bankList = ["신한은행","하나은행","직접입력"];
+                $("#application-cancel-div").append(`
+                    <div class="popup popup-unhidden" style="z-index: 1">
+                        <div class="popup-content d-flex justify-content-center align-items-center">
+                            <span class="my-3">환불받을 계좌정보를 입력해주세요.</span>
+                            <div class="w-100">
+                            <!-- 은행 -->
+                            <div class="d-flex justify-content-between align-items-top w-100">
+                                <div class="w-25 pt-2">
+                                    <span>은행</span>
+                                </div>
+                                <div class="w-75">
+                                    <input type="text" class="form-control" id="acc-bank-text" hidden>
+                                    <select name="clntEmail-select" id="acc-bank-select"
+                                            class="form-control"
+                                            style="z-index: 1">
+                                            <option hidden selected>선택</option>
+                                            ${bankList.map(function(item){return "<option value='"+item+"'>"+item+"</option>"})}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 계좌번호 -->
+                            <div class="d-flex justify-content-between align-items-top w-100">
+                                <div class="w-25 pt-2">
+                                    <span>계좌번호</span>
+                                </div>
+                                <div class="w-75">
+                                    <input type="text" class="form-control" id="acc-number-text">
+                                </div>
+                            </div>
+
+                            <!-- 예금주 -->
+                            <div class="d-flex justify-content-between align-items-top w-100">
+                                <div class="w-25 pt-2">
+                                    <span>예금주</span>
+                                </div>
+                                <div class="w-75">
+                                    <input type="text" class="form-control" id="acc-name-text">
+                                </div>
+                            </div>
+
+                            </div>
+                            <div class="d-flex justify-content-between w-100 mt-3">
+                                <div class="w-100 pe-2"><button type="button" class="btn main-btn-outlined close-popup">취소</button></div>
+                                <div class="w-100 ps-2"><button type="button" class="btn main-btn close-popup" id="application-cancel-account" value="${aplPk}">완료</button></div>
+                            </div>
+                        </div>
+                    </div>`)
+            }
+            // 환불 은행 선택
+            $("html").on("input","#acc-bank-select",function(){
+                const val = $("#acc-bank-select option:selected").val();
+                if(val=="직접입력"){
+                    $("#acc-bank-text").removeAttr("hidden");
+                }
+                else{
+                    $("#acc-bank-text").attr("hidden","hidden").val(val);
+                }
+            });
+            // 환불정보 입력후 완료 클릭
+            $("html").on("click","#application-cancel-account", function(){
+                const aplPk = $(this).val();
+                const refnBank = $("#acc-bank-select").val();
+                const refnAccount = $("#acc-number-text").val();
+                const refnName = $("#acc-name-text").val();
+                $.ajax({
+                    url:"/api/client/applicationCancel/account",
+                    method:"PUT",
+                    data:{
+                        clntPk:clntPk,
+                        aplPk:aplPk,
+                        refnBank:refnBank,
+                        refnAccount:refnAccount,
+                        refnName:refnName,
+                    },
+                    success:(data)=>{
+                        if(data.result == "error"){
+                            showPopup(data.msg);
+                        }
+                        else if(data.result=="success"){
+                            if(data.msg == 405){
+                                showPopup("여행 기간이 지나 만기해지된 보험입니다.");
+                            }
+                            showPopup("취소신청 되었습니다. 입력해주신 계좌로 보험료가 환급됩니다.","warn-popup-apply-cancel-btn");
+                            $("html").on("click","#warn-popup-apply-cancel-btn",function(){
+                                location.reload();
+                            });
+                        }
+                    },
+                    error:()=>{}
+                });
+            });
         });
     </script>
 </head>
@@ -333,7 +480,7 @@
             <div id="ins-detail-div" class="">
                 <div class="d-flex flex-column text-start" hidden>
                     <div>
-                        <button type="button" class="btn border-0 text-secondary p-0" id="prev">이전</button>
+                        <button type="button" class="btn border-0 text-secondary p-0 mb-2" id="prev"><i class="bi bi-caret-left-fill"></i> 이전</button>
                     </div>
                     <div id="ins-detail-state"></div>
                     <div id="ins-detail-trPlace"></div>
@@ -461,7 +608,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div>
+                    <div id="email-pdf-kr-div">
                         <button type="button" class="btn main-btn-outlined mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입증명서</button>
                         <div class="popup" hidden style="z-index: 1">
                             <div class="popup-content d-flex justify-content-center align-items-center">
@@ -475,6 +622,7 @@
                             </div>
                         </div>
                     </div>
+                    <div id="application-cancel-div"></div>
                 </div>
             </div>
         </div>

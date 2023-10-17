@@ -15,9 +15,10 @@ function hideHiddenAlert() {
     alert.attr("hidden","hidden");
 }
 // 경고팝업 띄워주는 함수
-function showPopup(msg){
+function showPopup(msg, btnId){
     $("#warn-popup").removeAttr("hidden");
     $("#warn-popup-content").text(msg);
+    $("#warn-popup .popup-ok-btn").attr("id",btnId);
 }
 
 
@@ -44,7 +45,9 @@ $("html").on("click", function (e) {
 
     // .popup을 클릭하면 .popup을 숨김
     if ($(e.target).hasClass("popup")) {
-        $(".popup").attr("hidden", "hidden");
+        if(!$(e.target).hasClass("popup-unhidden")){
+            $(".popup").attr("hidden", "hidden");
+        }
     }
 
     // .close-popup을 클릭하면 .popup을 숨김
@@ -252,4 +255,19 @@ function validate6birth(dateInput) {
 
 function validateKrNm() {
 
+}
+
+function removeServerSession(){
+    $.ajax({
+        url: "/api/client/allSession",
+        type: "DELETE",
+        data: {},
+        success: (data) => {
+            sessionStorage.clear();
+            return true;
+        },
+        error: (err) => {
+            return false;
+        }
+    });
 }

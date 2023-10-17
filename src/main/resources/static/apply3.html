@@ -61,7 +61,7 @@
                     endDt = data.appSummaryDto.endDt;
                     trPlace = data.appSummaryDto.trPlace;
                     cnt = data.appSummaryDto.cnt;
-                    totalPrem = data.appSummaryDto.totalPrem;
+                    totalPrem = putComma(data.appSummaryDto.totalPrem);
 
                     $("#period").append(`<span>${period}일</span><br>`);
                     $("#trFromDt").append(`<span>${startDt} 부터</span><br>`);
@@ -113,19 +113,11 @@
                 $("#select-payment").removeAttr("hidden");
             });
 
-            // 아니요 클릭했을 때
+            // 위 내용이~ 아니요 클릭했을 때 세션삭제
             $("#no").on("click", function () {
-                $.ajax({
-                    url: "/api/client/allSession",
-                    type: "DELETE",
-                    data: {},
-                    success: (data) => {
-                        sessionStorage.clear();
-                        moveToCalculate();
-                    },
-                    error: (err) => {
-                    }
-                });
+                if(removeServerSession()){
+                    moveToCalculate();
+                }
             });
 
             // 입금방법 선택했을때(무통장입금밖에없음)
@@ -159,29 +151,39 @@
 
             // select에서 은행 선택하면 실행됨
             $(document).on("input", "#accBank-select", function (e) {
+                const i = $("#accBank-select").val();
+                const accBank = accData[i].accBank;
+                const accNum = accData[i].accNum;
+                const accNm = accData[i].accNm;
                 // 서버랑 통신해서 db에 결제정보, 가입신청정보 저장
                 $.ajax({
                     url: "/api/client/applyFinish",
                     type: "POST",
-                    data: {},
+                    data: {
+                        accBank:accBank,
+                        accNum:accNum,
+                        accNm:accNm,
+                    },
                     success: (data) => {
                         if (data == "session expired") {
                             // alertAndMove("세션이 만료되었습니다. 간편 페이지로 이동합니다.","/simg/simgOti/calculate");
                         } else if (data == "ok") {
                             console.log("가입 성공");
 
-                            const i = $("#accBank-select").val();
+
                             $("#accDueDt").empty().append(`<span>입금기한: ${accData[i].accDueDt}</span>`)
-                            $("#totalPrem2").empty().append(`<span>${totalPrem} 원</span>`);
-                            $("#accBank").empty().append(`<span>${accData[i].accBank}</span>`);
-                            $("#accNum").empty().append(`<span>${accData[i].accNum}</span>`);
-                            $("#accNm").empty().append(`<span>(예금주: ${accData[i].accNm})</span>`);
+                            $("#totalPrem2").empty().append(`<span>${putComma(totalPrem)} 원</span>`);
+                            $("#accBank").empty().append(`<span>${accBank}</span>`);
+                            $("#accNum").empty().append(`<span>${accNum}</span>`);
+                            $("#accNm").empty().append(`<span>(예금주: ${accNm})</span>`);
                             $("#account-div").remove();
                             $("#account-info-div").removeAttr("hidden");
 
+                            removeServerSession();
                         } else {
                             console.log(data);
                         }
+
                     },
                     error: (err) => {
 
@@ -201,13 +203,13 @@
         <div id="content">
 
             <!-- 요약 -->
-            <div class="mb-3">
+            <div class="mb-3 text-start">
                 <!-- 가입신청정보요약 -->
                 <div id="apply-summary">
                     <table class="w-100">
                         <colgroup>
-                            <col style="width: 20%">
-                            <col style="width: 80%">
+                            <col style="width: 40%">
+                            <col style="width: 60%">
                         </colgroup>
                         <tr>
                             <td>보험기간</td>
@@ -227,7 +229,7 @@
                         </tr>
                         <tr>
                             <td>가입인원</td>
-                            <td class="d-flex justify-content-center align-self-center">
+                            <td class="d-flex">
                                 <div id="applicant-count"></div>
                                 <div id="companion-list-btn-div" class="text-start ms-2" hidden>
                                     <button type="button" class="btn main-btn-outlined show-popup p-0" id="companion-list-btn">가입자명단</button>
@@ -267,13 +269,13 @@
                         </tr>
                     </table>
                 </div>
-
+                <hr>
                 <!-- (대표)가입자 -->
                 <div id="representative-client-div">
                     <table class="w-100">
                         <colgroup>
-                            <col style="width: 20%">
-                            <col style="width: 80%">
+                            <col style="width: 40%">
+                            <col style="width: 60%">
                         </colgroup>
                         <tr>
                             <td>대표가입자</td>
@@ -295,9 +297,12 @@
                 </div>
             </div>
 
+            <br>
+
             <div id="totalPrem" class="mb-3">
             </div>
 
+            <hr>
 
             <!-- 신청 버튼 -->
             <div class="d-flex flex-column" id="yes-or-no">
@@ -360,10 +365,10 @@
                 </div>
             </div>
 
-            <!-- 은행계좌번호 등 표시 -->
+            <!-- 입급확인 -->
             <div id="account-info-div" hidden="hidden">
                 <span id="accDueDt"></span><br>
-                <span>해당 시간까지 입금이 확인되지 않으면 가입 신청이 자동으로 취소됩니다.</span>
+                <span>위 기한까지 입금이 확인되지 않으면 가입 신청이 자동으로 취소됩니다.</span>
                 <table class="w-100">
                     <colgroup>
                         <col style="width: 40%">

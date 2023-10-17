@@ -28,6 +28,9 @@
         let clntPhone;
         let clntEmail;
         let read = [false, false, false, false, false];
+        let covCode = sessionStorage.getItem("covCode") || null;
+        let startDt = `${sessionStorage.getItem("startDate")} ${sessionStorage.getItem("startTime")}` || null;
+        let endDt = `${sessionStorage.getItem("endDate")} ${sessionStorage.getItem("endTime")}` || null;
 
         let check0bool = false;
 
@@ -41,6 +44,7 @@
         }
 
         function isVarsAllNotNull(){
+            inputAll();
             if(
                 (clntNm != "" && clntNm != null)&&
                 (clntJuminA != "" && clntJuminA != null)&&
@@ -61,6 +65,7 @@
         $(document).ready(function(){
 
             function checkAllVars(){
+
                 if(isVarsAllNotNull()){
                     $("#apply-btn").removeAttr("disabled");
                 }
@@ -152,7 +157,10 @@
                             clntJuminB:clntJuminB,
                             clntPhone:clntPhone,
                             clntEmail:clntEmail,
-                            clntCnt:1
+                            clntCnt:1,
+                            covCode:covCode,
+                            startDt:startDt,
+                            endDt:endDt,
                         },
                         success: (data) => {
                             location.href = "/simg/simgOti/applyPurpose";

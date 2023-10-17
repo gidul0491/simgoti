@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
     <script src="/js/bootstrap.bundle.js"></script>
     <script src="/js/jquery-3.7.0.js"></script>
+    <script src="/js/commonjs.js"></script>
 
     <style>
         body {
@@ -81,7 +82,7 @@
                 }
             });
 
-            getList('Y', 1, 5, "aplPk desc");
+            getList('Y', 1, 30, "aplPk desc");
 
             // 계약 요약정보 리스트를 불러오는 함수
             function getList(useYN, page, size, orderBy) {
@@ -98,7 +99,7 @@
                         console.log(data);
                         data.map((val, i) => {
                             addAppRow(val.aplPk);
-                            addAppData(val.aplPk, val.clntNm, val.covCode, val.clntCnt, val.premium, val.aplCdt, val.payedYN, val.aplStateCode, val.covNm);
+                            addAppData(val);
                         });
                     },
                     error: () => {
@@ -117,7 +118,19 @@
             }
 
             // 계약 요약정보를 담은 td태그를 tr태그에 추가하는 함수
-            function addAppData(aplPk, repClntNm, covCode, clntCnt, premium, aplCdt, payedYN, aplStateCode, covNm) {
+            function addAppData(data) {
+                const aplPk = data.aplPk;
+                const repClntNm = data.clntNm;
+                const trPlace = data.trPlace;
+                const covCode = data.covCode;
+                const clntCnt = data.clntCnt;
+                const premium = data.premium;
+                const aplCdt = data.aplCdt;
+                const payedYN = data.payedYN;
+                const aplStateCode = data.aplStateCode;
+                const covNm = data.covNm;
+                const useYN = data.useYN;
+
                 // const tbody = $("#application-tbody");
                 let tr = $(`tr#${aplPk}`);
 
@@ -134,7 +147,7 @@
                 `;
 
                 const aplStateSelect = `
-<select id="state-${aplPk}">
+<select class="state-select" id="state-${aplPk}">
     <option value="${aplPk}-401" ${selected(401)}>가입신청</option>
     <option value="${aplPk}-402" ${selected(402)}>가입완료</option>
     <option value="${aplPk}-403" ${selected(403)}>가입취소신청</option>
@@ -148,13 +161,15 @@
                 tr.empty().append(`
     <td class="clickable-td">${aplPk}</td>
     <td class="clickable-td">${repClntNm}</td>
+    <td class="clickable-td">${trPlace}</td>
     <td class="clickable-td">${covNm}</td>
     <td class="clickable-td">${clntCnt}</td>
-    <td class="clickable-td">${premium}</td>
+    <td class="clickable-td">${putComma(premium)}</td>
     <td class="clickable-td">${aplCdt}</td>
 
     <td class="clickable-td">${payedYnBtn}</td>
     <td class="clickable-td">${aplStateSelect}</td>
+    <td class="clickable-td">${useYN}</td>
                 `)
             }
 
@@ -166,19 +181,40 @@
                     data: {
                         aplPk: aplPk,
                         payedYN: payedYN,
-                        useYN: "Y",
                     },
                     success: (data) => {
                         console.log(data);
-                        const val = data;
-
-                        addAppData(val.aplPk, val.clntNm, val.covCode, val.clntCnt, val.premium, val.aplCdt, val.payedYN, val.aplStateCode, val.covNm);
+                        addAppData(data);
                     },
                     error: (err) => {
                         console.log(err);
                     }
                 });
             }
+
+            function setStateCode(aplPk, stateCode){
+                $.ajax({
+                    url:"/api/admin/stateCode",
+                    method:"PUT",
+                    data:{
+                        aplPk: aplPk,
+                        aplStateCode: stateCode
+                    },
+                    success:(data) => {
+                        console.log(data);
+                        addAppData(data);
+                    },
+                    error: (err)=>{
+                        console.log(err);
+                    }
+                });
+            }
+
+            $("html").on("input",".state-select",function(){
+                const aplPk = $(this).val().split("-")[0];
+                const stateCode = $(this).val().split("-")[1];
+                setStateCode(aplPk, stateCode);
+            });
         });
     </script>
 </head>
@@ -188,17 +224,19 @@
 </div>
 <div class="container-sm">
     <div class="application-table-div">
-        <table class="table table-hover">
+        <table class="table table-hover text-center">
             <thead>
             <tr>
                 <th>계약번호</th>
                 <th>대표고객명</th>
+                <th>여행지</th>
                 <th>담보종류</th>
                 <th>인원수</th>
                 <th>보험료</th>
                 <th>신청일시</th>
                 <th>결제여부</th>
                 <th>계약상태</th>
+                <th>데이터 사용여부</th>
             </tr>
             </thead>
             <tbody id="application-tbody">

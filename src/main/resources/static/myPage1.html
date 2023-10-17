@@ -70,11 +70,42 @@
                             else if(data == "fail"){
                                 alert("인증번호를 정확히 입력해주세요.");
                             }
+                            else if(data == "dataOver1") {
+                                dataOver1();
+                            }
+                            else if(data == "bad network"){
+                                alert("네트워크 통신이 원활하지 않습니다.");
+                            }
                         },
-                        error:(e)=>{}
+                        error:(e)=>{alert("네트워크 통신이 원활하지 않습니다.");}
                     });
                 }
             });
+            function dataOver1(){
+                const name = prompt("입력한 생년월일과 전화번호로 가입한 고객이 2명 이상입니다. 가입시 사용했던 이름을 입력해 주세요.");
+                $.ajax({
+                    url:"/api/client/checkNumCheck/dataOver1",
+                    method:"POST",
+                    data:{name:name, checkNum:checkNum},
+                    success:(data)=>{
+                        console.log(data);
+                        if(data == "success"){
+                            // location.href = "/simg/simgOti/myPage";
+                            location.replace("/simg/simgOti/myPage");
+                        }
+                        else if (data == "session timeout"){
+                            alert("세션이 만료되었습니다.");
+                        }
+                        else if(data == "fail"){
+                            alert("인증번호를 정확히 입력해 주세요.");
+                        }
+                        else if(data == "bad network"){
+                            alert("네트워크 통신이 원활하지 않습니다.");
+                        }
+                    },
+                    error:()=>{ alert("네트워크 통신이 원활하지 않습니다");}
+                });
+            };
         });
     </script>
 

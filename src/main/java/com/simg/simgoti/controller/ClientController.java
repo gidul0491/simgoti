@@ -1,10 +1,7 @@
 package com.simg.simgoti.controller;
 
 import com.simg.simgoti.dto.*;
-import com.simg.simgoti.service.ClientService;
-import com.simg.simgoti.service.CommonService;
-import com.simg.simgoti.service.NaverApiService;
-import com.simg.simgoti.service.PdfService;
+import com.simg.simgoti.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -15,23 +12,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriUtils;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.nio.charset.MalformedInputException;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -40,12 +27,13 @@ import java.util.*;
 public class ClientController {
     private final ClientService clientService;
     private final CommonService commonService;
-    private final PdfService pdfService;
+    private final MessageService messageService;
+    private final HanaPremium hanaPremium;
 
     // calculate 페이지에서 보험료 확인 버튼을 눌렀을 때 db의 coverage 테이블에서 coverage code, 담보 한글이름, 하루당 보험료, 최소 보험료 정보인 coverageTabList와
     // 담보에 포함되는 세부담보 코드, 세부담보 이름, 세부담보 보장금액 정보인 coverageList를 result라는 변수명에 담아서 반환
     @RequestMapping(value = "/coverageList", method = RequestMethod.GET)
-    public Object selectCoverageList(@RequestParam String startDt, @RequestParam String endDt, @RequestParam String clntBirth) throws Exception {
+    public Object selectCoverageList(@RequestParam String startDt, @RequestParam String endDt, @RequestParam String clntBirth, @RequestParam char clntGen) throws Exception {
         Map<String, Object> resp = new HashMap<>();
         int insAge;
         try {
@@ -70,7 +58,7 @@ public class ClientController {
             int travelDay = commonService.getPeriod(startDt, endDt);
             Map<String, List> data = new HashMap<>();
             data.put("coverageList", clientService.selectCoverageList());
-            data.put("coverageTabList", clientService.selectCoverageTypeList(travelDay));
+            data.put("coverageTabList", clientService.selectCoverageTypeList(insAge, clntGen, travelDay));
 
             resp.put("data", data);
             resp.put("result", "success");
@@ -81,7 +69,7 @@ public class ClientController {
     // apply1Alone 페이지에서 확인 버튼을 누르면 실행
     // 입력한 정보를 세션에 추가, 입력한 정보를 이용하여 db에 저장 혹은 업데이트(이메일/전화번호), db에서 사용하는 pk값을 세션에 추가
     @RequestMapping(value = "/cliInfo", method = RequestMethod.POST)
-    public Object addAppSession(@RequestParam String clntNm, @RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception {
+    public Object addAppSession(@RequestParam String covCode,@RequestParam String startDt, @RequestParam String endDt, @RequestParam String clntNm, @RequestParam String clntJuminA, @RequestParam String clntJuminB, @RequestParam String clntPhone, @RequestParam String clntEmail, @RequestParam int clntCnt, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         session.setAttribute("clntNm", clntNm);
         session.setAttribute("clntJuminA", clntJuminA);
@@ -98,8 +86,13 @@ public class ClientController {
         int clntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntGen, clntJumin, clntPhone, clntEmail);
         session.setAttribute("clntPk", clntPk);
 
-        if (clntCnt > 1) {
-        }
+        // 동승자리스트로 세션에 저장(마지막 총보험료계산을위함)
+        List<CompanionDto> list = new ArrayList<>();
+        int repPrem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), commonService.getPeriod(startDt, endDt));
+        CompanionDto rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, clntPk);
+        list.add(rep);
+        session.setAttribute("companion",list);
+
         return "ok";
     }
 
@@ -122,7 +115,8 @@ public class ClientController {
         String repClntJumin = clntJuminA + clntJuminB;
 
         int period = commonService.getPeriod(startDt, endDt);
-        int repPrem = clientService.getPremium(covCode, period, 1); // 대표가입자의 보험료
+//        int repPrem = clientService.getPremium(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), period, 1); // 대표가입자의 보험료
+        int repPrem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), period);
 
         // 대표가입자 처리
         CompanionDto rep = new CompanionDto();
@@ -148,13 +142,14 @@ public class ClientController {
         // 동반가입자 처리
         for (int i = 0; i < jsonArray.size(); i++) {
             JSONObject item = (JSONObject) jsonArray.get(i);
-            System.out.println("동반가입자 "+ item);
+
             String num = item.get("companionNum").toString();
             String nm = item.get("companionNm").toString();
             String juminA = item.get("companionJuminA").toString();
             String juminB = item.get("companionJuminB").toString();
 
-            int prem = clientService.getPremium(covCode, period, 1); // 동반가입자의 보험료
+//            int prem = clientService.getPremium(covCode, commonService.calculateInsAge(juminA),commonService.getGen(juminB), period, 1); // 동반가입자의 보험료
+            int prem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(juminA),commonService.getGen(juminB), period);
 
             String gen = juminB.substring(0, 1);
             String jumin = juminA + juminB;
@@ -170,6 +165,7 @@ public class ClientController {
             }
             ;
             list.add(dto);
+            System.out.println("동반가입자 "+ dto);
         }
 
         if (calOrApl.equals("apl")) {
@@ -191,7 +187,7 @@ public class ClientController {
         session.setAttribute("covCode", covCode);
         session.setAttribute("trPlace", trPlace);
         session.setMaxInactiveInterval(1800);
-        System.out.printf("이름 %s 주민앞자리 %s 주민뒷자리 %s 폰 %s 이메일 %s 담보 %s 여행자수 %s 여행장소 %s 여행목적 %s 여행출발 %s 여행종료 %s \n",
+        System.out.printf("보험가입 정보 요약 : 이름 %s 주민앞자리 %s 주민뒷자리 %s 폰 %s 이메일 %s 담보 %s 여행자수 %s 여행장소 %s 여행목적 %s 여행출발 %s 여행종료 %s \n",
                 session.getAttribute("clntNm"),
                 session.getAttribute("clntJuminA"),
                 session.getAttribute("clntJuminB"),
@@ -219,7 +215,12 @@ public class ClientController {
 
             // 총 보험료
             // 세션에서 동승자 리스트를 불러와 for문으로 모든 동승자 보험료의 합을 대입하는 로직으로 변경가능
-            int totalPrem = clientService.getPremium(session.getAttribute("covCode").toString(), period, clntCnt);
+//            int totalPrem = clientService.getPremium(session.getAttribute("covCode").toString(), commonService.calculateInsAge(session.getAttribute("clntJuminA").toString()),commonService.getGen("clntJuminB"), period, clntCnt);
+            int totalPrem = 0;
+            List<CompanionDto> list = (ArrayList<CompanionDto>) session.getAttribute("companion");
+            for(CompanionDto item : list){
+                totalPrem += item.getPrem();
+            }
             session.setAttribute("totalPrem", totalPrem);
 
             session.setMaxInactiveInterval(1800);
@@ -247,7 +248,7 @@ public class ClientController {
             // 결제페이지에 표시될 대표가입자정보를 dto에 추가
             ClientDto repClientDto = new ClientDto();
             repClientDto.setClntNm(session.getAttribute("clntNm").toString());
-            String resi = session.getAttribute("clntJuminA") + session.getAttribute("clntJuminB").toString().substring(0, 1) + "******";
+            String resi = session.getAttribute("clntJuminA") +"-"+ session.getAttribute("clntJuminB").toString().substring(0, 1) + "******";
             repClientDto.setClntJumin(resi);
             repClientDto.setClntPhone(session.getAttribute("clntPhone").toString());
             repClientDto.setClntEmail(session.getAttribute("clntEmail").toString());
@@ -265,19 +266,22 @@ public class ClientController {
         HttpSession session = req.getSession();
         List<AccDto> accDtoList = new ArrayList<>();
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dueDt;
-        if(now.getHour() >= 22){
-            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0).plusDays(1);
-        }
-        else{
-            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0);
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String dueDtStr = dueDt.format(formatter);
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime dueDt;
+//        if(now.getHour() >= 22){
+//            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0).plusDays(1);
+//        }
+//        else{
+//            dueDt = now.withHour(23).withMinute(0).withSecond(0).withNano(0);
+//        }
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//        String dueDtStr = dueDt.format(formatter);
+//        session.setAttribute("dueDt", dueDtStr);
+
+        String dueDtStr = session.getAttribute("startDt").toString();
         session.setAttribute("dueDt", dueDtStr);
 
-        AccDto acc1 = new AccDto("하나은행", "2579106828397", "박준호", dueDtStr);
+        AccDto acc1 = new AccDto("하나은행", "25791068283907", "박준호", dueDtStr);
         accDtoList.add(acc1);
 
         AccDto acc2 = new AccDto("신한은행", "110501566550", "박준호", dueDtStr);
@@ -287,24 +291,33 @@ public class ClientController {
     }
 
 
-    // 모든 세션정보를 삭제
+    // 로그인정보 제외 모든 세션정보를 삭제
     @RequestMapping(value = "/allSession", method = RequestMethod.DELETE)
     public void deleteAllSession(HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
+        int myPageClntPk = -1;
+        if(session.getAttribute("myPageClntPk") != null){
+            myPageClntPk = (int) session.getAttribute("myPageClntPk");
+        }
         session.invalidate();
+        session = req.getSession();
+        if(myPageClntPk != -1){
+            session.setAttribute("myPageClntPk",myPageClntPk);
+            session.setMaxInactiveInterval(1800);
+        }
     }
 
     // apply3 페이지에서 무통장입금 선택 후 은행까지 선택하면 실행됨
     // 결제데이터, 가입자명단데이터, 가입신청데이터를 db에 저장
     @RequestMapping(value = "/applyFinish", method = RequestMethod.POST)
-    public Object applyFinish(HttpServletRequest req) throws Exception {
+    public Object applyFinish(@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         try {
             int totalPrem = Integer.parseInt(session.getAttribute("totalPrem").toString());
             String dueDt = session.getAttribute("dueDt").toString();
             int covCode = Integer.parseInt(session.getAttribute("covCode").toString());
             // 결제 정보 저장
-            int payPk = clientService.insertApplyPayment(totalPrem, dueDt);
+            int payPk = clientService.insertApplyPayment(totalPrem, dueDt, accBank, accNum, accNm);
             // 가입신청 정보 저장
             String polNo = commonService.selectPolNoByCovCode(covCode);
             int comCode = 1; // 업체코드는 1로 설정
@@ -344,6 +357,7 @@ public class ClientController {
         }
     }
 
+    // 인증번호 발송후 세션에 저장
     @RequestMapping(value = "/checkNum", method = RequestMethod.POST)
     public String checkNum(@RequestParam String phone, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
@@ -378,12 +392,9 @@ public class ClientController {
         String num = (String) session.getAttribute("checkNum");
         List<Integer> clntPk = clientService.selectClientJuminAPhone(clntJuminA, clntPhone);
 
+        // 인증번호가 일치할떼
         if (num != null && num.equals(checkNum)) {
-            // 세션에 저장된 인증번호 제거
-            if (session.getAttribute("checkNum") != null) {
-                session.invalidate();
-                session = req.getSession();
-            }
+            // 주민번호 앞자리, 전화번호가 동일한 고객이 있을때 이름을 추가적으로 입력받기
             if(clntPk.size() >=2){
                 session.setAttribute("clntJuminA",clntJuminA);
                 session.setAttribute("clntPhone",clntPhone);
@@ -391,10 +402,17 @@ public class ClientController {
             }
             else{
                 try{
+                    // 세션에 저장된 인증번호 제거
+                    if (session.getAttribute("checkNum") != null) {
+                        session.invalidate();
+                        session = req.getSession();
+                    }
+                    // 세션에 고객 pk 저장
                     session.setAttribute("myPageClntPk", clntPk.get(0));
                     session.setMaxInactiveInterval(1800);
                 }
                 catch (Exception e){
+                    // 가입된 고객이 아닐 때 pk값에 -1을 저장
                     session.setAttribute("myPageClntPk", -1);
                     session.setMaxInactiveInterval(1800);
                 }
@@ -407,6 +425,41 @@ public class ClientController {
         }
     }
 
+    // 주민번호 앞자리, 전화번호가 일치하는 고객이 2명이상인 경우 추가적으로 이름을 입력받기위한 함수
+    @RequestMapping(value = "/checkNumCheck/dataOver1", method = RequestMethod.POST)
+    public String dataOver1(@RequestParam String name, @RequestParam String checkNum, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        try{
+            // 전송된 인증번호가 아직 세션에 남아있을때
+            if(session.getAttribute("checkNum") != null){
+                String num = session.getAttribute("checkNum").toString();
+                // 인증번호가 일치할 때
+                if(num.equals(checkNum)){
+                    String clntJuminA = session.getAttribute("clntJuminA").toString();
+                    String clntPhone = session.getAttribute("clntPhone").toString();
+                    String clntNm = name;
+                    System.out.printf("select : %s %s %s \n",clntNm, clntJuminA, clntPhone);
+                    int clntPk = clientService.selectClientJuminAPhoneName(clntJuminA, clntPhone, clntNm).get(0);
+                    // 세션에 저장된 인증번호 제거
+                    session.invalidate();
+                    session = req.getSession();
+                    session.setAttribute("myPageClntPk", clntPk);
+                    session.setMaxInactiveInterval(1800);
+                    return "success";
+                }
+                else {
+                    return "fail";
+                }
+            }
+            else {return "session timeout";}
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return "bad network";
+        }
+    }
+
+    // 전화번호 인증이 완료되었을때 MyPage2에서 가입된 보험 리스트가 나옴
     @RequestMapping(value = "/insList", method = RequestMethod.GET)
     public Object insList(HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
@@ -473,7 +526,7 @@ public class ClientController {
         if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
 
             String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
-            PDDocument document = pdfService.createPdfKr(aplPk);
+            PDDocument document = messageService.createPdfKr(aplPk);
             document.save(filePath);
             document.close();
             byte[] files = FileUtils.readFileToByteArray(new File(filePath));
@@ -495,23 +548,65 @@ public class ClientController {
     }
 
     @RequestMapping(value = "/applicationPdfKrEmail", method = RequestMethod.GET)
-    public void applicationPdfKr(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    public void applicationPdfKrEmail(@RequestParam int aplPk, @RequestParam int clntPk, @RequestParam String clntEmail,HttpServletRequest req, HttpServletResponse resp) throws Exception {
         HttpSession session = req.getSession();
 
         if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
 
-            String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
-            PDDocument document = pdfService.createPdfKr(aplPk);
-            document.save(filePath);
-            document.close();
 
-            pdfService.sendMail(aplPk,"pol0258@naver.com", filePath);
+            messageService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입증명서", clntEmail, "가입증명서.pdf");
 
-            // 생성한 PDF 파일 삭제
-            File generatedPdf = new File(filePath);
-            if (generatedPdf.exists()) {
-                generatedPdf.delete();
+        }
+    }
+
+    @RequestMapping(value = "/applicationCancel", method = RequestMethod.PUT)
+    public Object applicationCancel(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        Map<String,Object> result = new HashMap<>();
+        if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
+            Character payedYN = clientService.selectPayedYNByAplPk(aplPk);
+            if(payedYN == 'N'){
+                clientService.updateAplStateCode(aplPk,clntPk,404);
+                result.put("result","success");
+                result.put("msg","deleted");
+                return result;
             }
+            else{
+                result.put("result","success");
+                result.put("msg","account required");
+                result.put("aplPk",aplPk);
+                return result;
+            }
+        }
+        else if(session.getAttribute("myPageClntPk") == null){
+            result.put("result","error");
+            result.put("msg","세션이 만료되었습니다.");
+            return result;
+        }
+        else{
+            result.put("result","error");
+            result.put("msg","네트워크 연결이 불안정합니다.");
+            return result;
+        }
+    }
+    @RequestMapping(value = "/applicationCancel/account", method = RequestMethod.PUT)
+    public Object applicationCancel(@RequestParam int aplPk, @RequestParam int clntPk, @RequestParam String refnBank, @RequestParam String refnAccount, @RequestParam String refnName, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        Map<String,Object> result = new HashMap<>();
+        if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
+            result.put("result","success");
+            result.put("msg",clientService.callAplRefund(aplPk, clntPk, refnBank, refnAccount, refnName));
+            return result;
+        }
+        else if(session.getAttribute("myPageClntPk") == null){
+            result.put("result","error");
+            result.put("msg","세션이 만료되었습니다.");
+            return result;
+        }
+        else{
+            result.put("result","error");
+            result.put("msg","네트워크 연결이 불안정합니다.");
+            return result;
         }
     }
 }

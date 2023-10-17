@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class AdminInsSumDto {
     private int aplPk;
     private String clntNm;
+    private String trPlace;
     private int covCode;
     private String covNm;
     private int clntCnt;
@@ -17,4 +18,5 @@ public class AdminInsSumDto {
     private int aplStateCode;
     private String aplState;
     private String payedYN;
+    private String useYN;
 }

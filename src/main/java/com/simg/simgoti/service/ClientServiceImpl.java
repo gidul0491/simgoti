@@ -14,6 +14,7 @@ import java.util.Map;
 public class ClientServiceImpl implements ClientService {
     private final ClientMapper clientMapper;
     private final CommonService commonService;
+    private final HanaPremium hanaPremium;
 
     @Override
     public List<CoverageDto> selectCoverageList() throws Exception {
@@ -21,30 +22,22 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<CoverageTypeDto> selectCoverageTypeList(int day) throws Exception {
+    public List<CoverageTypeDto> selectCoverageTypeList(int insAge, char gen, int day) throws Exception {
         List<CoverageTypeDto> list = clientMapper.selectCoverageTypeList();
         for (CoverageTypeDto dto : list) {
-            dto.setTotPremium(commonService.calculatePremium(dto.getCovCode(), dto.getCovPremium(), dto.getCovPremiumMin(), day));
+            dto.setTotPremium(hanaPremium.byCovAgeGen(dto.getCovCode(), insAge, gen, day));
         }
         return list;
     }
 
-    @Override
-    public int getPremium(String code, int period, int cnt) throws Exception {
-        int prem = 0;
-        Map<String, Integer> prems = clientMapper.selectPremium(Integer.parseInt(code));
-        prem = commonService.calculatePremium(code, prems.get("covPremium"), prems.get("covPremiumMin"), period) * cnt;
-        return prem;
-    }
 
     @Override
     public int insertOrUpdateClient(String clntNm, String clntBirth, String clntGen, String clntJumin, String clntPhone, String clntEmail) throws Exception {
         Aes128Service aes = new Aes128Service("simgotiaes128key");
         String encJumin = aes.encrypt(clntJumin);
-        System.out.printf("encJumin : %s \n",encJumin);
         int clntPk = -1;
         try {
-            clntPk = clientMapper.selectClientNmJuminPhone(clntNm, encJumin, clntPhone).get(0);
+            clntPk = clientMapper.selectClientNmJumin(clntNm, encJumin).get(0);
             ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, encJumin);
             System.out.println(dto);
             if (clntPhone != null && clntEmail != null) {
@@ -65,18 +58,14 @@ public class ClientServiceImpl implements ClientService {
         return clntPk;
     }
 
-//    @Override
-//    public int selectClientNmJumin(String clntNm, String clntJumin) throws Exception {
-//        Aes128Service aes = new Aes128Service("simgotiaes128key");
-//        String encJumin = aes.encrypt(clntJumin);
-//        return clientMapper.selectClientNmJuminPhone(clntNm, encJumin).get(0);
-//    }
-
     @Override
-    public int insertApplyPayment(int premium, String payDueDt) throws Exception {
+    public int insertApplyPayment(int premium, String payDueDt, String accBank, String accNum, String accNm) throws Exception {
         ApplyPaymentDto dto = new ApplyPaymentDto();
         dto.setPremium(premium);
         dto.setPayDueDt(payDueDt);
+        dto.setAccBank(accBank);
+        dto.setAccNum(accNum);
+        dto.setAccNm(accNm);
         clientMapper.insertApplyPayment(dto);
         return dto.getPayPk();
     }
@@ -110,6 +99,20 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<Integer> selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception {
         return clientMapper.selectClientJuminAPhone(clntJuminA, clntPhone);
+    }
+
+    @Override
+    public List<Integer> selectClientJuminAPhoneName(String clntJuminA, String clntPhone, String clntNm) throws Exception {
+        List<Integer> list = new ArrayList<>();
+        try{
+            list = clientMapper.selectClientJuminAPhoneName(clntJuminA, clntPhone, clntNm);
+            return list;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            list.add(-1);
+            return list;
+        }
     }
 
     @Override
@@ -157,4 +160,19 @@ public class ClientServiceImpl implements ClientService {
     public int updateClntEmail(int clntPk, String clntEmail) throws Exception{
         return clientMapper.updateClntEmail(clntPk, clntEmail);
     }
+
+    @Override
+    public Character selectPayedYNByAplPk(int aplPk) throws Exception{
+        return clientMapper.selectPayedYNByAplPk(aplPk);
+    }
+
+    @Override
+    public int updateAplStateCode(int aplPk,int clntPk,  int aplStateCode) throws Exception{
+        return clientMapper.updateAplStateCode(aplPk,clntPk, aplStateCode);
+    }
+
+    @Override
+    public int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception{
+        return clientMapper.callAplRefund(aplPk, clntPk, refnBank, refnAccount, refnName);
+    };
 }

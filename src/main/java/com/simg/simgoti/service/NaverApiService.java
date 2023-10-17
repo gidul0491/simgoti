@@ -71,12 +71,12 @@ public class NaverApiService {
         requestBody.put("messages", messages);
 
         // 요청 본문 데이터를 JSON 문자열로 확인
-        try {
-            String requestBodyJson = objectMapper.writeValueAsString(requestBody);
-            System.out.println("요청 본문 JSON: " + requestBodyJson);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            String requestBodyJson = objectMapper.writeValueAsString(requestBody);
+//            System.out.println("요청 본문 JSON: " + requestBodyJson);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
 
         // HttpEntity를 사용하여 헤더와 본문을 함께 설정

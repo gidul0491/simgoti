@@ -19,8 +19,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminInsSumDto selectAdminInsSumDto(int aplPk, Character useYN) throws Exception {
-        return adminMapper.selectAdminInsSumDto(aplPk, useYN);
+    public AdminInsSumDto selectAdminInsSumDto(int aplPk) throws Exception {
+        return adminMapper.selectAdminInsSumDto(aplPk);
     }
 
     @Override
@@ -31,5 +31,10 @@ public class AdminServiceImpl implements AdminService {
         else{
             return adminMapper.updateInsPayedYN(aplPk, 'Y', 402);
         }
+    }
+
+    @Override
+    public int updateInsStateCode(int aplPk, int aplStateCode) throws Exception{
+        return adminMapper.updateInsStateCode(aplPk, aplStateCode);
     }
 }

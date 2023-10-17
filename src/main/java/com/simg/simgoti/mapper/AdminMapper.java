@@ -9,6 +9,7 @@ import java.util.List;
 @Mapper
 public interface AdminMapper {
     List<AdminInsSumDto> selectAdminInsSumDtoList(Character useYN, int start, int size, String orderBy) throws Exception;
-    AdminInsSumDto selectAdminInsSumDto(int aplPk, Character useYN) throws Exception;
+    AdminInsSumDto selectAdminInsSumDto(int aplPk) throws Exception;
     int updateInsPayedYN(int aplPk, Character payedYN, int aplStateCode) throws Exception;
+    int updateInsStateCode(int aplPk, int aplStateCode) throws Exception;
 }

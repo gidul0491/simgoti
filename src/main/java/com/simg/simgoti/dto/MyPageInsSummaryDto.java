@@ -11,6 +11,7 @@ public class MyPageInsSummaryDto {
     private String trToDt;
     private String trPlace;
     private String aplState;
+    private int aplStateCode;
     private int clntCnt;
     private int premium;
 }

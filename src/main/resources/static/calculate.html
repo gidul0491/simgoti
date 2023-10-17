@@ -86,44 +86,81 @@
 
     </style>
     <script>
-        // let startDate = sessionStorage.getItem("startDate") || null;
-        // let startTime = sessionStorage.getItem("startTime") || null;
-        // let endDate = sessionStorage.getItem("endDate") || null;
-        // let endTime = sessionStorage.getItem("endTime") || null;
-        let startDate;
-        let startTime;
-        let endDate;
-        let endTime;
-        let clntBirth = sessionStorage.getItem("clntBirth") || null;
-        let clntGen = sessionStorage.getItem("clntGen") || null;
-        let trPlace = sessionStorage.getItem("trPlace") || null;
-
-        let covCode = sessionStorage.getItem("covCode") || 10120102;
-        let startDt;
-        let endDt;
-
-
-        function isAllVarsNotNull() {
-            let result = false;
-            if (
-                startDate != null &&
-                startTime != null &&
-                endDate != null &&
-                endTime != null &&
-                clntBirth != null &&
-                clntGen != null &&
-                trPlace != null
-            ) {
-                result = true;
-            }
-            return result;
-        }
-
-
         $(document).ready(function () {
+            // let startDate = sessionStorage.getItem("startDate") || null;
+            // let startTime = sessionStorage.getItem("startTime") || null;
+            // let endDate = sessionStorage.getItem("endDate") || null;
+            // let endTime = sessionStorage.getItem("endTime") || null;
+            let startDate;
+            let startTime;
+            let endDate;
+            let endTime;
+            // let clntBirth = sessionStorage.getItem("clntBirth") || null;
+            // let clntGen = sessionStorage.getItem("clntGen") || null;
+            // let trPlace = sessionStorage.getItem("trPlace") || null;
+            let clntBirth;
+            let clntGen;
+            let trPlace;
+
+            let covCode = sessionStorage.getItem("covCode") || 10120102;
+            let startDt;
+            let endDt;
+
+            function isAllVarsNotNull() {
+                startDate = $("#start-date").val();
+                startTime = $("#start-time-pick option:selected:not([disabled])").text();
+                endDate = $("#end-date").val();
+                endTime = $("#end-time-pick option:selected:not([disabled])").text();
+                clntBirth = $("#clntBirth").val();
+                clntGen = $("#clntGen-pick").val();
+                trPlace = $("#trPlace-text").val();
+                console.log(`
+                startDate : ${startDate}
+                startTime : ${startTime}
+                endDate : ${endDate}
+                endTime : ${endTime}
+                clntBirth : ${clntBirth}
+                clntGen : ${clntGen}
+                trPlace : ${trPlace}
+                `)
+                let result = false;
+                if (
+                    (startDate != null && startDate != '') &&
+                    (startTime != null && startTime != '') &&
+                    (endDate != null && endDate != '') &&
+                    (endTime != null && endTime != '') &&
+                    (clntBirth != null && clntBirth != '') &&
+                    (clntGen != null && clntGen != '') &&
+                    (trPlace != null && trPlace != '')
+                ) {
+                    result = true;
+                }
+                return result;
+            }
+
+            function isSessionStorageNotnull() {
+                if (sessionStorage.getItem("startTime") != null &&
+                    sessionStorage.getItem("startDate") != null &&
+                    sessionStorage.getItem("endDate") != null &&
+                    sessionStorage.getItem("endTime") != null &&
+                    sessionStorage.getItem("covCode") != null &&
+                    sessionStorage.getItem("clntGen") != null &&
+                    sessionStorage.getItem("trPlace") != null) {
+                    return true
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            // 모든 input태그 초기화
+            window.onload = function () {
+                $("input").val(null);
+                $("select").val(null);
+            }
 
             function checkVars() {
-
                 // 모두 입력했을때 보험료확인 버튼 활성화, summary와 calculate-result 숨기기
                 if (isAllVarsNotNull()) {
                     if (clntBirth.length < 8) {
@@ -142,8 +179,6 @@
 
                 // 날짜 시간 입력시 이전 날짜나 시간을 입력해야 disabled가 해제되도록
                 const startDateInput = $("#start-date");
-                // const startTimeSelect = $("#start-time-pick");
-                // const startTimeInput = $("#start-time");
                 const startTimeInput = $("#start-time-pick");
                 const endDateInput = $("#end-date");
                 const endTimeInput = $("#end-time-pick");
@@ -153,16 +188,11 @@
                 } else {
                     startTimeInput.attr("disabled", true).addClass("disabled");
                 }
-
-                // if(startTimeSelect.val() != null){
-                //     endDateInput.removeAttr("disabled");
-                // }
                 if (startTimeInput.val() != null) {
                     endDateInput.removeAttr("disabled");
                 } else {
                     endDateInput.attr("disabled", true);
                 }
-
                 if (endDateInput.val() != "") {
                     endTimeInput.removeAttr("disabled").removeClass("disabled");
                 } else {
@@ -180,21 +210,20 @@
             $("#start-date").attr("min", todayStr);
             $("#start-date").attr("max", after3mthStr);
             // 최초 sessionStorage에서 값을 가져와 변수에 저장하여 변수들이 null이 아닌경우 input 태그에 대입
-            if (isAllVarsNotNull()) {
-                $("#start-date").val(startDate);
-                $("#start-time-pick").removeAttr("disabled").val(parseInt(startTime.split(":")[0]));
-                // $("#start-time").val(startTime);
-                $("#end-date").removeAttr("disabled").val(endDate);
-                $("#end-time-pick").removeAttr("disabled").val(parseInt(endTime.split(":")[0]));
-                // $("#end-time").val(endTime);
-                $("#clntBirth").val(clntBirth);
-                $("#clntGen-pick").val(clntGen);
-                // $("#clntGen").val(clntGen);
-                $("#trPlace-text").val(trPlace);
-                startDt = new Date(startDate + " " + startTime);
-                endDt = new Date(endDate + " " + endTime);
-                getPremiumAndCoverage();
-            }
+            // if (isSessionStorageNotnull()) {
+            //     $("#start-date").val(sessionStorage.getItem("startDate"));
+            //     $("#start-time-pick").removeAttr("disabled").val(sessionStorage.getItem("startTime"));
+            //     // $("#end-date").removeAttr("disabled").val(endDate);
+            //     // $("#end-time-pick").removeAttr("disabled").val(parseInt(endTime.split(":")[0]));
+            //     // $("#clntBirth").val(clntBirth);
+            //     // $("#clntGen-pick").val(clntGen);
+            //     // $("#trPlace-text").val(trPlace);
+            //     // startDt = new Date(startDate + " " + startTime);
+            //     // endDt = new Date(endDate + " " + endTime);
+            //     console.log("ss not null");
+            //     isAllVarsNotNull();
+            //     getPremiumAndCoverage();
+            // }
 
             // 나라 선택시 텍스트창에 넣고 변수 country에도 대입
             $("#trPlace-select").on("change", function () {
@@ -208,14 +237,12 @@
             $("#start-date").on("input", function () {
                 startDate = $(this).val();
                 $("#end-date").val(null);
-                // $("#end-time").val(null);
                 $("#end-time-pick").val(null);
-                // $("#start-time").val(null);
 
                 $("#start-time-pick").empty();
                 $("#start-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
                 for (let i = 0; i < 24; i++) {
-                    $("#start-time-pick").append("<option value='" + i + "'>" + numPadding2(i) + ":00" + "</option>")
+                    $("#start-time-pick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")
                 }
 
                 if (startDate != "") {
@@ -231,7 +258,7 @@
                     // 선택한 날짜가 오늘일 때 선택가능한 최소시간을 시간단위로 지금보다 1시간 뒤부터 선택가능하도록 설정
                     let nowTime = parseInt(dateTimeToStr(today).split(" ")[1].split(":")[0]);
                     $("#start-time-pick option").each(function () {
-                        if ($(this).val() != '' && $(this).val() <= nowTime) {
+                        if ($(this).val() != '' && $(this).val().split(":")[0] <= nowTime) {
                             $(this).remove();
                         } else if ($(this).val() != '' && $(this).val() > nowTime) {
                             return false;
@@ -273,14 +300,14 @@
                 $("#end-time-pick").empty();
                 $("#end-time-pick").append("<option value='' hidden='hidden' disabled selected>시간</option>");
                 for (let i = 0; i < 24; i++) {
-                    $("#end-time-pick").append("<option value='" + i + "'>" + numPadding2(i) + ":00" + "</option>")
+                    $("#end-time-pick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")
                 }
 
                 if (endDate == maxDateStr) {
                     // 선택한 날짜가 보험 최대기간이 되는 일자일때 최대 시간을 선택한 여행출발시간으로 설정
                     let startTimeInt = parseInt(startTime.split(":")[0]);
                     $("#end-time-pick option").each(function () {
-                        if ($(this).val() > startTimeInt) {
+                        if ($(this).val().split(":")[0] > startTimeInt) {
                             $(this).remove();
                         }
                     });
@@ -289,7 +316,7 @@
                     // 선택한 일자가 출발일자와 같을때, 출발시간과 동일하거나 그 이전인 시간은 제거
                     $("#end-time-pick option").each(function () {
                         let startTimeInt = parseInt(startTime.split(":")[0]);
-                        if ($(this).val() != '' && $(this).val() <= startTimeInt) {
+                        if ($(this).val() != '' && $(this).val().split(":")[0] <= startTimeInt) {
                             $(this).remove();
                         }
                     });
@@ -359,6 +386,7 @@
                         startDt: `${startDate} ${startTime}`,
                         endDt: `${endDate} ${endTime}`,
                         clntBirth: clntBirth,
+                        clntGen: 'M',
                     },
                     success: (resp) => {
                         const result = resp.result;
@@ -383,7 +411,7 @@
                             $("#summary").removeAttr("hidden");
                             $("#sum-period").text(travelDay + "일");
                             $("#sum-age").text(calculateInsAge(clntBirth));
-                            $("#sum-clntGen").text($("#clntGen-pick option:selected").val());
+                            $("#sum-clntGen").text($("#clntGen-pick option:selected").val() == 'M' ? "남자" : "여자");
                             $("#sum-trPlace").text($("#trPlace-text").val());
 
                             // calculate-result 보이게
@@ -470,11 +498,6 @@
                 // getPremiumAndCoverage();
             });
 
-            // // 문서의 모든 요소가 변할 때마다 동작
-            // $("html").on("input", function () {
-            //
-            // });
-
             // 담보 탭 클릭시
             $(document).on("click", ".cov-tab", function () {
                 $(".cov-tab").removeClass("selected");
@@ -483,7 +506,7 @@
                 $(".coverage-details").attr("hidden", "hidden");
                 $("#detail-" + code).removeAttr("hidden");
                 covCode = $(this).val();
-                sessionStorage.setItem("covCode", covCode);
+                // sessionStorage.setItem("covCode", covCode);
                 moveScrollTop("#after-calculate");
             });
 
@@ -495,8 +518,6 @@
                 ) {
                     sessionStorage.setItem("covCode", covCode);
                     location.href = "/simg/simgOti/applyAlone";
-                    // const startDtStr = dateToStr(startDt);
-                    // const endDtStr = dateToStr(endDt);
                 }
             })
 
@@ -531,43 +552,37 @@
                         <div class="w-50 d-flex justify-content-center align-items-center">
                             <span>여행 출발</span>
                         </div>
-                        <div class="w-100">
+                        <div class="w-100 pe-1">
                             <input type="date" class="form-control" id="start-date">
                         </div>
-                        <div class="w-100 position-relative">
-                            <!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
-                            <!--                                   placeholder="시간"-->
-                            <!--                                   name="start-time" id="start-time" value="" disabled>-->
-                            <!--                            <select id="start-time-pick"-->
-                            <!--                                    class="form-control position-absolute top-100 text-option time-pick" hidden size="5"-->
-                            <!--                                    style="z-index: 1">-->
+                        <div class="w-100 position-relative ps-1">
                             <select id="start-time-pick"
                                     class="form-control time-pick disabled" disabled>
                                 <option value='' hidden="hidden" disabled selected>시간</option>
-                                <option value='0'>00:00</option>
-                                <option value='1'>01:00</option>
-                                <option value='2'>02:00</option>
-                                <option value='3'>03:00</option>
-                                <option value='4'>04:00</option>
-                                <option value='5'>05:00</option>
-                                <option value='6'>06:00</option>
-                                <option value='7'>07:00</option>
-                                <option value='8'>08:00</option>
-                                <option value='9'>09:00</option>
-                                <option value='10'>10:00</option>
-                                <option value='11'>11:00</option>
-                                <option value='12'>12:00</option>
-                                <option value='13'>13:00</option>
-                                <option value='14'>14:00</option>
-                                <option value='15'>15:00</option>
-                                <option value='16'>16:00</option>
-                                <option value='17'>17:00</option>
-                                <option value='18'>18:00</option>
-                                <option value='19'>19:00</option>
-                                <option value='20'>20:00</option>
-                                <option value='21'>21:00</option>
-                                <option value='22'>22:00</option>
-                                <option value='23'>23:00</option>
+<!--                                <option value='0'>00:00</option>-->
+<!--                                <option value='1'>01:00</option>-->
+<!--                                <option value='2'>02:00</option>-->
+<!--                                <option value='3'>03:00</option>-->
+<!--                                <option value='4'>04:00</option>-->
+<!--                                <option value='5'>05:00</option>-->
+<!--                                <option value='6'>06:00</option>-->
+<!--                                <option value='7'>07:00</option>-->
+<!--                                <option value='8'>08:00</option>-->
+<!--                                <option value='9'>09:00</option>-->
+<!--                                <option value='10'>10:00</option>-->
+<!--                                <option value='11'>11:00</option>-->
+<!--                                <option value='12'>12:00</option>-->
+<!--                                <option value='13'>13:00</option>-->
+<!--                                <option value='14'>14:00</option>-->
+<!--                                <option value='15'>15:00</option>-->
+<!--                                <option value='16'>16:00</option>-->
+<!--                                <option value='17'>17:00</option>-->
+<!--                                <option value='18'>18:00</option>-->
+<!--                                <option value='19'>19:00</option>-->
+<!--                                <option value='20'>20:00</option>-->
+<!--                                <option value='21'>21:00</option>-->
+<!--                                <option value='22'>22:00</option>-->
+<!--                                <option value='23'>23:00</option>-->
                             </select>
                         </div>
                     </div>
@@ -579,43 +594,37 @@
                         <div class="w-50 d-flex justify-content-center align-items-center">
                             <span>여행 종료</span>
                         </div>
-                        <div class="w-100">
+                        <div class="w-100 pe-1">
                             <input type="date" class="form-control" id="end-date" disabled>
                         </div>
-                        <div class="w-100 position-relative">
-                            <!--                            <input type="text" class="form-control time-input bg-white text-select disabled" readonly-->
-                            <!--                                   placeholder="시간"-->
-                            <!--                                   name="end-time" id="end-time" value="" disabled>-->
-                            <!--                            <select id="end-time-pick"-->
-                            <!--                                    class="form-control position-absolute top-100 text-option time-pick"-->
-                            <!--                                    hidden size="5" style="z-index: 1">-->
+                        <div class="w-100 position-relative ps-1">
                             <select id="end-time-pick"
                                     class="form-control time-pick" disabled>
                                 <option value='' hidden="hidden" disabled selected>시간</option>
-                                <option value='0'>00:00</option>
-                                <option value='1'>01:00</option>
-                                <option value='2'>02:00</option>
-                                <option value='3'>03:00</option>
-                                <option value='4'>04:00</option>
-                                <option value='5'>05:00</option>
-                                <option value='6'>06:00</option>
-                                <option value='7'>07:00</option>
-                                <option value='8'>08:00</option>
-                                <option value='9'>09:00</option>
-                                <option value='10'>10:00</option>
-                                <option value='11'>11:00</option>
-                                <option value='12'>12:00</option>
-                                <option value='13'>13:00</option>
-                                <option value='14'>14:00</option>
-                                <option value='15'>15:00</option>
-                                <option value='16'>16:00</option>
-                                <option value='17'>17:00</option>
-                                <option value='18'>18:00</option>
-                                <option value='19'>19:00</option>
-                                <option value='20'>20:00</option>
-                                <option value='21'>21:00</option>
-                                <option value='22'>22:00</option>
-                                <option value='23'>23:00</option>
+<!--                                <option value='0'>00:00</option>-->
+<!--                                <option value='1'>01:00</option>-->
+<!--                                <option value='2'>02:00</option>-->
+<!--                                <option value='3'>03:00</option>-->
+<!--                                <option value='4'>04:00</option>-->
+<!--                                <option value='5'>05:00</option>-->
+<!--                                <option value='6'>06:00</option>-->
+<!--                                <option value='7'>07:00</option>-->
+<!--                                <option value='8'>08:00</option>-->
+<!--                                <option value='9'>09:00</option>-->
+<!--                                <option value='10'>10:00</option>-->
+<!--                                <option value='11'>11:00</option>-->
+<!--                                <option value='12'>12:00</option>-->
+<!--                                <option value='13'>13:00</option>-->
+<!--                                <option value='14'>14:00</option>-->
+<!--                                <option value='15'>15:00</option>-->
+<!--                                <option value='16'>16:00</option>-->
+<!--                                <option value='17'>17:00</option>-->
+<!--                                <option value='18'>18:00</option>-->
+<!--                                <option value='19'>19:00</option>-->
+<!--                                <option value='20'>20:00</option>-->
+<!--                                <option value='21'>21:00</option>-->
+<!--                                <option value='22'>22:00</option>-->
+<!--                                <option value='23'>23:00</option>-->
                             </select>
                         </div>
                     </div>
@@ -624,24 +633,18 @@
                 <div class="text-start mb-3" id="clntBirth-clntGen">
                     <div class="d-flex justify-content-between">
 
-                        <div class="w-100">
+                        <div class="w-100 pe-1">
                             <input type="text" class="form-control bg-white" id="clntBirth" name="clntBirth"
                                    placeholder="생년월일(8자)"
                                    maxlength="8">
                         </div>
 
-                        <div class="w-100 select-div">
-
-                            <!--                            <input type="text" class="form-control bg-white text-select" readonly placeholder="성별"-->
-                            <!--                                   id="clntGen">-->
-                            <!--                            <select name="clntGen-pick" id="clntGen-pick"-->
-                            <!--                                    class="form-control text-option" hidden size="2"-->
-                            <!--                                    style="z-index: 1">-->
+                        <div class="w-100 select-div ps-1">
                             <select name="clntGen-pick" id="clntGen-pick"
                                     class="form-control">
                                 <option value="" disabled hidden selected>성별</option>
-                                <option value="남자">남자</option>
-                                <option value="여자">여자</option>
+                                <option value="M">남자</option>
+                                <option value="F">여자</option>
                             </select>
                         </div>
                     </div>
@@ -649,14 +652,11 @@
                 <!-- 여행지 선택 -->
                 <div class="text-start mb-3" id="trPlace">
                     <div class="d-flex justify-content-between">
-                        <div class="w-100">
+                        <div class="w-100 pe-1">
                             <input type="text" placeholder="여행 국가 선택" id="trPlace-text" readonly
                                    class="show-popup form-control bg-white show-popup">
                             <div id="countries" class="popup" hidden style="z-index: 1">
                                 <div class="popup-content d-flex justify-content-center align-items-center">
-                                    <!--                                    <select name="trPlace" id="trPlace-select" class="form-select mb-4" size="17">-->
-                                    <!--                                        </optgroup>-->
-                                    <!--                                    </select>-->
                                     <div id="country-btns">
                                         <h5 class="ps-3">자주 찾는 여행지</h5>
                                         <button type="button" class="country-btn" value='JP'><span>일본</span><i
@@ -1216,20 +1216,20 @@
         </div>
     </div>
 
-<!--    &lt;!&ndash; 안내 팝업&ndash;&gt;-->
-<!--    <div class="popup" id="warn-popup" style="z-index: 2" hidden>-->
-<!--        <div class="popup-content d-flex justify-content-center align-items-center">-->
-<!--            <div class="mb-2">-->
-<!--                <h5>안내</h5>-->
-<!--            </div>-->
-<!--            <div class="text-start">-->
-<!--                <span id="warn-popup-content"></span>-->
-<!--            </div>-->
-<!--            <div class="w-100 mt-3">-->
-<!--                <button type="button" class="btn main-btn close-popup" id="no">확인</button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
+    <!--    &lt;!&ndash; 안내 팝업&ndash;&gt;-->
+    <!--    <div class="popup" id="warn-popup" style="z-index: 2" hidden>-->
+    <!--        <div class="popup-content d-flex justify-content-center align-items-center">-->
+    <!--            <div class="mb-2">-->
+    <!--                <h5>안내</h5>-->
+    <!--            </div>-->
+    <!--            <div class="text-start">-->
+    <!--                <span id="warn-popup-content"></span>-->
+    <!--            </div>-->
+    <!--            <div class="w-100 mt-3">-->
+    <!--                <button type="button" class="btn main-btn close-popup" id="no">확인</button>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
 </div>
 <div class="footer">
 </div>

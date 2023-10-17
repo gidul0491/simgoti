@@ -6,6 +6,7 @@ import lombok.Data;
 public class PdfInsInfoDto {
    // a.aplPk, a.trFromDt, a.trToDt, a.trPlace, cd.codeNm as aplState, a.clntCnt, a.premium, c.covNm, cl.clntNm
     String aplPk;
+    String polNo;
     String trFromDt;
     String trToDt;
     String trPlace;
@@ -13,4 +14,5 @@ public class PdfInsInfoDto {
     int premium;
     String covNm;
     String clntNm;
+    String clntEmail;
 }

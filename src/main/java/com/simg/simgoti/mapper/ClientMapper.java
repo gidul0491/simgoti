@@ -15,12 +15,13 @@ public interface ClientMapper {
     List<CoverageTypeDto> selectCoverageTypeList() throws Exception;
     Map<String, Integer> selectPremium(int covCode) throws Exception;
     int insertRepClient(ClientDto dto) throws Exception;
-    List<Integer> selectClientNmJuminPhone(String clntNm, String clntJumin, String clntPhone) throws Exception;
+    List<Integer> selectClientNmJumin(String clntNm, String clntJumin) throws Exception;
     int updateClientPhoneEmailByPk(ClientDto dto) throws Exception;
     int insertApplyPayment(ApplyPaymentDto dto) throws Exception;
     int insertApplyFinish(ApplyFinishDto dto) throws Exception;
     int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN) throws Exception;
     List<Integer> selectClientJuminAPhone(String clntJuminA, String clntPhone) throws Exception;
+    List<Integer> selectClientJuminAPhoneName(String clntJuminA, String clntPhone, String clntNm ) throws Exception;
     List<MyPageInsSummaryDto> selectApplySummaryList(int clntPk) throws Exception;
     MyPageInsSummaryDto selectInsSummaryDto(int aplPk) throws Exception;
     List<MyPageCompanionDto> selectCompanionDtoList(int aplPk) throws Exception;
@@ -28,4 +29,7 @@ public interface ClientMapper {
     List<MyPageCoverageDetailDto> selectCoverageDetailList(int aplPk) throws Exception;
     int updateClntEmail(int clntPk, String clntEmail) throws Exception;
     PdfInsInfoDto selectInsForPdf(int aplPk) throws Exception;
+    Character selectPayedYNByAplPk(int aplPk) throws Exception;
+    int updateAplStateCode(int aplPk, int clntPk, int aplStateCode) throws Exception;
+    int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception;
 }

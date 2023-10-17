@@ -33,8 +33,14 @@ public class AdminController {
     };
 
     @RequestMapping(value = "/payedYN", method = RequestMethod.PUT)
-    public Object updateInsPayedYN(@RequestParam int aplPk, @RequestParam Character payedYN, @RequestParam Character useYN) throws Exception{
+    public Object updateInsPayedYN(@RequestParam int aplPk, @RequestParam Character payedYN) throws Exception{
         adminService.updateInsPayedYN(aplPk, payedYN);
-        return adminService.selectAdminInsSumDto(aplPk, useYN);
+        return adminService.selectAdminInsSumDto(aplPk);
+    }
+
+    @RequestMapping(value = "/stateCode", method = RequestMethod.PUT)
+    public Object updateStateCode(@RequestParam int aplPk, @RequestParam int aplStateCode) throws Exception{
+        adminService.updateInsStateCode(aplPk, aplStateCode);
+        return adminService.selectAdminInsSumDto(aplPk);
     }
 }

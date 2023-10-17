@@ -12,7 +12,8 @@
 }
 
 /* 모바일 화면 */
-@media all and (max-aspect-ratio: 1/1){
+/*@media all and (max-aspect-ratio: 1/1){*/
+@media all and (max-width: 991px){
     html {
         font-size: 3.6vw;
     }
@@ -30,7 +31,8 @@
     }
 }
 /* pc 화면 */
-@media all and (min-aspect-ratio:1/1) and (min-width: 720px){
+/*@media all and (min-aspect-ratio:1/1) and (min-width: 768px){*/
+@media all and (min-width: 992px){
     .mainView {
         padding:1.5rem;
         width: 540px;
@@ -99,6 +101,18 @@
     color: #0d6efd;
     border: 1px solid #0d6efd;
 }
+
+.main-btn-outlined-red {
+    border: 1px solid #de440a;
+    background: white;
+    color: #de440a;
+    width: 100%;
+}
+.main-btn-outlined-red:hover{
+    color: #fd6e0d;
+    border: 1px solid #fd6e0d;
+}
+
 .margin-btn {
     margin: 3rem 0vh 3rem 0vh;
 }

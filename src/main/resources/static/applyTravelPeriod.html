@@ -1,158 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>가입정보 입력</title>
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>가입정보 입력</title>-->
 
-    <script src="/js/jquery-3.7.0.js"></script>
-    <link rel="stylesheet" href="/css/bootstrap.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
-    <script src="/js/bootstrap.bundle.js"></script>
-    <link rel="stylesheet" href="/css/simgoti.css">
-    <script src="/js/commonjs.js"></script>
+<!--    <script src="/js/jquery-3.7.0.js"></script>-->
+<!--    <link rel="stylesheet" href="/css/bootstrap.css">-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">-->
+<!--    <script src="/js/bootstrap.bundle.js"></script>-->
+<!--    <link rel="stylesheet" href="/css/simgoti.css">-->
+<!--    <script src="/js/commonjs.js"></script>-->
 
-    <script>
-        $(document).ready(function () {
-            let startDate;
-            let startTime;
-            let endDate;
-            let endTime;
-
-
-            $("#startDate").on("change", function () {
-                startDate = $(this).val();
-            });
-
-            $("#endDate").on("change", function () {
-                endDate = $(this).val();
-            });
-
-            for (let i = 0; i < 24; i++) {
-                $(".timePick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")
-            }
-
-            // $("#startTime").on("click", function () {
-            //     $("#startTimePick").removeAttr("hidden");
-            // });
-
-            $("#startTimePick").on("change", function () {
-                // $("#startTimePick").attr("hidden", "hidden");
-                startTime = $(this).val();
-                // $("#startTime").val(startTime);
-            });
-
-            // $("#startTimePick").on("blur", function () {
-            //     $("#startTimePick").attr("hidden", "hidden");
-            //     $("#startTime").val($(this).val());
-            // });
-
-            // $("#endTime").on("click", function () {
-            //     $("#endTimePick").removeAttr("hidden");
-            // });
-
-            $("#endTimePick").on("change", function () {
-                // $("#endTimePick").attr("hidden", "hidden");
-                endTime = $(this).val();
-                // $("#endTime").val(endTime);
-            });
-
-            // $("#endTimePick").on("blur", function () {
-            //     $("#endTimePick").attr("hidden", "hidden");
-            //     $("#endTime").val($(this).val());
-            // });
-
-            $("#next").on("click", function () {
-                if (startTime == null || startDate == null || endDate == null || endTime == null) {
-                    alert("출발 시간과 종료 시간을 모두 입력해 주세요.");
-                } else {
-                    let travelDatetimeFromStr = `${startDate} ${startTime}`;
-                    let travelDatetimeToStr = `${endDate} ${endTime}`
-                    let travelDatetimeFrom = new Date(travelDatetimeFromStr);
-                    let travelDatetimeTo = new Date(travelDatetimeToStr);
-
-                    nowDatetime = new Date();
-                    if (travelDatetimeFrom - nowDatetime <= 0) {
-                        alert("출발 시간을 현재 시간 이후로 설정해 주세요.");
-                    } else if (travelDatetimeTo - travelDatetimeFrom <= 0) {
-                        alert("종료 시간을 출발 시간 이후로 설정해 주세요.");
-                    } else if (travelDatetimeFrom - nowDatetime > (62*24*60*60*1000)) {
-                        alert("여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.");
-                    } else if (travelDatetimeTo - travelDatetimeFrom > (89*24*60*60*1000)){
-                        alert("여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.");
-                    }
-                    else {
-                        window.localStorage.setItem("travelDatetimeFrom", travelDatetimeFromStr);
-                        window.localStorage.setItem("travelDatetimeTo", travelDatetimeToStr);
-                        window.location.href = "/applyInsuredPerson";
-                    }
-                }
-
-            });
-        });
-    </script>
-</head>
-<body>
-<div class="main">
-    <div class="apply-header d-flex justify-content-between align-items-center">
-        <a href="/home" class="btn back"><span>이전</span></a>
-        <span>가입정보 입력</span>
-        <a href="/home" class="btn home"><span>홈</span></a>
-    </div>
-
-    <div class="d-flex flex-column">
-        <div class="d-flex justify-content-around">
-            <div class="position-relative m-4">
-                <div class="">
-                    <span class="">여행 출발</span>
-                    <input type="date" class="form-control" id="startDate">
-                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간"
-                           name="startTime" id="startTime">
-                </div>
-                <select name="startTimePick" id="startTimePick" class="top-100 timePick form-control position-absolute"
-                        hidden="hidden" size="5">
-                </select>
-            </div>
-
-            <div class="position-relative m-4">
-                <div class="">
-                    <span class="">여행 종료</span>
-                    <input type="date" class="form-control" id="endDate">
-                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간" name="endTime"
-                           id="endTime">
-                </div>
-                <select name="endTimePick" id="endTimePick" class="top-100 timePick form-control position-absolute"
-                        hidden="hidden" size="5">
-                </select>
-            </div>
-        </div>
-        <div>
-            <ul class="list-unstyled small text-secondary">
-                <li class="d-flex ">
-                    <i class="bi bi-exclamation-circle me-2"></i>
-                    <p>여행(보험)기간은 집에서 출발하고 도착하는 일시이며, 이미 출발한 경우 비행기 탑승 일시를 입력해 주세요.</p>
-                </li>
-                <li class="d-flex">
-                    <i class="bi bi-exclamation-circle me-2"></i>
-                    <p>여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.</p>
-
-                </li>
-                <li class="d-flex">
-                    <i class="bi bi-exclamation-circle me-2"></i>
-                    <p>여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.</p>
-                </li>
-                <li class="d-flex">
-                    <i class="bi bi-exclamation-circle me-2"></i>
-                    <p>일정 변경을 원하시면 계약 취소 후 재가입 바랍니다. 계약 취소는 보험 개시 전에만 가능합니다.</p>
-                </li>
-            </ul>
-        </div>
-    </div>
+<!--    <script>-->
+<!--        $(document).ready(function () {-->
+<!--            let startDate;-->
+<!--            let startTime;-->
+<!--            let endDate;-->
+<!--            let endTime;-->
 
 
-    <div>
-        <button class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></button>
-    </div>
+<!--            $("#startDate").on("change", function () {-->
+<!--                startDate = $(this).val();-->
+<!--            });-->
 
-</div>
-</body>
-</html>
+<!--            $("#endDate").on("change", function () {-->
+<!--                endDate = $(this).val();-->
+<!--            });-->
+
+<!--            for (let i = 0; i < 24; i++) {-->
+<!--                $(".timePick").append("<option value='" + numPadding2(i) + ":00" + "'>" + numPadding2(i) + ":00" + "</option>")-->
+<!--            }-->
+
+<!--            // $("#startTime").on("click", function () {-->
+<!--            //     $("#startTimePick").removeAttr("hidden");-->
+<!--            // });-->
+
+<!--            $("#startTimePick").on("change", function () {-->
+<!--                // $("#startTimePick").attr("hidden", "hidden");-->
+<!--                startTime = $(this).val();-->
+<!--                // $("#startTime").val(startTime);-->
+<!--            });-->
+
+<!--            // $("#startTimePick").on("blur", function () {-->
+<!--            //     $("#startTimePick").attr("hidden", "hidden");-->
+<!--            //     $("#startTime").val($(this).val());-->
+<!--            // });-->
+
+<!--            // $("#endTime").on("click", function () {-->
+<!--            //     $("#endTimePick").removeAttr("hidden");-->
+<!--            // });-->
+
+<!--            $("#endTimePick").on("change", function () {-->
+<!--                // $("#endTimePick").attr("hidden", "hidden");-->
+<!--                endTime = $(this).val();-->
+<!--                // $("#endTime").val(endTime);-->
+<!--            });-->
+
+<!--            // $("#endTimePick").on("blur", function () {-->
+<!--            //     $("#endTimePick").attr("hidden", "hidden");-->
+<!--            //     $("#endTime").val($(this).val());-->
+<!--            // });-->
+
+<!--            $("#next").on("click", function () {-->
+<!--                if (startTime == null || startDate == null || endDate == null || endTime == null) {-->
+<!--                    alert("출발 시간과 종료 시간을 모두 입력해 주세요.");-->
+<!--                } else {-->
+<!--                    let travelDatetimeFromStr = `${startDate} ${startTime}`;-->
+<!--                    let travelDatetimeToStr = `${endDate} ${endTime}`-->
+<!--                    let travelDatetimeFrom = new Date(travelDatetimeFromStr);-->
+<!--                    let travelDatetimeTo = new Date(travelDatetimeToStr);-->
+
+<!--                    nowDatetime = new Date();-->
+<!--                    if (travelDatetimeFrom - nowDatetime <= 0) {-->
+<!--                        alert("출발 시간을 현재 시간 이후로 설정해 주세요.");-->
+<!--                    } else if (travelDatetimeTo - travelDatetimeFrom <= 0) {-->
+<!--                        alert("종료 시간을 출발 시간 이후로 설정해 주세요.");-->
+<!--                    } else if (travelDatetimeFrom - nowDatetime > (62*24*60*60*1000)) {-->
+<!--                        alert("여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.");-->
+<!--                    } else if (travelDatetimeTo - travelDatetimeFrom > (89*24*60*60*1000)){-->
+<!--                        alert("여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.");-->
+<!--                    }-->
+<!--                    else {-->
+<!--                        window.localStorage.setItem("travelDatetimeFrom", travelDatetimeFromStr);-->
+<!--                        window.localStorage.setItem("travelDatetimeTo", travelDatetimeToStr);-->
+<!--                        window.location.href = "/applyInsuredPerson";-->
+<!--                    }-->
+<!--                }-->
+
+<!--            });-->
+<!--        });-->
+<!--    </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="main">-->
+<!--    <div class="apply-header d-flex justify-content-between align-items-center">-->
+<!--        <a href="/home" class="btn back"><span>이전</span></a>-->
+<!--        <span>가입정보 입력</span>-->
+<!--        <a href="/home" class="btn home"><span>홈</span></a>-->
+<!--    </div>-->
+
+<!--    <div class="d-flex flex-column">-->
+<!--        <div class="d-flex justify-content-around">-->
+<!--            <div class="position-relative m-4">-->
+<!--                <div class="">-->
+<!--                    <span class="">여행 출발</span>-->
+<!--                    <input type="date" class="form-control" id="startDate">-->
+<!--                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간"-->
+<!--                           name="startTime" id="startTime">-->
+<!--                </div>-->
+<!--                <select name="startTimePick" id="startTimePick" class="top-100 timePick form-control position-absolute"-->
+<!--                        hidden="hidden" size="5">-->
+<!--                </select>-->
+<!--            </div>-->
+
+<!--            <div class="position-relative m-4">-->
+<!--                <div class="">-->
+<!--                    <span class="">여행 종료</span>-->
+<!--                    <input type="date" class="form-control" id="endDate">-->
+<!--                    <input type="text" class="form-control timeInput bg-white" readonly placeholder="시간" name="endTime"-->
+<!--                           id="endTime">-->
+<!--                </div>-->
+<!--                <select name="endTimePick" id="endTimePick" class="top-100 timePick form-control position-absolute"-->
+<!--                        hidden="hidden" size="5">-->
+<!--                </select>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div>-->
+<!--            <ul class="list-unstyled small text-secondary">-->
+<!--                <li class="d-flex ">-->
+<!--                    <i class="bi bi-exclamation-circle me-2"></i>-->
+<!--                    <p>여행(보험)기간은 집에서 출발하고 도착하는 일시이며, 이미 출발한 경우 비행기 탑승 일시를 입력해 주세요.</p>-->
+<!--                </li>-->
+<!--                <li class="d-flex">-->
+<!--                    <i class="bi bi-exclamation-circle me-2"></i>-->
+<!--                    <p>여행 시작일은 오늘부터 최대 2개월(62일)까지 선택 가능합니다.</p>-->
+
+<!--                </li>-->
+<!--                <li class="d-flex">-->
+<!--                    <i class="bi bi-exclamation-circle me-2"></i>-->
+<!--                    <p>여행 종료일은 시작일 기준 3개월(89일) 이내로만 선택 가능합니다.</p>-->
+<!--                </li>-->
+<!--                <li class="d-flex">-->
+<!--                    <i class="bi bi-exclamation-circle me-2"></i>-->
+<!--                    <p>일정 변경을 원하시면 계약 취소 후 재가입 바랍니다. 계약 취소는 보험 개시 전에만 가능합니다.</p>-->
+<!--                </li>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--    </div>-->
+
+
+<!--    <div>-->
+<!--        <button class="btn main-btn d-flex align-items-center justify-content-center" id="next"><span>다음</span></button>-->
+<!--    </div>-->
+
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->
