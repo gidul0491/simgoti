@@ -8,6 +8,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 
@@ -36,13 +39,6 @@ public class MessageServiceImpl implements MessageService {
     private final String smtpPass = "cdljuescbaujqurb"; // gmail 비번
     private final int port = 587;
 
-    // pdfResource폴더 경로
-    private final String resourcePath = System.getProperty("user.dir") +
-            File.separator + "src" +
-            File.separator + "main" +
-            File.separator + "resources" +
-            File.separator + "pdfResources" +
-            File.separator;
     String clntEmail;
 
 //        private final String senderEmail = "231015"; // simg account
@@ -92,9 +88,11 @@ public class MessageServiceImpl implements MessageService {
 
             // 로고추가
             ClassPathResource resource = new ClassPathResource("pdfResources"+File.separator+"hanaSimg_logo.png");
-            File logo = resource.getFile();
-            Image img = ImageIO.read(logo);
-            PDImageXObject pdImage = PDImageXObject.createFromFile(logo.toString(), document);
+//            File logo = resource.getFile();
+//            Image img = ImageIO.read(logo);
+            InputStream logoStream = resource.getInputStream();
+            BufferedImage img = ImageIO.read(logoStream);
+            PDImageXObject pdImage = LosslessFactory.createFromImage(document, img);
 
             float imgWidth = pageX / 3;
             float imgHeight = imgWidth * ((float) img.getHeight(null) / img.getWidth(null));
@@ -105,9 +103,10 @@ public class MessageServiceImpl implements MessageService {
             // 타이틀 추가
             yPosition -= 10;
             resource = new ClassPathResource("pdfResources"+File.separator+"title_bg.png");
-            File titleBg = resource.getFile();
-            img = ImageIO.read(titleBg);
-            pdImage = PDImageXObject.createFromFile(titleBg.toString(), document);
+            InputStream titleBgStream = resource.getInputStream();
+//            File titleBg = resource.getFile();
+            img = ImageIO.read(titleBgStream);
+            pdImage = LosslessFactory.createFromImage(document, img);
 
             imgWidth = contentX;
             imgHeight = imgWidth * ((float) img.getHeight(null) / img.getWidth(null));
