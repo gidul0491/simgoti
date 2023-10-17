@@ -35,6 +35,14 @@ public class MessageServiceImpl implements MessageService {
     private final String senderEmail = "quack0258@gmail.com"; // gmail 아이디
     private final String smtpPass = "cdljuescbaujqurb"; // gmail 비번
     private final int port = 587;
+
+    // pdfResource폴더 경로
+    private final String resourcePath = System.getProperty("user.dir") +
+            File.separator + "src" +
+            File.separator + "main" +
+            File.separator + "resources" +
+            File.separator + "pdfResources" +
+            File.separator;
     String clntEmail;
 
 //        private final String senderEmail = "231015"; // simg account
@@ -83,7 +91,7 @@ public class MessageServiceImpl implements MessageService {
             float cellMargin = 5f;
 
             // 로고추가
-            ClassPathResource resource = new ClassPathResource("pdfResources/hanaSimg_logo.png");
+            ClassPathResource resource = new ClassPathResource("pdfResources"+File.separator+"hanaSimg_logo.png");
             File logo = resource.getFile();
             Image img = ImageIO.read(logo);
             PDImageXObject pdImage = PDImageXObject.createFromFile(logo.toString(), document);
@@ -96,7 +104,7 @@ public class MessageServiceImpl implements MessageService {
 
             // 타이틀 추가
             yPosition -= 10;
-            resource = new ClassPathResource("pdfResources/title_bg.png");
+            resource = new ClassPathResource("pdfResources"+File.separator+"title_bg.png");
             File titleBg = resource.getFile();
             img = ImageIO.read(titleBg);
             pdImage = PDImageXObject.createFromFile(titleBg.toString(), document);
