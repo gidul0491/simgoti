@@ -15,4 +15,7 @@ public class PdfInsInfoDto {
     String covNm;
     String clntNm;
     String clntEmail;
+    String trPurpose;
+    String payedDt;
+    String clntPhone;
 }

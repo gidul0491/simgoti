@@ -11,6 +11,7 @@ public class MyPageCompanionDto {
     private String clntBirth;
     private String clntGen;
     private int premium;
+    private char adult;
     private List<MyPageCoverageDetailDto> covDList;
 
 }

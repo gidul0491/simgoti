@@ -6,14 +6,19 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.HashMap;
 
-public class NaverApiService {
+@Service
+public class SMSImpl implements SMS{
+    private String simgSmsUrl = "https://hana-rent-bike-dev.simg.kr/api/v1/flex/sms";
+    private String simg_X_API_SECRET = "1F478190-F877-11ED-86DA-3B753D9AE9E1";
     private String accessKey = "F4nqr68CXn2V3IiCZ3I8";
     private String secretKey = "0MGqxfvGg18SI5TgLcz8gLGUEPOKQxbXsP2Cg71w";
     private String smsUrl = "https://sens.apigw.ntruss.com/sms/v2/services/ncp:sms:kr:317060051431:simgoti/messages";
@@ -91,4 +96,36 @@ public class NaverApiService {
         return response;
     }
 
+    public String certificationSms(String phone) {
+        Random random = new Random();
+        int num = random.nextInt(1000000);
+        String numStr = String.format("%06d",num);
+
+        try{
+            // 요청 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-type", "application/x-www-form-urlencoded");
+            headers.set("X-API-SECRET", simg_X_API_SECRET);
+
+
+            // 요청 본문 데이터 설정
+            String requestBody = "cell=" + URLEncoder.encode(phone, "UTF-8") + "&code=" + URLEncoder.encode(numStr,"UTF-8");
+
+            // HttpEntity를 사용하여 헤더와 본문을 함께 설정
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // POST 요청 보내기
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    simgSmsUrl,
+                    requestEntity,
+                    String.class);
+
+            System.out.println(response);
+            return numStr;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return "error";
+        }
+    }
 }

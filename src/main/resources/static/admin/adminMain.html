@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
     <script src="/js/bootstrap.bundle.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <script src="/js/jquery-3.7.0.js"></script>
     <script src="/js/commonjs.js"></script>
 
@@ -60,6 +61,34 @@
             color: white;
             background: #55dd55;
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading{
+            position: relative;
+            padding: 10px 20px;
+            background: #ffcc55;
+            color: white;
+            font-size: 16px;
+        }
+
+        .spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+
     </style>
     <script>
         $(document).ready(function () {
@@ -69,13 +98,17 @@
                     console.log("clicked " + id);
                 }
                 if ($(e.target).hasClass("payedYnBtn")) {
-                    const pk = $(e.target).val().split("-")[0];
-                    const value = $(e.target).val().split("-")[1];
+                    const btn = $(e.target);
+                    const pk = btn.val().split("-")[0];
+                    const value = btn.val().split("-")[1];
                     console.log(`pk = ${pk}, value = ${value}`);
-                    if(value=="N"){
+                    if(value=="N"){ // N인 상태에서 누르는경우 Y로 수정
                         updatePayedYN(pk,"Y");
+
+                        btn.empty().addClass("loading").append("<div class=\"spinner\"></div>");
+                        btn.addClass("loading");
                     }
-                    else if (value=="Y"){
+                    else if (value=="Y"){ // Y인 상태에서 누르는 경우 N으로 수정
                         updatePayedYN(pk,"N");
                     }
 
@@ -143,7 +176,9 @@
                 }
 
                 const payedYnBtn = `
-<button class="payedYnBtn btn btn-payedYN-${payedYN}" value="${aplPk}-${payedYN}">${payedYN}</button>
+<button class="payedYnBtn btn btn-payedYN-${payedYN} p-0" value="${aplPk}-${payedYN}">
+        ${payedYN}
+    </button>
                 `;
 
                 const aplStateSelect = `
@@ -175,6 +210,7 @@
 
             // N 버튼을 눌렀을때 payedYN이 Y로 바뀌는 함수
             function updatePayedYN(aplPk, payedYN) {
+
                 $.ajax({
                     url: "/api/admin/payedYN",
                     method: "PUT",
@@ -223,6 +259,7 @@
     <h3>SIMG 해외여행자보험 계약관리</h3>
 </div>
 <div class="container-sm">
+
     <div class="application-table-div">
         <table class="table table-hover text-center">
             <thead>

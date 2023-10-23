@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class CommonServiceImpl implements CommonService {
     private final CommonMapper commonMapper;
-    private final HanaPremium hanaPremium;
+    private final HanaPremiumImpl hanaPremium;
 
     public String selectPolNoByCovCode(int covCode) throws Exception {
         return commonMapper.selectPolNoByCovCode(covCode);
@@ -36,10 +36,10 @@ public class CommonServiceImpl implements CommonService {
             int nowYr = now.getYear() % 100;
             int nowCentury = now.getYear() - nowYr;
             if(yr > nowYr){
-                year = nowCentury + yr;
+                year = nowCentury -100 + yr;
             }
             else{
-                year = nowCentury -100 + yr;
+                year = nowCentury + yr;
             }
             mth = Integer.parseInt(birth.substring(2,4));
             dt = Integer.parseInt(birth.substring(4,6));
@@ -47,9 +47,8 @@ public class CommonServiceImpl implements CommonService {
 
         LocalDate birthday = LocalDate.of(year, mth, dt);
 
-        // 보험나이는 오늘을 6개월 이후의 하루 전날로 계산한 만나이와 동일함(또는 생년월일에 -6개월을 한 뒤 구한 만나이)
-
-        now = now.plusMonths(6);
+        // 보험나이는 생년월일에 -6개월을 한 뒤 구한 만나이
+        birthday = birthday.minusMonths(6);
 
         int insAge = now.getYear() - birthday.getYear();
 
@@ -60,8 +59,49 @@ public class CommonServiceImpl implements CommonService {
         else if(mth == now.getMonthValue() && dt > now.getDayOfMonth()){
             insAge--;
         }
-
+//        System.out.println("insAge : " + insAge);
         return insAge;
+    }
+
+    // 생년월일 8자리를 만나이로 변환, 유효성검사도 가능  + 6자리를 입력했을때도 변환가능하게 기능추가
+    public int calculateManAge(String birth) throws Exception{
+
+        int year=1997;
+        int mth=12;
+        int dt=5;
+        LocalDate now = LocalDate.now();
+        if(birth.length() == 8){
+            year = Integer.parseInt(birth.substring(0,4));
+            mth = Integer.parseInt(birth.substring(4,6));
+            dt = Integer.parseInt(birth.substring(6,8));
+        }
+        else if(birth.length()==6){
+            int yr = Integer.parseInt(birth.substring(0,2));
+            int nowYr = now.getYear() % 100;
+            int nowCentury = now.getYear() - nowYr;
+            if(yr > nowYr){
+                year = nowCentury -100 + yr;
+            }
+            else{
+                year = nowCentury + yr;
+            }
+            mth = Integer.parseInt(birth.substring(2,4));
+            dt = Integer.parseInt(birth.substring(4,6));
+        }
+
+        LocalDate birthday = LocalDate.of(year, mth, dt);
+
+        int manAge = now.getYear() - birthday.getYear();
+
+        // 월 비교
+        if(mth > now.getMonthValue()){
+            manAge--;
+        }
+        else if(mth == now.getMonthValue() && dt > now.getDayOfMonth()){
+            manAge--;
+        }
+
+        return manAge;
     }
 
     // 여행기간을 입력받아 유효한 기간인지 아닌지를 검사
@@ -107,6 +147,9 @@ public class CommonServiceImpl implements CommonService {
         if(startDt.length() > 16){
             formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         }
+        if(startDt.length()==12){
+            formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+        }
         LocalDateTime startLdt = LocalDateTime.parse(startDt, formatter);
         LocalDateTime endLdt = LocalDateTime.parse(endDt, formatter);
         Duration duration = Duration.between(startLdt, endLdt);
@@ -117,6 +160,22 @@ public class CommonServiceImpl implements CommonService {
 
     @Override
     public char getGen(String clntJuminB){
-        return 'M';
+        int num = Integer.parseInt(clntJuminB.substring(0,1));
+        if(num % 2 == 1){
+            return 'M';
+        }
+        else{
+            return 'F';
+        }
+    }
+
+    @Override
+    public String attachJosa(String word){
+        char lastChar = word.charAt(word.length()-1);
+        char josa = '을';
+        if((lastChar - '가') % 28 == 0){
+            josa = '를';
+        }
+        return word+josa;
     }
 }

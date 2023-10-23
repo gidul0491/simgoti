@@ -9,4 +9,5 @@ public class MyPageInsDetailDto {
     private MyPageInsSummaryDto insSummary;
     private List<MyPageCompanionDto> companionList;
     private MyPageClientDto repClient;
+    private MyPageAccInfo myPageAccInfo;
 }

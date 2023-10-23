@@ -3,10 +3,8 @@ package com.simg.simgoti.dto;
 import lombok.Data;
 
 @Data
-public class CoverageDto {
-    private String covCode;
-    private String covNm;
-    private String covDCode;
+public class PdfCovDto {
+    private int covDCode;
     private String covDNm;
     private int covDAmt;
 }

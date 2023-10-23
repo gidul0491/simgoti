@@ -143,27 +143,49 @@ function calculateInsAge(birth) {
     const year = birth.substring(0, 4);
     const mth = birth.substring(4, 6);
     const dt = birth.substring(6, 8);
-
-    // 보험나이는 오늘을 6개월이후의 하루 전날로 계산한 만나이와 동일함
     let today = new Date();
-    today.setMonth(today.getMonth()+6);
-    today.setDate(today.getDate()-1);
-    today.setHours(0, 0, 0, 0);
 
+    // 보험나이는 생일에 -6개월을 하고 계산한 만나이와 동일함
     let birthday = new Date(`${year}-${mth}-${dt}`);
+    let insBirthday = birthday;
+    insBirthday.setMonth(birthday.getMonth()-6);
+    const insYr = insBirthday.getFullYear();
+    const insMth = insBirthday.getMonth()+1;
+    const insDt = insBirthday.getDate();
 
-    let insAge = today.getFullYear() - year;
+    let insAge = today.getFullYear() - insYr;
 
     // 월 비교
-    if(mth > (today.getMonth() + 2)){
+    if(insMth > (today.getMonth() + 2)){
         insAge--;
     }
     // 일 비교
-    else if(mth == (today.getMonth() + 1) && dt > today.getDate()){
+    else if(insMth == (today.getMonth() + 1) && insDt > today.getDate()){
         insAge--;
     }
 
     return insAge;
+}
+
+// 만 나이 구하는 함수
+function calculateManAge(birth){
+    const year = birth.substring(0, 4);
+    const mth = birth.substring(4, 6);
+    const dt = birth.substring(6, 8);
+    let today = new Date();
+
+    let manAge = today.getFullYear() - year;
+
+    // 월 비교
+    if(mth > (today.getMonth() + 2)){
+        manAge--;
+    }
+    // 일 비교
+    else if(mth == (today.getMonth() + 1) && dt > today.getDate()){
+        manAge--;
+    }
+
+    return manAge;
 }
 
 // 생년월일 8자리 유효성검사
@@ -179,7 +201,7 @@ function validate8birth(dateInput) {
     const date = new Date(year, month - 1, day);
 
     if (date.getFullYear() == year && date.getMonth() + 1 == month && date.getDate() == day) {
-        if(calculateInsAge(dateInput) > 80 || calculateInsAge(dateInput) < 1){
+        if(calculateManAge(dateInput) > 79 || calculateManAge(dateInput) < 0){
             return "age";
         }
         else {
@@ -220,15 +242,15 @@ function validate6birth(dateInput) {
                 if(now.getDate() < day){
                     return "age";
                 }
-                // 입력한 일이 오늘보다 작은 경우 - 지금은 2023년 9월 28인데 230927을 입력한 경우는 2023년 9월 27일로 가정함
-                else {
-                    return "age";
-                }
+                // // 입력한 일이 오늘보다 작은 경우 - 지금은 2023년 9월 28인데 230927을 입력한 경우는 2023년 9월 27일로 가정함
+                // else {
+                //     return "age";
+                // }
             }
             // 나머지 경우 - 입력한 월이 오늘의 월보다 작은 경우 - 지금은 2023년 9월인데 230801을 입력한 경우는 2023년 8월 1일로 가정함
             else {
-                // 보험나이가 1살이 안되는 경우
-                if(calculateInsAge(nowCent+yr+month+day) < 1){
+                // 만나이가 0살이 안되는 경우
+                if(calculateManAge(nowCent+yr+month+day) < 0){
                     return "age";
                 }
                 else{
@@ -236,14 +258,15 @@ function validate6birth(dateInput) {
                 }
             }
         }
+        // 입력한 연도가 현재 연도보다 큰 경우 - 지금은 23년인데 24년을 입력
         else if(nowYr < yr){
             const cent = (parseInt(nowCent) -1).toString();
-            if(calculateInsAge(cent+yr+month+day) > 80){
+            if(calculateManAge(cent+yr+month+day) > 79){
                 return "age";
             }
         }
         else if(nowYr > yr){
-            if(calculateInsAge(nowCent+yr+month+day) < 1){
+            if(calculateManAge(nowCent+yr+month+day) < 0){
                 return "age";
             }
             else {

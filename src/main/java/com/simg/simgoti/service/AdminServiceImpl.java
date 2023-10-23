@@ -25,10 +25,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public int updateInsPayedYN(int aplPk, Character payedYN) throws Exception{
-        if(payedYN.equals('N')){
+        if(payedYN.equals('N')){ // payedYN을 N으로 바꾸는 경우(결제되지않은 상태로 바꾸는경우)
             return adminMapper.updateInsPayedYN(aplPk, 'N', 401);
         }
-        else{
+        else{ // payedYN을 Y로 바꾸는경우(결제된 상태로 바꾸는 경우)
             return adminMapper.updateInsPayedYN(aplPk, 'Y', 402);
         }
     }

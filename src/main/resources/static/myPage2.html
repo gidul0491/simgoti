@@ -185,6 +185,15 @@
 
                 $("#clntEmail-text-a").val(emailA);
                 $("#clntEmail-text-b").val(emailB);
+                // 계약상태에 따라 가입증명서버튼 보이기
+                const state = summary.aplStateCode;
+                console.log(state);
+                if(state == 402 || state == 405){
+                    $("#email-pdf-kr-div").removeAttr("hidden");
+                }
+                else{
+                    $("#email-pdf-kr-div").attr("hidden","hidden");
+                }
 
                 // 계약 상태가 만기해지가 아닐때 계약취소버튼 추가
                 $("#application-cancel-div").empty();
@@ -229,6 +238,7 @@
                             if(emailPdfBtn.hasClass("main-btn")){
                                 emailPdfBtn.removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서");
                             }
+                            // 고객의 이메일에따라 이메일변경 팝업에서 이메일 select 관련 처리
                             $("#clntEmail-select").empty();
                             emailDomain.map((item)=>{
                                 let selected = "";
@@ -238,6 +248,46 @@
                                 }
                                 $("#clntEmail-select").append(`<option value='${item}' ${selected}>${item}</option>>`);
                             });
+
+                            // 가입신청단계인 경우 입금할 계좌정보를 표시
+                            $("#ins-detail-acc").empty();
+                            if(data.insDetail.myPageAccInfo != null){
+                                const accInfo = data.insDetail.myPageAccInfo;
+                                let payDueDt = accInfo.payDueDt
+                                payDueDt = payDueDt.substring(0,payDueDt.length -3)
+                                console.log(accInfo);
+                                $("#ins-detail-acc").append(`
+                                <hr>
+                                <!-- 입급확인 -->
+                                <div class="text-center">
+                                    <span id="accDueDt">${payDueDt}</span><br>
+                                    <span>위 기한까지 입금이 확인되지 않으면 가입 신청이 자동으로 취소됩니다.</span>
+                                </div>
+
+                                <table class="w-100 mt-3">
+                                    <colgroup>
+                                        <col style="width: 40%">
+                                        <col style="width: 60%">
+                                    </colgroup>
+                                    <tr>
+                                        <td>입금하실 보험료</td>
+                                        <td id="totalPrem2">${putComma(accInfo.premium)}원</td>
+                                    </tr>
+                                    <tr>
+                                        <td>입금하실 계좌</td>
+                                        <td id="accBank">${accInfo.accBank}</td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td id="accNum">${accInfo.accNum}</td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td id="accNm">${accInfo.accNm}</td>
+                                    </tr>
+                                </table>`)
+                            }
+
                         }
                     },
                     error: () => {
@@ -608,7 +658,8 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="email-pdf-kr-div">
+                    <div id="ins-detail-acc"></div>
+                    <div id="email-pdf-kr-div" hidden>
                         <button type="button" class="btn main-btn-outlined mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입증명서</button>
                         <div class="popup" hidden style="z-index: 1">
                             <div class="popup-content d-flex justify-content-center align-items-center">

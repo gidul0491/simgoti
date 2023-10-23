@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <script src="/js/jquery-3.7.0.js"></script>
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <style>
+
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            let info = {
+                clntNm:"",
+                clntJumin:"",
+                benefRel:"",
+                benefNm:"",
+                benefPhone:"",
+                benefEmail:"",
+                clmDt:"",
+                clmPlace:"",
+                clmAmt:"",
+                clmDetail:""
+            };
+
+            let read = [false, false, false];
+            let check0bool = false;
+
+            // 모든 변수에 값을 대입하고 유효성을 검사하는 함수
+            function checkAllVars(){
+                let checkAllVarsBool = true;
+                info.clntNm = $("#clntNm-text").val();
+                info.clntJumin = $("#clntJumin-text-a").val() + $("#clntJumin-text-b").val();
+                info.benefRel = $("#benefRel-select option:selected").val();
+                info.benefNm = $("#benefNm-text").val();
+                info.benefPhone = $("#benefPhone-text").val();
+
+
+                if($("#benefEmail-text-a").val() != "" && $("#benefEmail-select option:selected").val() != "직접입력"){
+                    info.benefEmail = $("#benefEmail-text-a").val()+"@"+$("#benefEmail-select option:selected").val();
+                }
+                else   if($("#benefEmail-text-a").val() != "" && $("#benefEmail-text-b").val() != ""){
+                    info.benefEmail = $("#benefEmail-text-a").val()+"@"+$("#benefEmail-text-b").val();
+                }
+
+                if($("#clmDt-time-pick option:selected").val() != "") {
+                    info.clmDt = $("#clmDt-date").val() + " " + $("#clmDt-time-pick option:selected").val();
+                }
+
+                info.clmPlace = $("#clmPlace-text").val();
+                info.clmAmt = $("#clmAmt-text").val();
+                info.clmDetail = $("#clmDetail-text").val();
+
+                console.log("******************************************");
+                Object.keys(info).forEach((key)=>{
+                    const value = info[key];
+                    console.log(`${key} : ${value}`);
+                    if(value == "" || value == null){
+                        checkAllVarsBool =  false;
+                    }
+                });
+
+                console.log(checkAllVarsBool);
+                if(checkAllVarsBool && check0bool){
+                    $("#claim-btn").removeAttr("disabled");
+                }
+                else{
+                    $("#claim-btn").attr("disabled","disabled");
+                }
+
+                return true
+            }
+
+            // 이메일 관련
+            const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
+
+            // 이메일 select 옵션 넣기
+            emailDomain.map(function(item){
+                $("#benefEmail-select").append(`<option value='${item}'>${item}</option>`);
+            });
+
+            // 이메일 직접입력
+            $("#benefEmail-text-b").on("keyup",function(){
+                info.benefEmail = $("#benefEmail-text-a").val() + "@" + $("#benefEmail-text-b").val();
+            });
+
+            // 이메일 도메인 선택했을때
+            $("#benefEmail-select").on("input", function () {
+                const selected = $("#benefEmail-select option:selected").val();
+                const emailB = $("#benefEmail-text-b");
+                // 직접입력 선택했을때
+                if (selected == "직접입력") {
+                    info.benefEmail = null;
+                    emailB.removeAttr("hidden");
+                    emailB.val(null).focus();
+                }else{
+                    emailB.val(selected);
+                    emailB.attr("hidden","hidden");
+                    info.benefEmail = $("#benefEmail-text-a").val() + "@" + $("#benefEmail-text-b").val();
+                }
+            })
+
+
+            // 사고 날짜 선택시
+            $("#clmDt-date").on("input", function () {
+                $("#clmDt-time-pick").removeAttr("disabled");
+            });
+
+            // 약관 보이기
+            $(".show-btn").on("click", function () {
+                const showNum = $(this).attr("id").split("-")[2];
+                // 한번 클릭하면 배열 read의 showNum 요소가 true로 바뀜
+                read[showNum] = true;
+
+                // 약관버튼의 체크표시를 파란색으로 바꿈
+                if (!$("#read-" + showNum).hasClass("checked")) {
+                    $("#read-" + showNum).addClass("checked");
+                }
+
+                // "모든 약관을 확인해주세요" 안내를 숨김
+                $("#hidden-alert").attr("hidden", "hidden");
+
+                if (!$(this).hasClass("show")) {
+                    $(this).addClass("show");
+                    $(".show-div#show-div-" + showNum).removeAttr("hidden");
+                    $("#show-btn-" + showNum + " i.closed").attr("hidden", "hidden");
+                    $("#show-btn-" + showNum + " i.opened").removeAttr("hidden");
+
+                    // moveScrollTop(this);
+                } else {
+                    $(this).removeClass("show");
+                    $(".show-div#show-div-" + showNum).attr("hidden", "hidden");
+                    $("#show-btn-" + showNum + " i.closed").removeAttr("hidden");
+                    $("#show-btn-" + showNum + " i.opened").attr("hidden", "hidden");
+                }
+
+                // "위 모든 ~에 동의합니다."  버튼의 div가 .agree-check-disable 클래스를 가지고 있을 때
+                // read 배열의 모든 요소가 true이면 위 모든 ~ 동의합니다 버튼의 클래스를 .agree-check-disable에서 ...-able로 바꿈
+                if ($("#agree-check").hasClass("agree-check-disable")) {
+                    if (!read.includes(false)) {
+                        $("#agree-check").removeClass("agree-check-disable").addClass("agree-check-able");
+                    }
+                }
+            });
+
+            // 약관 펼쳐졌을때  보이는 접기버튼
+            $(".close").on("click", function () {
+                const showNum = $(this).val();
+                console.log("close " + showNum);
+                $("#show-btn-" + showNum).removeClass("show");
+                $(".show-div#show-div-" + showNum).attr("hidden", "hidden");
+                $("#show-btn-" + showNum + " i.closed").removeAttr("hidden");
+                $("#show-btn-" + showNum + " i.opened").attr("hidden", "hidden");
+            });
+
+            // 약관 동의 체크
+            $(document).on("click", ".agree-check-able #check-0", function () {
+                if (!check0bool) {
+                    check0bool = true;
+                    $(this).addClass("checked");
+
+                } else {
+                    check0bool = false;
+                    $(this).removeClass("checked");
+                }
+                checkAllVars();
+            });
+
+            // 약관 안읽었는데 동의 체크하려고할때
+            $(document).on("click", ".agree-check-disable #check-0", function () {
+                $("#hidden-alert").removeAttr("hidden");
+            });
+
+            $("input").on("input",function(){
+                checkAllVars();
+            })
+            $("select").on("input",function(){
+                checkAllVars();
+            })
+        });
+    </script>
+</head>
+<body>
+<div class="mainView d-flex flex-column text-center">
+    <div id="header"></div>
+    <div class="contentsView">
+        <div id="tabs" class="tab-3"></div>
+        <!-- 탭 아래 본문내용-->
+        <div id="content">
+            <!-- 피보험자 정보 입력 -->
+            <div id="insured" class="mt-3">
+                <h5 class="text-start">피보험자(다치거나 피해를 입으신 분)</h5>
+                <!-- 이름 -->
+                <div class="text-start my-3" id="clntNm-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>이름</span>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="clntNm-text" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 주민번호 -->
+                <div class="text-start mb-3" id="clntJumin-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <div><span>주민등록번호</span></div>
+                            <div><span><small>(외국인번호)</small></span></div>
+                        </div>
+                        <div class="w-75">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="w-100 pe-2">
+                                    <input type="text" class="form-control" id="clntJumin-text-a" maxlength="6">
+                                </div>
+
+                                <span>-</span>
+                                <div class="w-100 ms-2">
+                                    <input type="text" class="form-control" id="clntJumin-text-b" maxlength="7">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 안내받으실분 정보 입력 -->
+            <div id="contact" class="mt-5">
+                <h5 class="text-start">보상 안내 받으실 분</h5>
+                <!-- 관계 선택 -->
+                <div class="text-start mb-3" id="benefRel-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <div><span>관계</span></div>
+                        </div>
+                        <div class="w-75">
+                            <select name="benefRel" id="benefRel-select">
+                                <option value="" hidden disabled selected>피보험자와의 관계</option>
+                                <option value="본인">본인</option>
+                                <option value="법정대리인">법정대리인</option>
+                                <option value="법정상속인">법정상속인</option>
+                                <option value="기타">기타</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- 이름 -->
+                <div class="text-start my-3" id="benefNm-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>이름</span>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="benefNm-text" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+                <!-- 휴대폰번호 -->
+                <div class="text-start mb-3" id="clntPhone-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <div><span>휴대폰번호</span></div>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="benefPhone-text" maxlength="13">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 이메일 -->
+                <div class="text-start mb-3" id="benefEmail-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <div><span>이메일</span></div>
+                        </div>
+                        <div class="w-75">
+                            <div class="d-flex justify-content-between align-items-top">
+                                <div class="w-100 pe-2">
+                                    <input type="text" class="form-control" id="benefEmail-text-a">
+                                </div>
+
+                                <span>@</span>
+
+                                <div class="select-div w-100 ms-2">
+                                    <input type="text" class="form-control"
+                                           id="benefEmail-text-b">
+                                    <select name="benefEmail-select" id="benefEmail-select"
+                                            class="form-control"
+                                            style="z-index: 1">
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사고정보 입력 -->
+            <div id="accident">
+                <!-- 사고 시간-->
+                <div class="text-start mb-3" id="clmDt-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>사고 시간</span>
+                        </div>
+                        <div class="w-75 d-flex justify-content-between">
+                            <div class="w-50 pe-1">
+                                <input type="date" class="form-control" id="clmDt-date">
+                            </div>
+                            <div class="w-50 position-relative ps-1">
+                                <select id="clmDt-time-pick"
+                                        class="form-control time-pick disabled" disabled>
+                                    <option value='' hidden="hidden" disabled selected>시간</option>
+                                    <option value='00:00'>00:00</option>
+                                    <option value='01:00'>01:00</option>
+                                    <option value='02:00'>02:00</option>
+                                    <option value='03:00'>03:00</option>
+                                    <option value='04:00'>04:00</option>
+                                    <option value='05:00'>05:00</option>
+                                    <option value='06:00'>06:00</option>
+                                    <option value='07:00'>07:00</option>
+                                    <option value='08:00'>08:00</option>
+                                    <option value='09:00'>09:00</option>
+                                    <option value='10:00'>10:00</option>
+                                    <option value='11:00'>11:00</option>
+                                    <option value='12:00'>12:00</option>
+                                    <option value='13:00'>13:00</option>
+                                    <option value='14:00'>14:00</option>
+                                    <option value='15:00'>15:00</option>
+                                    <option value='16:00'>16:00</option>
+                                    <option value='17:00'>17:00</option>
+                                    <option value='18:00'>18:00</option>
+                                    <option value='19:00'>19:00</option>
+                                    <option value='20:00'>20:00</option>
+                                    <option value='21:00'>21:00</option>
+                                    <option value='22:00'>22:00</option>
+                                    <option value='23:00'>23:00</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 사고장소 -->
+                <div class="text-start my-3" id="clmPlace-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>사고 장소</span>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="clmPlace-text" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+                <!-- 피해금액 -->
+                <div class="text-start my-3" id="clmAmt-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>피해(예상)금액</span>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="clmAmt-text" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+                <!-- 사고내용 -->
+                <div class="text-start my-3" id="clmDetail-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>사고 내용</span>
+                        </div>
+                        <div class="w-75">
+                            <input type="text" class="form-control" id="clmDetail-text" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 개인정보 동의 -->
+            <div id="agreement">
+                <div class="agree-terms">
+                    <ul class="list-unstyled mb-0">
+                        <li>
+                            <button type="button" class="show-btn" id="show-btn-0">
+                                <div>개인정보 수집 이용에 관한 사항 <i class="bi bi-caret-down-fill closed"></i><i
+                                        class="bi bi-caret-up-fill opened" hidden></i></div>
+                                <div id="read-0" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                            </button>
+                            <div class="show-div" id="show-div-0" hidden>
+                            <pre>
+
+</pre>
+                                <button type="button" class="close mx-auto my-2" value="0">[접기]</button>
+                            </div>
+                        </li>
+                        <li>
+                            <button type="button" class="show-btn" id="show-btn-1">
+                                <div>개인정보 제공에 관한 사항 <i class="bi bi-caret-down-fill closed"></i><i
+                                        class="bi bi-caret-up-fill opened" hidden></i></div>
+                                <div id="read-1" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                            </button>
+                            <div class="show-div" id="show-div-1" hidden>
+                           <pre>
+</pre>
+                                <button type="button" class="close mx-auto my-2" value="1">[접기]</button>
+                            </div>
+                        </li>
+                        <li>
+                            <button type="button" class="show-btn" id="show-btn-2">
+                                <div>개인정보 조회에 관한 사항 <i class="bi bi-caret-down-fill closed"></i><i
+                                        class="bi bi-caret-up-fill opened" hidden></i></div>
+                                <div id="read-2" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                            </button>
+                            <div class="show-div" id="show-div-2" hidden>
+                            <pre>
+</pre>
+                                <button type="button" class="close mx-auto my-2" value="2">[접기]</button>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </div>
+                <div class="my-3 agree-check-disable" id="agree-check">
+                    <button class="check-btn me-3 border-0" id="check-0">
+                        <span class="text">위 모든 사항을 확인했으며 이에 동의합니다.</span>
+                        <span class="icon"><i class="bi bi-check-circle-fill"></i></span>
+                    </button>
+                    <div id="hidden-alert" class="text-danger" hidden><span>모든 약관을 확인해주세요.</span></div>
+                </div>
+            </div>
+
+            <!-- 접수 버튼 -->
+            <div id="claim-btn-div">
+                <button type="button" class="btn main-btn w-100" id="claim-btn" disabled="disabled">접수</button>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<div class="footer">
+</div>
+</body>
+<script src="/js/commonjs.js"></script>
+</html>

@@ -42,6 +42,8 @@ dependencies {
     // https://mvnrepository.com/artifact/javax.mail/javax.mail-api
     implementation 'javax.mail:javax.mail-api:1.6.2'
 
+    // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.2'

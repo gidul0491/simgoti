@@ -1,8 +1,10 @@
 package com.simg.simgoti.controller;
 
+import com.simg.simgoti.service.Hanacrowling;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +13,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 @RequestMapping("/simg")
+@RequiredArgsConstructor
 public class MainController {
+    private final Hanacrowling hanacrowling;
     @RequestMapping("")
     public String index() throws Exception {
+
         return "index.html";
+    }
+
+    @RequestMapping(value = "/simgOti/calculate/hana", method = RequestMethod.GET)
+    public String calculateHana() throws Exception {
+        hanacrowling.hanaPrem();
+        return "done";
     }
 
     @RequestMapping(value = "/simgOti/calculate", method = RequestMethod.GET)
@@ -68,5 +79,8 @@ public class MainController {
         return "/admin/adminMain.html";
     }
 
-
+    @RequestMapping(value = "/simgOti/claim", method = RequestMethod.GET)
+    public String claim() throws Exception{
+        return "/claim.html";
+    }
 }

@@ -6,7 +6,7 @@
 
             <button id="myPageTab" class="w-100 tab-btn p-2"><span>마이페이지</span></button>
 
-<!--            <button id="qnaTab" class="w-100 tab-btn p-2"><span>QnA</span></button>-->
+            <button id="clmTab" class="w-100 tab-btn p-2"><span>사고접수</span></button>
 
     <!-- 안내 팝업-->
     <div class="popup" id="warn-popup" style="z-index: 2" hidden>
@@ -31,7 +31,6 @@
             location.href = "/simg/simgOti/calculate";
         });
 
-
         $("#applyTab").on("click", function(){
             showPopup("간편계산을 먼저 진행해주세요.","moveToCal");
             $("html").on("click","#moveToCal",function(){
@@ -40,7 +39,11 @@
         });
 
         $("#myPageTab").on("click",function(){
-            location.href = "/simg/simgOti/myPage"
+            location.href = "/simg/simgOti/myPage";
+        });
+
+        $("#clmTab").on("click",function(){
+            location.href ="/simg/simgOti/claim";
         });
 
         const selectedTab = $("#tabs").attr("class").split("-")[1];
@@ -55,9 +58,9 @@
             case "2":
                 $("#myPageTab").addClass("selected");
                 break;
-            // case "3":
-            //     $("#qnaTab").addClass("selected");
-            //     break;
+            case "3":
+                $("#clmTab").addClass("selected");
+                break;
         }
     });
 

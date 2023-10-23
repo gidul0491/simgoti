@@ -16,7 +16,7 @@
 
     <select id="selectCoverageList" resultType="com.simg.simgoti.dto.CoverageDto">
         select
-            c.covCode, c.covNm, c.covPremium, c.covPremiumMin, d.covDCode, covDNm, covDAmt
+            c.covCode, c.covNm, d.covDCode, covDNm, covDAmt
         from
             simgotidb.coverage c
         join
@@ -25,17 +25,20 @@
             c.covCode = d.covCode
         where
             c.useYN = 'Y' and d.useYN = 'Y'
+        <if test="isOver19 == 'N'">
+            and d.covDCode not in (1012010101, 1012010103, 1012010201, 1012010203, 1012010301, 1012010303)
+        </if>
         order by
             d.covDCode asc;
     </select>
 
     <select id="selectCoverageTypeList" resultType="com.simg.simgoti.dto.CoverageTypeDto">
         select
-            covCode, covNm, covPremium, covPremiumMin
+            covCode, covNm
         from
             simgotidb.coverage
         where
-            useYN = 'Y';
+            useYN = 'Y'
     </select>
 
     <select id="selectPremium" resultType="Map">
@@ -73,6 +76,27 @@
             clntPk = #{clntPk} and useYN = 'Y';
     </update>
 
+    <select id="selectCovDList" resultType="com.simg.simgoti.dto.CoverageDto">
+        select
+            d.covDCode, d.covDNm, d.covDAmt
+        from
+            simgotidb.coverageDetail d
+        where
+            d.covCode = #{covCode}
+        <if test="isOver19 == 'N'">
+            and d.covDCode not in (1012010101, 1012010103, 1012010201, 1012010203, 1012010301, 1012010303)
+        </if>
+    </select>
+
+    <select id="selectCovNm" resultType="String">
+        select
+            covNm
+        from
+            simgotidb.coverage
+        where
+            covCode = #{covCode}
+    </select>
+
     <insert id="insertApplyPayment" useGeneratedKeys="true" keyProperty="payPk">
         insert into
             simgotidb.payment (premium, payDueDt, accBank, accNum, accNm)
@@ -89,9 +113,9 @@
 
     <insert id="insertApplyInsuredList">
         insert into
-            simgotidb.applicationInsuredList (aplPk, clntPk, premium, repYN)
+            simgotidb.applicationInsuredList (aplPk, clntPk, premium, repYN, adult)
         values
-            (#{aplPk}, #{clntPk}, #{prem}, #{repYN});
+            (#{aplPk}, #{clntPk}, #{prem}, #{repYN}, #{adult});
     </insert>
 
     <select id="selectClientJuminAPhone" resultType="int">
@@ -133,7 +157,7 @@
     </select>
     <select id="selectCompanionDtoList" resultType="com.simg.simgoti.dto.MyPageCompanionDto">
         select
-            c.clntNm, c.clntBirth, c.clntGen, l.premium, l.repYN
+            c.clntNm, c.clntBirth, c.clntGen, l.premium, l.repYN, l.adult
         from
             simgotidb.applicationInsuredList l
         join
@@ -144,6 +168,17 @@
             l.aplPk = #{aplPk} and l.useYN = 'Y' and c.useYN = 'Y'
         order by
             l.repYn desc;
+    </select>
+
+    <select id="selectAccInfo">
+        select
+            p.premium, p.accBank, p.accNm, p.accNum, p.payDueDt
+        from
+            simgotidb.application a
+        join
+            simgotidb.payment p on a.payPk = p.payPk
+        where
+            a.aplPk = #{aplPk} and a.useYN = 'Y' and p.useYN = 'Y'
     </select>
 
     <select id="selectClientByAplPk" resultType="com.simg.simgoti.dto.MyPageClientDto">
@@ -163,11 +198,14 @@
         select
             d.covDCode, d.covDNm, d.covDAmt
         from
-            simgotidb.application a join simgotidb.coverageDetail d
-        on
-            a.covCode = d.covCode
+            simgotidb.application a
+        join
+            simgotidb.coverageDetail d on a.covCode = d.covCode
         where
             a.aplPk = #{aplPk} and a.useYN = 'Y' and d.useYN = 'Y'
+        <if test="isOver19 == 'N'">
+            and d.covDCode not in (1012010101, 1012010103, 1012010201, 1012010203, 1012010301, 1012010303)
+        </if>
         order by
             d.covDCode asc;
     </select>
@@ -182,15 +220,44 @@
     </update>
     <select id="selectInsForPdf" resultType="com.simg.simgoti.dto.PdfInsInfoDto">
         select
-            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, a.clntCnt, a.premium, c.covNm, cl.clntNm, a.polNo, cl.clntEmail
+            a.aplPk, a.trFromDt, a.trToDt, a.trPlace, a.clntCnt, a.premium, c.covNm, cl.clntNm, a.polNo, cl.clntEmail, cd.codeNm as trPurpose, p.payedDt,
+            cl.clntPhone
         from
             simgotidb.application a
         join
             simgotidb.coverage c on a.covCode = c.covCode
         join
             simgotidb.client cl on a.clntPk = cl.clntPk
+        join
+            simgotidb.code cd on a.trPurpose = cd.codePk
+        join
+            simgotidb.payment p on a.payPk = p.payPk
         where
             a.aplPk = #{aplPk} and a.useYN ='Y' and c.useYN = 'Y';
+    </select>
+    <select id="selectClntForPdf" resultType="com.simg.simgoti.dto.PdfClntDto">
+        select
+            c.clntNm, c.clntBirth, c.clntGen
+        from
+            simgotidb.applicationInsuredList al
+        join
+            simgotidb.client c on al.clntPk = c.clntPk
+        where
+            al.aplPk = #{aplPk}
+        order by
+            al.repYn desc;
+    </select>
+    <select id="selectCovDForPdf" resultType="com.simg.simgoti.dto.PdfCovDto">
+        select
+            d.covDCode, d.covDNm, d.covDAmt
+        from
+            simgotidb.application a
+        join
+            simgotidb.coverageDetail d on a.covCode = d.covCode
+        where
+            a.aplPk = #{aplPk}
+        order by
+            d.covDCode asc
     </select>
     <select id="selectPayedYNByAplPk">
         select
@@ -215,6 +282,28 @@
     </update>
     <select id="callAplRefund">
         call aplRefund(#{aplPk},#{clntPk},#{refnBank},#{refnAccount},#{refnName})
+    </select>
+    <select id="selectByCovAgeGen">
+        select
+        <choose>
+            <when test="covCode == 10120101">practical</when>
+            <when test="covCode == 10120102">standard</when>
+            <when test="covCode == 10120103">advanced</when>
+        </choose>
+        from
+            simgotidb.premium
+        where
+            gender = #{gen} and insAge = #{age} and period = #{day}
+    </select>
+    <select id="selectEmailByAplPk" resultType="java.lang.String">
+        select
+            c.clntEmail
+        from
+            simgotidb.application a
+        join
+            simgotidb.client c on a.clntPk = c.clntPk
+        where
+            a.aplPk = #{aplPk} and a.useYN = 'Y' and c.useYN = 'Y'
     </select>
 </mapper>
 

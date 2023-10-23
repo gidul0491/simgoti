@@ -7,25 +7,24 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
     private final ClientMapper clientMapper;
     private final CommonService commonService;
-    private final HanaPremium hanaPremium;
+    private final HanaPremiumImpl hanaPremium;
 
     @Override
-    public List<CoverageDto> selectCoverageList() throws Exception {
-        return clientMapper.selectCoverageList();
+    public List<CoverageDto> selectCoverageList(char isOver19) throws Exception {
+        return clientMapper.selectCoverageList(isOver19);
     }
 
     @Override
-    public List<CoverageTypeDto> selectCoverageTypeList(int insAge, char gen, int day) throws Exception {
-        List<CoverageTypeDto> list = clientMapper.selectCoverageTypeList();
+    public List<CoverageTypeDto> selectCoverageTypeList(int insAge, char gen, int day, char isOver19) throws Exception {
+        List<CoverageTypeDto> list = clientMapper.selectCoverageTypeList(isOver19);
         for (CoverageTypeDto dto : list) {
-            dto.setTotPremium(hanaPremium.byCovAgeGen(dto.getCovCode(), insAge, gen, day));
+            dto.setTotPremium(hanaPremium.selectByCovAgeGen(dto.getCovCode(), insAge, gen, day));
         }
         return list;
     }
@@ -36,10 +35,13 @@ public class ClientServiceImpl implements ClientService {
         Aes128Service aes = new Aes128Service("simgotiaes128key");
         String encJumin = aes.encrypt(clntJumin);
         int clntPk = -1;
+        char isOver19 = 'Y';
+        if(commonService.calculateManAge(clntBirth) < 19){
+            isOver19 = 'N';
+        }
         try {
             clntPk = clientMapper.selectClientNmJumin(clntNm, encJumin).get(0);
             ClientDto dto = new ClientDto(clntPk, clntNm, clntPhone, clntEmail, clntBirth, clntGen, encJumin);
-            System.out.println(dto);
             if (clntPhone != null && clntEmail != null) {
                 clientMapper.updateClientPhoneEmailByPk(dto);
             }
@@ -56,6 +58,16 @@ public class ClientServiceImpl implements ClientService {
             clntPk = dto.getClntPk();
         }
         return clntPk;
+    }
+
+    @Override
+    public List<CoverageDto> selectCovDList(String covCode, char isOver19){
+        return clientMapper.selectCovDList(covCode, isOver19);
+    };
+
+    @Override
+    public String selectCovNm(String covCode) {
+        return clientMapper.selectCovNm(Integer.parseInt(covCode));
     }
 
     @Override
@@ -87,13 +99,13 @@ public class ClientServiceImpl implements ClientService {
         dto.setClntCnt(clntCnt);
         dto.setPremium(premium);
         clientMapper.insertApplyFinish(dto);
-        System.out.println(dto);
+        System.out.println("보험가입완료 : " + dto);
         return dto.getAplPk();
     }
 
     @Override
-    public int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN) throws Exception {
-        return clientMapper.insertApplyInsuredList(aplPk, clntPk, prem, repYN);
+    public int insertApplyInsuredList(int aplPk, int clntPk, int prem, Character repYN, char isOver19) throws Exception {
+        return clientMapper.insertApplyInsuredList(aplPk, clntPk, prem, repYN, isOver19);
     }
 
     @Override
@@ -147,9 +159,16 @@ public class ClientServiceImpl implements ClientService {
         List<MyPageCompanionDto> myPageCompanionDtoList = clientMapper.selectCompanionDtoList(aplPk);
         // aplPk를 이용해서 myPageCompanionDtoList에 covDList 추가하기
         for(int i = 0;i < myPageCompanionDtoList.size(); i++){
-            myPageCompanionDtoList.get(i).setCovDList(clientMapper.selectCoverageDetailList(aplPk));
+            char isOver19 = myPageCompanionDtoList.get(i).getAdult();
+            System.out.printf("%s %s", myPageCompanionDtoList.get(i).getClntNm(),myPageCompanionDtoList.get(i).getAdult());
+            myPageCompanionDtoList.get(i).setCovDList(clientMapper.selectCoverageDetailList(aplPk, isOver19));
         }
         return myPageCompanionDtoList;
+    }
+
+    @Override
+    public MyPageAccInfo selectAccInfo(int aplPk) throws Exception{
+        return clientMapper.selectAccInfo(aplPk);
     }
 
     @Override

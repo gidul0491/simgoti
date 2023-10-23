@@ -31,16 +31,51 @@
         let accData;
 
         // companion-table에 값 저장하는 함수
-        function addCompanionRow(num, nm, jumin, prem) {
+        function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
             $("#companion-table").append(
                 `<tr>
                     <td>${num}</td>
                     <td>${nm}</td>
                     <td>${jumin}</td>
                     <td>${prem} 원</td>
+                    <td>
+                    <button type="button" class="btn main-btn-outlined show-popup p-0">확인</button>
+                        <div class="popup" hidden style="z-index: 2">
+                            <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
+                                ${coverageDetail(covNm, covDList)}
+                            </div>
+                        </div>
+                    </td>
                 </tr>`
             )
         }
+
+        // 보장내용 확인
+        function coverageDetail(covNm, covDList) {
+            const result = `
+                <span>${covNm}</span>
+                <div class="w-100 d-flex flex-column coverage-detail">
+                ${covDList.map((item) => {
+                return `
+                    <div class="d-flex justify-content-between">
+                        <div><span>${item.covDNm}</span></div>
+                        <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
+                    </div>
+                    `
+            }).join('')}
+                </div>
+                <div class="w-100 coverage-detail-close-div">
+                    <button type="button" class="btn main-btn coverage-detail-close">확인</button>
+                </div>
+                `;
+            return result;
+        }
+
+        $("html").on("click", ".coverage-detail-close", function () {
+            $(".popup").attr("hidden", "hidden");
+            $("#companion-list-popup").removeAttr("hidden");
+        });
+
 
         $(document).ready(function () {
             // 최초 결제요약정보를 불러옴
@@ -52,7 +87,7 @@
                     console.log(data);
 
                     if (data == "session expired") {
-                        alertAndMove("세션이 만료되었습니다. 간편 페이지로 이동합니다.", "/simg/simgOti/calculate");
+                        alertAndMove("세션이 만료되었습니다. 간편계산 페이지로 이동합니다.", "/simg/simgOti/calculate");
                     }
 
                     // 가입신청정보요약
@@ -71,15 +106,17 @@
                     $("#total-premium").append(`<span>${totalPrem} 원</span>`)
 
                     // 가입자명단
-                    const companionList =data.companionDtoList;
-                    if(companionList.length > 0){
+                    const companionList = data.companionDtoList;
+                    if (companionList.length > 0) {
                         $("#companion-list-btn-div").removeAttr("hidden");
-                        for(i in companionList){
+                        for (i in companionList) {
                             const item = companionList[i];
                             addCompanionRow(item.companionNum,
                                 item.companionNm,
                                 item.companionJuminA + "-" + item.companionJuminB,
-                                item.prem
+                                item.covNm,
+                                item.prem,
+                                item.covDList
                             )
                         }
                     }
@@ -115,7 +152,7 @@
 
             // 위 내용이~ 아니요 클릭했을 때 세션삭제
             $("#no").on("click", function () {
-                if(removeServerSession()){
+                if (removeServerSession()) {
                     moveToCalculate();
                 }
             });
@@ -160,9 +197,9 @@
                     url: "/api/client/applyFinish",
                     type: "POST",
                     data: {
-                        accBank:accBank,
-                        accNum:accNum,
-                        accNm:accNm,
+                        accBank: accBank,
+                        accNum: accNum,
+                        accNm: accNm,
                     },
                     success: (data) => {
                         if (data == "session expired") {
@@ -190,7 +227,8 @@
                     }
                 });
             })
-        });
+        })
+        ;
 
     </script>
 </head>
@@ -232,22 +270,26 @@
                             <td class="d-flex">
                                 <div id="applicant-count"></div>
                                 <div id="companion-list-btn-div" class="text-start ms-2" hidden>
-                                    <button type="button" class="btn main-btn-outlined show-popup p-0" id="companion-list-btn">가입자명단</button>
-                                    <div class="popup" hidden style="z-index: 2">
+                                    <button type="button" class="btn main-btn-outlined show-popup p-0"
+                                            id="companion-list-btn">가입자명단
+                                    </button>
+                                    <div class="popup" hidden id="companion-list-popup" style="z-index: 2">
                                         <div class="popup-content d-flex justify-content-center align-items-center">
                                             <div class="w-100">
                                                 <table id="companion-table" class="w-100">
                                                     <colgroup>
-                                                        <col style="width: 10%">
-                                                        <col style="width: 25%">
-                                                        <col style="width: 40%">
-                                                        <col style="width: 25%">
+                                                        <col style="width: 13%">
+                                                        <col style="width: 17%">
+                                                        <col style="width: 36%">
+                                                        <col style="width: 20%">
+                                                        <col style="width: 14%">
                                                     </colgroup>
                                                     <tr>
                                                         <th>번호</th>
                                                         <th>이름</th>
                                                         <th>주민등록번호</th>
                                                         <th>보험료</th>
+                                                        <th>보장</th>
                                                     </tr>
                                                 </table>
                                             </div>

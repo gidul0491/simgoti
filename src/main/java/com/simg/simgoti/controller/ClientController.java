@@ -27,8 +27,9 @@ import java.util.*;
 public class ClientController {
     private final ClientService clientService;
     private final CommonService commonService;
-    private final MessageService messageService;
-    private final HanaPremium hanaPremium;
+    private final EmailService emailService;
+    private final HanaPremiumImpl hanaPremium;
+    private final SMS sms;
 
     // calculate 페이지에서 보험료 확인 버튼을 눌렀을 때 db의 coverage 테이블에서 coverage code, 담보 한글이름, 하루당 보험료, 최소 보험료 정보인 coverageTabList와
     // 담보에 포함되는 세부담보 코드, 세부담보 이름, 세부담보 보장금액 정보인 coverageList를 result라는 변수명에 담아서 반환
@@ -43,11 +44,16 @@ public class ClientController {
             resp.put("result", "error");
             return resp;
         }
+        int manAge = commonService.calculateManAge(clntBirth);
+        char isOver19 = 'Y';
+        if(manAge <19){
+            isOver19 = 'N';
+        }
 
         String validateInsDate = commonService.validateInsDate(startDt, endDt);
 
-        if (insAge < 1 || insAge > 80) {
-            resp.put("msg", "1세부터 80세까지만 가입 가능합니다.");
+        if (manAge < 0 || manAge > 79) {
+            resp.put("msg", "만 0세부터 79세까지 가입 가능합니다.");
             resp.put("result", "error");
             return resp;
         } else if (!validateInsDate.equals("ok")) {
@@ -57,8 +63,8 @@ public class ClientController {
         } else {
             int travelDay = commonService.getPeriod(startDt, endDt);
             Map<String, List> data = new HashMap<>();
-            data.put("coverageList", clientService.selectCoverageList());
-            data.put("coverageTabList", clientService.selectCoverageTypeList(insAge, clntGen, travelDay));
+            data.put("coverageList", clientService.selectCoverageList(isOver19));
+            data.put("coverageTabList", clientService.selectCoverageTypeList(insAge, clntGen, travelDay, isOver19));
 
             resp.put("data", data);
             resp.put("result", "success");
@@ -86,12 +92,17 @@ public class ClientController {
         int clntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntGen, clntJumin, clntPhone, clntEmail);
         session.setAttribute("clntPk", clntPk);
 
+        char isOver19 = 'Y';
+        if(commonService.calculateManAge(clntJuminA) < 19){
+            isOver19 = 'N';
+        }
         // 동승자리스트로 세션에 저장(마지막 총보험료계산을위함)
         List<CompanionDto> list = new ArrayList<>();
-        int repPrem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), commonService.getPeriod(startDt, endDt));
-        CompanionDto rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, clntPk);
+        int repPrem = hanaPremium.selectByCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), commonService.getPeriod(startDt, endDt));
+        CompanionDto rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******",clientService.selectCovNm(covCode), repPrem, clntPk, isOver19);
         list.add(rep);
         session.setAttribute("companion",list);
+        System.out.println("개인정보동의 : " + list);
 
         return "ok";
     }
@@ -116,18 +127,24 @@ public class ClientController {
 
         int period = commonService.getPeriod(startDt, endDt);
 //        int repPrem = clientService.getPremium(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), period, 1); // 대표가입자의 보험료
-        int repPrem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), period);
+        int repPrem = hanaPremium.selectByCovAgeGen(covCode, commonService.calculateInsAge(clntJuminA), commonService.getGen(clntJuminB), period);
+        char repIsOver19 = 'Y';
+        if(commonService.calculateManAge(clntJuminA) < 19){
+            repIsOver19 = 'N';
+        }
 
         // 대표가입자 처리
         CompanionDto rep = new CompanionDto();
         if (calOrApl.equals("cal")) {
-            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, 0);
+            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******",clientService.selectCovNm(covCode), repPrem, 0,repIsOver19);
+            rep.setCovDList(clientService.selectCovDList(covCode,repIsOver19));
         } else if (calOrApl.equals("apl")) {
             // 대표가입자 정보를 db에 저장/업데이트
             int repClntPk = clientService.insertOrUpdateClient(clntNm, clntJuminA, clntJuminB.substring(0, 1), repClntJumin, clntPhone, clntEmail);
 
             // 대표가입자 정보를 세션의 동반가입자 리스트에 추가
-            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******", repPrem, repClntPk);
+            rep = new CompanionDto("대표", clntNm, clntJuminA, clntJuminB.substring(0, 1) + "******",clientService.selectCovNm(covCode), repPrem, repClntPk, repIsOver19);
+            rep.setCovDList(clientService.selectCovDList(covCode,repIsOver19));
             session.setAttribute("clntPk", repClntPk);
             session.setAttribute("clntNm", clntNm);
             session.setAttribute("clntJuminA", clntJuminA);
@@ -149,19 +166,25 @@ public class ClientController {
             String juminB = item.get("companionJuminB").toString();
 
 //            int prem = clientService.getPremium(covCode, commonService.calculateInsAge(juminA),commonService.getGen(juminB), period, 1); // 동반가입자의 보험료
-            int prem = hanaPremium.byCovAgeGen(covCode, commonService.calculateInsAge(juminA),commonService.getGen(juminB), period);
+            int prem = hanaPremium.selectByCovAgeGen(covCode, commonService.calculateInsAge(juminA),commonService.getGen(juminB), period);
 
             String gen = juminB.substring(0, 1);
             String jumin = juminA + juminB;
+            char isOver19 = 'Y';
+            if(commonService.calculateManAge(juminA)<19){
+                isOver19 = 'N';
+            }
 
             CompanionDto dto = new CompanionDto();
             if (calOrApl.equals("cal")) {
-                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******", prem, 0);
+                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******",clientService.selectCovNm(covCode), prem, 0, isOver19);
+                dto.setCovDList(clientService.selectCovDList(covCode,isOver19));
             } else if (calOrApl.equals("apl")) {
                 // 동반가입자 정보를 db에 저장후 pk 반환
                 int clntPk = clientService.insertOrUpdateClient(nm, juminA, gen, jumin, null, null);
 
-                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******", prem, clntPk);
+                dto = new CompanionDto(num, nm, juminA, juminB.substring(0, 1) + "******",clientService.selectCovNm(covCode), prem, clntPk, isOver19);
+                dto.setCovDList(clientService.selectCovDList(covCode,isOver19));
             }
             ;
             list.add(dto);
@@ -170,6 +193,7 @@ public class ClientController {
 
         if (calOrApl.equals("apl")) {
             session.setAttribute("companion", list);
+            session.setMaxInactiveInterval(1800);
             return "ok";
         }
 
@@ -212,9 +236,10 @@ public class ClientController {
         try {
             int clntCnt = (int) session.getAttribute("clntCnt");
             int period = commonService.getPeriod(session.getAttribute("startDt").toString(), session.getAttribute("endDt").toString());
+            String covCode = (String) session.getAttribute("covCode");
 
             // 총 보험료
-            // 세션에서 동승자 리스트를 불러와 for문으로 모든 동승자 보험료의 합을 대입하는 로직으로 변경가능
+            // 세션에서 동승자 리스트를 불러와 for문으로 모든 동승자 보험료의 합을 대입
 //            int totalPrem = clientService.getPremium(session.getAttribute("covCode").toString(), commonService.calculateInsAge(session.getAttribute("clntJuminA").toString()),commonService.getGen("clntJuminB"), period, clntCnt);
             int totalPrem = 0;
             List<CompanionDto> list = (ArrayList<CompanionDto>) session.getAttribute("companion");
@@ -231,7 +256,7 @@ public class ClientController {
                     session.getAttribute("startDt").toString(),
                     session.getAttribute("endDt").toString(),
                     session.getAttribute("trPlace").toString(),
-                    session.getAttribute("covCode").toString(),
+                    covCode,
                     clntCnt,
                     totalPrem
             );
@@ -241,6 +266,11 @@ public class ClientController {
             List<CompanionDto> companionDtoList = new ArrayList<>();
             if (session.getAttribute("companion") != null && (int) session.getAttribute("clntCnt") > 1) {
                 companionDtoList = (ArrayList<CompanionDto>) session.getAttribute("companion");
+                for(int i=0; i<companionDtoList.size(); i++){
+                    char isOver19 = companionDtoList.get(i).getIsOver19();
+                    companionDtoList.get(i).setCovDList(clientService.selectCovDList(covCode, isOver19));
+                }
+
                 applyFinalCheckDto.setCompanionDtoList(companionDtoList);
             }
             applyFinalCheckDto.setCompanionDtoList(companionDtoList);
@@ -332,7 +362,7 @@ public class ClientController {
             int aplPk = clientService.insertApplyFinish(payPk, polNo, comCode, insComCode, clntPk, trPurpose, trPlace, trFromDt, trToDt, covCode, clntCnt, premium);
 
             // 가입자명단정보 저장
-            // 동승자가 있는경우
+            // companion 리스트를가져와 for문 돌리기
             if (session.getAttribute("companion") != null) {
                 List<CompanionDto> companionDtoList = (ArrayList<CompanionDto>) session.getAttribute("companion");
                 for (int i = 0; i < companionDtoList.size(); i++) {
@@ -342,13 +372,14 @@ public class ClientController {
                     if(i == 0){
                         repYN = 'Y';
                     }
-                    clientService.insertApplyInsuredList(aplPk, comClntPk, prem, repYN);
+                    char isOver19 = companionDtoList.get(i).getIsOver19();
+                    clientService.insertApplyInsuredList(aplPk, comClntPk, prem, repYN, isOver19);
                 }
             }
             // 동승자가 없는 경우 - 대표가입자만
-            else{
-                clientService.insertApplyInsuredList(aplPk, clntPk, totalPrem, 'Y');
-            }
+//            else{
+//                clientService.insertApplyInsuredList(aplPk, clntPk, totalPrem, 'Y');
+//            }
 
             return "ok";
         } catch (Exception e) {
@@ -366,12 +397,9 @@ public class ClientController {
         if (phone.length() == 11) {
 
             // 문자 발송
-//            Random random = new Random();
-//            int num = random.nextInt(1000000);
-//            String numStr = String.format("%06d",num);
-//            session.setAttribute("checkNum",numStr);
-//            NaverApiService naver = new NaverApiService();
-//            naver.sendSms(phone,"[SIMG 해외여행자보험]\n인증번호는 ["+numStr+"] 입니다.");
+//            String checkNum = sms.certificationSms(phone);
+//            session.setAttribute("checkNum",checkNum);
+//            System.out.println(phone + " 인증번호 : "+ checkNum);
 
             // 테스트
             session.setAttribute("checkNum", "000000");
@@ -483,14 +511,19 @@ public class ClientController {
         Map<String, Object> result = new HashMap<>();
         if ((int) session.getAttribute("myPageClntPk") == clntPk) {
             result.put("result","success");
-
+            MyPageInsDetailDto insDetailDto = new MyPageInsDetailDto();
             MyPageInsSummaryDto myPageInsSummaryDto = clientService.selectInsSummaryDto(aplPk);
             List<MyPageCompanionDto> companionDtoList = clientService.selectCompanionDtoList(aplPk);
             MyPageClientDto repClientDto = clientService.selectClientByAplPk(aplPk);
-            MyPageInsDetailDto insDetailDto = new MyPageInsDetailDto();
             insDetailDto.setInsSummary(myPageInsSummaryDto);
             insDetailDto.setCompanionList(companionDtoList);
             insDetailDto.setRepClient(repClientDto);
+
+            if(myPageInsSummaryDto.getAplStateCode() == 401){
+                MyPageAccInfo myPageAccInfo = clientService.selectAccInfo(aplPk);
+                insDetailDto.setMyPageAccInfo(myPageAccInfo);
+            }
+
             System.out.println("clntPk : "+clntPk);
             System.out.println("repClientDto : "+repClientDto);
             result.put("insDetail",insDetailDto);
@@ -526,7 +559,7 @@ public class ClientController {
         if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
 
             String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
-            PDDocument document = messageService.createPdfKr(aplPk);
+            PDDocument document = emailService.createPdfKr(aplPk);
             document.save(filePath);
             document.close();
             byte[] files = FileUtils.readFileToByteArray(new File(filePath));
@@ -550,12 +583,8 @@ public class ClientController {
     @RequestMapping(value = "/applicationPdfKrEmail", method = RequestMethod.GET)
     public void applicationPdfKrEmail(@RequestParam int aplPk, @RequestParam int clntPk, @RequestParam String clntEmail,HttpServletRequest req, HttpServletResponse resp) throws Exception {
         HttpSession session = req.getSession();
-
         if(session.getAttribute("myPageClntPk") != null && (int)session.getAttribute("myPageClntPk") == clntPk ){
-
-
-            messageService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입증명서", clntEmail, "가입증명서.pdf");
-
+            emailService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입증명서", clntEmail, "가입증명서.pdf");
         }
     }
 
