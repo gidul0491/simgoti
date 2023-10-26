@@ -14,6 +14,7 @@ public class ClientServiceImpl implements ClientService {
     private final ClientMapper clientMapper;
     private final CommonService commonService;
     private final HanaPremiumImpl hanaPremium;
+    private final Aes128Service aes = new Aes128Service("simgotiaes128key");
 
     @Override
     public List<CoverageDto> selectCoverageList(char isOver19) throws Exception {
@@ -32,7 +33,6 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public int insertOrUpdateClient(String clntNm, String clntBirth, String clntGen, String clntJumin, String clntPhone, String clntEmail) throws Exception {
-        Aes128Service aes = new Aes128Service("simgotiaes128key");
         String encJumin = aes.encrypt(clntJumin);
         int clntPk = -1;
         char isOver19 = 'Y';
@@ -193,5 +193,12 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception{
         return clientMapper.callAplRefund(aplPk, clntPk, refnBank, refnAccount, refnName);
-    };
+    }
+
+    @Override
+    public int insertClaim(ClaimDto claim) throws Exception {
+        String clntJuminEnc = aes.encrypt(claim.getClntJumin());
+        claim.setClntJumin(clntJuminEnc);
+        return clientMapper.insertClaim(claim);
+    }
 }

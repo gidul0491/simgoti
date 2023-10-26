@@ -18,5 +18,5 @@ public class AdminInsSumDto {
     private int aplStateCode;
     private String aplState;
     private String payedYN;
-    private String useYN;
+//    private String useYN;
 }

@@ -16,24 +16,25 @@
     </style>
 
     <script>
-        let period;
-        let startDt;
-        let endDt;
-        let trPlace;
-        let cnt;
-        let totalPrem;
+        $(document).ready(function () {
+            let period;
+            let startDt;
+            let endDt;
+            let trPlace;
+            let cnt;
+            let totalPrem;
 
-        let clntNm;
-        let clntJumin;
-        let clntPhone;
-        let clntEmail;
+            let clntNm;
+            let clntJumin;
+            let clntPhone;
+            let clntEmail;
 
-        let accData;
+            let accData;
 
-        // companion-table에 값 저장하는 함수
-        function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
-            $("#companion-table").append(
-                `<tr>
+            // companion-table에 값 저장하는 함수
+            function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
+                $("#companion-table").append(
+                    `<tr>
                     <td>${num}</td>
                     <td>${nm}</td>
                     <td>${jumin}</td>
@@ -47,37 +48,35 @@
                         </div>
                     </td>
                 </tr>`
-            )
-        }
+                )
+            }
 
-        // 보장내용 확인
-        function coverageDetail(covNm, covDList) {
-            const result = `
+            // 보장내용 확인
+            function coverageDetail(covNm, covDList) {
+                const result = `
                 <span>${covNm}</span>
                 <div class="w-100 d-flex flex-column coverage-detail">
                 ${covDList.map((item) => {
-                return `
+                    return `
                     <div class="d-flex justify-content-between">
                         <div><span>${item.covDNm}</span></div>
                         <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
                     </div>
                     `
-            }).join('')}
+                }).join('')}
                 </div>
                 <div class="w-100 coverage-detail-close-div">
                     <button type="button" class="btn main-btn coverage-detail-close">확인</button>
                 </div>
                 `;
-            return result;
-        }
+                return result;
+            }
 
-        $("html").on("click", ".coverage-detail-close", function () {
-            $(".popup").attr("hidden", "hidden");
-            $("#companion-list-popup").removeAttr("hidden");
-        });
+            $("html").on("click", ".coverage-detail-close", function () {
+                $(".popup").attr("hidden", "hidden");
+                $("#companion-list-popup").removeAttr("hidden");
+            });
 
-
-        $(document).ready(function () {
             // 최초 결제요약정보를 불러옴
             $.ajax({
                 url: "/api/client/summary",
@@ -192,6 +191,10 @@
                 const accBank = accData[i].accBank;
                 const accNum = accData[i].accNum;
                 const accNm = accData[i].accNm;
+                const accDueDt = accData[i].accDueDt;
+
+                $("#accDueDt").empty().append(`<span>가입신청 중..</span>`)
+
                 // 서버랑 통신해서 db에 결제정보, 가입신청정보 저장
                 $.ajax({
                     url: "/api/client/applyFinish",
@@ -200,6 +203,7 @@
                         accBank: accBank,
                         accNum: accNum,
                         accNm: accNm,
+                        clntEmail:clntEmail
                     },
                     success: (data) => {
                         if (data == "session expired") {
@@ -208,7 +212,7 @@
                             console.log("가입 성공");
 
 
-                            $("#accDueDt").empty().append(`<span>입금기한: ${accData[i].accDueDt}</span>`)
+                            $("#accDueDt").empty().append(`<span>입금기한: ${accDueDt}</span>`)
                             $("#totalPrem2").empty().append(`<span>${putComma(totalPrem)} 원</span>`);
                             $("#accBank").empty().append(`<span>${accBank}</span>`);
                             $("#accNum").empty().append(`<span>${accNum}</span>`);
@@ -409,6 +413,7 @@
 
             <!-- 입급확인 -->
             <div id="account-info-div" hidden="hidden">
+                <hr>
                 <span id="accDueDt"></span><br>
                 <span>위 기한까지 입금이 확인되지 않으면 가입 신청이 자동으로 취소됩니다.</span>
                 <table class="w-100">

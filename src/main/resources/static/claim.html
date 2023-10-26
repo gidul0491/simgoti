@@ -39,6 +39,14 @@
                 info.benefNm = $("#benefNm-text").val();
                 info.benefPhone = $("#benefPhone-text").val();
 
+                if($("#benefRel-select option:selected").val() == "본인"){
+                    info.benefNm = $("#clntNm-text").val();
+                    $("#benefNm-text").val(info.clntNm);
+                }
+                else{
+                    info.benefNm = "";
+                    $("#benefNm-text").val(null);
+                }
 
                 if($("#benefEmail-text-a").val() != "" && $("#benefEmail-select option:selected").val() != "직접입력"){
                     info.benefEmail = $("#benefEmail-text-a").val()+"@"+$("#benefEmail-select option:selected").val();
@@ -103,7 +111,6 @@
                     info.benefEmail = $("#benefEmail-text-a").val() + "@" + $("#benefEmail-text-b").val();
                 }
             })
-
 
             // 사고 날짜 선택시
             $("#clmDt-date").on("input", function () {
@@ -181,6 +188,46 @@
             $("select").on("input",function(){
                 checkAllVars();
             })
+
+            $("#claim-btn").on("click",function(){
+                $("#claim-btn").text("접수중..").attr("disabled","disabled");
+                $.ajax({
+                    url: "/api/client/claim",
+                    type: "POST",
+                    data: {
+                        clntNm:info.clntNm,
+                        clntJumin:info.clntJumin,
+                        benefRel:info.benefRel,
+                        benefNm:info.benefNm,
+                        benefPhone:info.benefPhone,
+                        benefEmail:info.benefEmail,
+                        clmDt:info.clmDt,
+                        clmPlace:info.clmPlace,
+                        clmAmt:info.clmAmt,
+                        clmDetail:info.clmDetail
+                    },
+                    success: (data) => {
+                        console.log(data.result);
+                        if(data.result == "success"){
+                            showPopup(data.msg, "done");
+                            $("html").on("click","#done", function(){
+                                location.reload();
+                            })
+                            $("html").on("click",".popup", function(){
+                                location.reload();
+                            })
+
+                            $("#claim-btn").text("접수").removeAttr("disabled");
+                        }
+                        else {
+                            showPopup(data.msg);
+                        }
+                    },
+                    error:()=>{
+                        showPopup("네트워크 연결이 원활하지 않습니다.")
+                    }
+                });
+            });
         });
     </script>
 </head>
@@ -302,7 +349,8 @@
             </div>
 
             <!-- 사고정보 입력 -->
-            <div id="accident">
+            <div id="accident" class="mt-5">
+                <h5 class="text-start">사고 정보</h5>
                 <!-- 사고 시간-->
                 <div class="text-start mb-3" id="clmDt-div">
                     <div class="d-flex justify-content-between">
@@ -363,8 +411,9 @@
                         <div class="w-25">
                             <span>피해(예상)금액</span>
                         </div>
-                        <div class="w-75">
-                            <input type="text" class="form-control" id="clmAmt-text" maxlength="20">
+                        <div class="w-75 d-flex justify-content-between align-items-center">
+                            <div class="w-100 pe-2"><input type="text" class="form-control" id="clmAmt-text" maxlength="20"></div>
+                            <div class="text-end"><span>원</span></div>
                         </div>
                     </div>
                 </div>

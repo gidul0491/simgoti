@@ -9,7 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <script src="/js/jquery-3.7.0.js"></script>
     <script src="/js/commonjs.js"></script>
-
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <link rel="stylesheet" href="/css/simgotiAdmin.css">
     <style>
         body {
             margin: 0;
@@ -92,6 +93,15 @@
     </style>
     <script>
         $(document).ready(function () {
+            const tbody = $("#application-tbody");
+            let list = [];
+
+            let excelDownloadUrl = "/api/admin/insList/download"
+            let useYn = 'Y';
+            let page = 1;
+            let size = 30;
+            let orderBy = "aplPk desc";
+
             $("html").on("click", function (e) {
                 if ($(e.target).hasClass("clickable-td")) {
                     const id = $(e.target).parent().attr("id");
@@ -104,9 +114,9 @@
                     console.log(`pk = ${pk}, value = ${value}`);
                     if(value=="N"){ // N인 상태에서 누르는경우 Y로 수정
                         updatePayedYN(pk,"Y");
-
-                        btn.empty().addClass("loading").append("<div class=\"spinner\"></div>");
                         btn.addClass("loading");
+                        btn.empty().addClass("loading").append("<div class=\"spinner\"></div>");
+
                     }
                     else if (value=="Y"){ // Y인 상태에서 누르는 경우 N으로 수정
                         updatePayedYN(pk,"N");
@@ -115,7 +125,7 @@
                 }
             });
 
-            getList('Y', 1, 30, "aplPk desc");
+            getList(useYn, page, size, orderBy);
 
             // 계약 요약정보 리스트를 불러오는 함수
             function getList(useYN, page, size, orderBy) {
@@ -124,15 +134,17 @@
                     method: "GET",
                     data: {
                         useYN: useYN,
-                        page: page - 1,
+                        page: page,
                         size: size,
                         orderBy: orderBy
                     },
                     success: (data) => {
+                        list = data;
                         console.log(data);
-                        data.map((val, i) => {
-                            addAppRow(val.aplPk);
-                            addAppData(val);
+                        tbody.empty();
+                        list.map((item, index) => {
+                            addAppRow(item.aplPk);
+                            addAppData(item);
                         });
                     },
                     error: () => {
@@ -143,7 +155,6 @@
 
             // 계약 요약정보를 담은 tr태그를 tbody태그에 추가하는 함수
             function addAppRow(aplPK) {
-                const tbody = $("#application-tbody");
                 tbody.append(`
 <tr class="clickable-tr" id="${aplPK}">
 </tr>
@@ -162,7 +173,6 @@
                 const payedYN = data.payedYN;
                 const aplStateCode = data.aplStateCode;
                 const covNm = data.covNm;
-                const useYN = data.useYN;
 
                 // const tbody = $("#application-tbody");
                 let tr = $(`tr#${aplPk}`);
@@ -204,13 +214,11 @@
 
     <td class="clickable-td">${payedYnBtn}</td>
     <td class="clickable-td">${aplStateSelect}</td>
-    <td class="clickable-td">${useYN}</td>
                 `)
             }
 
             // N 버튼을 눌렀을때 payedYN이 Y로 바뀌는 함수
             function updatePayedYN(aplPk, payedYN) {
-
                 $.ajax({
                     url: "/api/admin/payedYN",
                     method: "PUT",
@@ -251,6 +259,11 @@
                 const stateCode = $(this).val().split("-")[1];
                 setStateCode(aplPk, stateCode);
             });
+
+            $("#excel").on("click",function(){
+
+                window.location.href =excelDownloadUrl+"?useYn=Y&page="+page+"&size="+size+"&orderBy="+orderBy;
+            });
         });
     </script>
 </head>
@@ -259,6 +272,12 @@
     <h3>SIMG 해외여행자보험 계약관리</h3>
 </div>
 <div class="container-sm">
+    <div class="d-flex justify-content-between">
+        <div id="tabs-admin" class="tabs-apply"></div>
+        <div class="d-flex justify-content-end w-100">
+            <div class="ps-5 pe-5 p-1"> <button type="button" class="btn main-btn-outlined" id="excel">엑셀파일 다운로드</button></div>
+        </div>
+    </div>
 
     <div class="application-table-div">
         <table class="table table-hover text-center">
@@ -273,7 +292,6 @@
                 <th>신청일시</th>
                 <th>결제여부</th>
                 <th>계약상태</th>
-                <th>데이터 사용여부</th>
             </tr>
             </thead>
             <tbody id="application-tbody">

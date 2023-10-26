@@ -1,0 +1,33 @@
+
+<div class="d-flex justify-content-start w-100">
+        <div class="ps-5 p-1"> <button type="button" class="btn main-btn-outlined" id="apply">기명요청 조회</button></div>
+        <div class="p-1"> <button type="button" class="btn main-btn-outlined" id="claim">사고접수 조회</button></div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        // 탭을 누르면 페이지 이동
+        $("#apply").on("click", function () {
+            location.href = "/simg/simgOti/admin/apply";
+        });
+
+        $("#claim").on("click", function () {
+            location.href = "/simg/simgOti/admin/claim";
+        });
+
+        const selectedTab = $("#tabs-admin").attr("class").split("-")[1];
+
+        switch (selectedTab) {
+            case "apply":
+                $("#apply").removeClass("main-btn-outlined").addClass("main-btn");
+                break;
+            case "claim":
+                $("#claim").removeClass("main-btn-outlined").addClass("main-btn");
+                let excelDownloadUrl = "/api/admin/clmList/download"
+                break;
+        }
+
+
+    });
+
+</script>

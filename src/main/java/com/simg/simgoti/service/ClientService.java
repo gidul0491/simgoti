@@ -29,4 +29,5 @@ public interface ClientService {
     Character selectPayedYNByAplPk(int aplPk) throws Exception;
     int updateAplStateCode(int aplPk,int clntPk, int aplStateCode) throws Exception;
     int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception;
+    int insertClaim(ClaimDto claim) throws Exception;
 }

@@ -40,4 +40,5 @@ public interface ClientMapper {
     int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception;
     int selectByCovAgeGen(String covCode, int age, char gen, int day) throws Exception;
     String selectEmailByAplPk(int aplPk) throws Exception;
+    int insertClaim(ClaimDto claim) throws Exception;
 }

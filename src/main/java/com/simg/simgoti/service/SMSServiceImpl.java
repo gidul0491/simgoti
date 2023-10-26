@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.HashMap;
 
 @Service
-public class SMSImpl implements SMS{
+public class SMSServiceImpl implements SMSService {
     private String simgSmsUrl = "https://hana-rent-bike-dev.simg.kr/api/v1/flex/sms";
     private String simg_X_API_SECRET = "1F478190-F877-11ED-86DA-3B753D9AE9E1";
     private String accessKey = "F4nqr68CXn2V3IiCZ3I8";

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SIMG 해외여행자보험 관리자페이지</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
+    <script src="/js/bootstrap.bundle.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="/js/jquery-3.7.0.js"></script>
+    <script src="/js/commonjs.js"></script>
+
+
+    <link rel="stylesheet" href="/css/simgoti.css">
+    <link rel="stylesheet" href="/css/simgotiAdmin.css">
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .admin-header {
+            background: #0a53be;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 4rem;
+        }
+
+        .admin-header h3 {
+            margin: 0;
+
+        }
+
+        .application-table-div {
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .application-table-div table {
+            width: 100%;
+        }
+
+        .popup-content-in {
+            overflow-y: auto;
+            overflow-wrap: anywhere;
+        }
+
+    </style>
+    <script>
+        $(document).ready(function () {
+            const tbody = $("#claim-tbody");
+            let useYn = 'Y';
+            let page = 1;
+            let size = 30;
+            let orderBy = "clmPk desc"
+            let list = [];
+            getList(useYn,page,size,orderBy);
+            function getList(useYN, page, size, orderBy){
+                $.ajax({
+                    url:"/api/admin/claimList",
+                    method:"GET",
+                    data:{
+                        useYN: useYN,
+                        page: page,
+                        size: size,
+                        orderBy: orderBy
+                    },
+                    success:(data)=>{
+                        list = data;
+                        console.log(list);
+                        tbody.empty();
+                        list.map((item,i) => {
+                            addAppRow(item.clmPk);
+                            addAppData(item);
+                        })
+                    },
+                    error:()=>{}
+                });
+            }
+            // 청구신청 정보를 담은 tr태그를 tbody태그에 추가하는 함수
+            function addAppRow(clmPk) {
+                tbody.append(`
+<tr class="clickable-tr" id="${clmPk}">
+</tr>
+`);
+            }
+            function addAppData(item){
+                const clmPk = item.clmPk
+                const clntNm = item.clntNm;
+                const clntJumin = item.clntJumin;
+                const clmCdt = cutSec(item.clmCdt);
+                const benefRel = item.benefRel;
+                const benefNm = item.benefNm;
+                const benefPhone = item.benefPhone;
+                const benefEmail = item.benefEmail;
+                const clmDt = cutSec(item.clmDt);
+                const clmPlace = item.clmPlace;
+                const clmAmt = item.clmAmt;
+                const clmDetail = item.clmDetail;
+
+                let tr= $("tr#"+clmPk);
+
+                tr.empty().append(`
+    <td class="clickable-td">${clmPk}</td>
+    <td class="clickable-td">${clntNm}</td>
+    <td class="clickable-td">${clntJumin}</td>
+    <td class="clickable-td">${clmCdt}</td>
+    <td class="clickable-td">${benefNm}(${benefRel})</td>
+    <td class="clickable-td">${benefPhone}</td>
+    <td class="clickable-td">${benefEmail}</td>
+    <td class="clickable-td">${clmDt}</td>
+    <td class="clickable-td">
+    <button type="button" class="btn main-btn clmContent" value="${clmPk}">보기</button>
+    <span hidden id="${clmPk}-clmPlace">${clmPlace}</span>
+    <span hidden id="${clmPk}-clmAmt">${clmAmt}</span>
+    <span hidden id="${clmPk}-clmDetail" >${clmDetail}</span>
+    </td>
+
+            `)}
+
+            $("html").on("click",".clmContent",function(){
+                showDetail($(this).val());
+            });
+
+            function showDetail(clmPk){
+                const popup = $("#popup");
+                popup.removeAttr("hidden");
+                $("#clmPk").empty().text(clmPk);
+                $("#clmPlace").empty().text($(`#${clmPk}-clmPlace`).text());
+                $("#clmAmt").empty().text($(`#${clmPk}-clmAmt`).text());
+                $("#clmDetail").empty().text($(`#${clmPk}-clmDetail`).text());
+            }
+        });
+    </script>
+</head>
+<body>
+<div class="admin-header">
+    <h3>SIMG 해외여행자보험 계약관리</h3>
+</div>
+<div class="container-sm">
+    <div id="tabs-admin" class="tab-claim">
+
+    </div>
+    <div class="application-table-div">
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th>청구번호</th>
+                <th>피보험자</th>
+                <th>주민번호</th>
+                <th>청구일시</th>
+                <th>연락고객</th>
+                <th>연락처</th>
+                <th>이메일</th>
+                <th>사고시간</th>
+                <th>상세내용</th>
+            </tr>
+            </thead>
+            <tbody id="claim-tbody">
+
+            </tbody>
+        </table>
+    </div>
+    <div class="popup" id="popup" hidden style="z-index: 2; background: rgba(0,0,0,0)">
+            <div class="popup-content d-flex flex-column pe-3" style="border: 1px solid black">
+                <div class="popup-content-in">
+                    <div><span>청구번호 : </span><span id="clmPk"></span></div>
+                    <div><span>사고장소 : </span><span id="clmPlace"></span></div>
+                    <div><span>피해(예상)금액 : </span><span id="clmAmt"></span></div>
+                    <div><span>사고 내용 : </span></div>
+                    <div class="px-2 w-100" id="clmDetail-div"><span id="clmDetail"></span></div>
+
+                </div>
+                <div class="w-100 mt-3">
+                    <button type="button" class="btn main-btn close-popup">확인</button>
+                </div>
+            </div>
+    </div>
+</div>
+
+
+</body>
+</html>

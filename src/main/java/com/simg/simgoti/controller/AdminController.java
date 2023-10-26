@@ -1,19 +1,29 @@
 package com.simg.simgoti.controller;
 
+import com.simg.simgoti.dto.AdminClaimDto;
 import com.simg.simgoti.dto.AdminInsSumDto;
+import com.simg.simgoti.dto.ClaimDto;
 import com.simg.simgoti.dto.Pageable;
-import com.simg.simgoti.service.AdminService;
-import com.simg.simgoti.service.ClientService;
-import com.simg.simgoti.service.CommonService;
-import com.simg.simgoti.service.EmailService;
+import com.simg.simgoti.service.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -24,6 +34,7 @@ public class AdminController {
     private final AdminService adminService;
     private final CommonService commonService;
     private final EmailService emailService;
+    private final ExcelService excelService;
 
     @RequestMapping(value = "/insList", method = RequestMethod.GET)
     public Object selectAdminInsSumDtoList(Character useYN, Pageable pageable) throws Exception {
@@ -48,5 +59,42 @@ public class AdminController {
     public Object updateStateCode(@RequestParam int aplPk, @RequestParam int aplStateCode) throws Exception{
         adminService.updateInsStateCode(aplPk, aplStateCode);
         return adminService.selectAdminInsSumDto(aplPk);
+    }
+
+    @RequestMapping(value = "/claimList", method = RequestMethod.GET)
+    public Object selectClaimDtoList(Character useYN, Pageable pageable) throws Exception {
+        Pageable pageableStartCal = new Pageable(pageable.getPage(), pageable.getSize(), pageable.getOrderBy());
+        System.out.println(pageableStartCal);
+        List<AdminClaimDto> list = adminService.selectClaimDtoList(useYN, pageableStartCal);
+
+        return list;
+    };
+
+    @RequestMapping(value = "/insList/download", method = RequestMethod.GET)
+    public void selectClaimDtoList(@RequestParam char useYn, Pageable pageable, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        Pageable pageableStartCal = new Pageable(pageable.getPage(), pageable.getSize(), pageable.getOrderBy());
+        String filePath = System.getProperty("user.dir") + File.separator + "tempXxls" + File.separator + "application_list.xlsx";
+
+        XSSFWorkbook workbook = excelService.createInsListExcel(filePath, useYn,pageableStartCal);
+        File xlsFile = new File(filePath);
+        FileOutputStream fileOut = new FileOutputStream(xlsFile);
+        workbook.write(fileOut);
+        fileOut.close();
+
+        byte[] files = FileUtils.readFileToByteArray(new File(filePath));
+
+        resp.setContentType("application/octet-stream");
+        resp.setContentLength(files.length);
+        resp.setHeader("Content-Disposition","attachment;fileName=\""+ URLEncoder.encode("기명요청목록.xlsx","UTF-8")+"\"");
+
+        resp.getOutputStream().write(files);
+        resp.getOutputStream().flush();
+        resp.getOutputStream().close();
+
+        // 생성한 PDF 파일 삭제
+        File generatedPdf = new File(filePath);
+        if (generatedPdf.exists()) {
+            generatedPdf.delete();
+        }
     }
 }

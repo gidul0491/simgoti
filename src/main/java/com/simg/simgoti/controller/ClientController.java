@@ -29,7 +29,7 @@ public class ClientController {
     private final CommonService commonService;
     private final EmailService emailService;
     private final HanaPremiumImpl hanaPremium;
-    private final SMS sms;
+    private final SMSService smsService;
 
     // calculate 페이지에서 보험료 확인 버튼을 눌렀을 때 db의 coverage 테이블에서 coverage code, 담보 한글이름, 하루당 보험료, 최소 보험료 정보인 coverageTabList와
     // 담보에 포함되는 세부담보 코드, 세부담보 이름, 세부담보 보장금액 정보인 coverageList를 result라는 변수명에 담아서 반환
@@ -340,7 +340,7 @@ public class ClientController {
     // apply3 페이지에서 무통장입금 선택 후 은행까지 선택하면 실행됨
     // 결제데이터, 가입자명단데이터, 가입신청데이터를 db에 저장
     @RequestMapping(value = "/applyFinish", method = RequestMethod.POST)
-    public Object applyFinish(@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, HttpServletRequest req) throws Exception {
+    public Object applyFinish(@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, @RequestParam String clntEmail,  HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         try {
             int totalPrem = Integer.parseInt(session.getAttribute("totalPrem").toString());
@@ -381,6 +381,8 @@ public class ClientController {
 //                clientService.insertApplyInsuredList(aplPk, clntPk, totalPrem, 'Y');
 //            }
 
+            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
+
             return "ok";
         } catch (Exception e) {
             System.out.println(e);
@@ -397,13 +399,13 @@ public class ClientController {
         if (phone.length() == 11) {
 
             // 문자 발송
-//            String checkNum = sms.certificationSms(phone);
-//            session.setAttribute("checkNum",checkNum);
-//            System.out.println(phone + " 인증번호 : "+ checkNum);
+            String checkNum = smsService.certificationSms(phone);
+            session.setAttribute("checkNum",checkNum);
+            System.out.println(phone + " 인증번호 : "+ checkNum);
 
             // 테스트
-            session.setAttribute("checkNum", "000000");
-            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
+//            session.setAttribute("checkNum", "000000");
+//            System.out.println("인증번호 : "+session.getAttribute("checkNum"));
 
 
             session.setMaxInactiveInterval(301);
@@ -637,5 +639,22 @@ public class ClientController {
             result.put("msg","네트워크 연결이 불안정합니다.");
             return result;
         }
+    }
+    @RequestMapping(value = "/claim", method = RequestMethod.POST)
+    public Object claim(@RequestParam String clntNm, @RequestParam String clntJumin, @RequestParam String benefRel, @RequestParam String benefNm, @RequestParam String benefPhone, @RequestParam String benefEmail, @RequestParam String clmDt, @RequestParam String clmPlace, @RequestParam String clmAmt, @RequestParam String clmDetail) throws Exception {
+        Map<String,Object> result = new HashMap<>();
+        ClaimDto claim = new ClaimDto(clntNm, clntJumin, benefRel, benefNm, benefEmail, benefPhone, clmDt, clmPlace, clmAmt, clmDetail);
+        int inserted = clientService.insertClaim(claim);
+        System.out.println(inserted);
+        if(inserted == 0){
+            result.put("result","error");
+            result.put("msg","네트워크 연결이 원활하지 않습니다.");
+        }
+        else{
+            result.put("result","success");
+            result.put("msg","보험금 청구 신청이 완료되었습니다.");
+            emailService.sendClaimMail("[SIMG 해외여행자보험] 사고접수가 완료되었습니다.", benefEmail);
+        }
+        return result;
     }
 }

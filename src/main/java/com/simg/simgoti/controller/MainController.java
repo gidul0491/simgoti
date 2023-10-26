@@ -74,9 +74,14 @@ public class MainController {
         }
     }
 
-    @RequestMapping(value = "/simgOti/admin", method = RequestMethod.GET)
+    @RequestMapping(value = "/simgOti/admin/apply", method = RequestMethod.GET)
     public String admin() throws Exception {
-        return "/admin/adminMain.html";
+        return "/admin/adminApply.html";
+    }
+
+    @RequestMapping(value = "/simgOti/admin/claim", method = RequestMethod.GET)
+    public String adminClaim() throws Exception {
+        return "/admin/adminClaim.html";
     }
 
     @RequestMapping(value = "/simgOti/claim", method = RequestMethod.GET)

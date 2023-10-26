@@ -1,0 +1,12 @@
+.mainView {
+    padding:1.5rem;
+    width: 540px;
+    margin: auto;
+}
+#product {
+    background: #0a53be;
+    color: white;
+    margin-bottom: 0;
+    padding: 0.6rem;
+    border-radius: 0.4rem 0.4rem 0 0;
+}

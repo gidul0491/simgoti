@@ -1,6 +1,8 @@
 package com.simg.simgoti.service;
 
+import com.simg.simgoti.dto.AdminClaimDto;
 import com.simg.simgoti.dto.AdminInsSumDto;
+import com.simg.simgoti.dto.ClaimDto;
 import com.simg.simgoti.dto.Pageable;
 import com.simg.simgoti.mapper.AdminMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
     private final AdminMapper adminMapper;
+    private final Aes128Service aes = new Aes128Service("simgotiaes128key");
     @Override
     public List<AdminInsSumDto> selectAdminInsSumDtoList(Character useYN, Pageable pageable) throws Exception{
         return adminMapper.selectAdminInsSumDtoList(useYN, pageable.getStart(), pageable.getSize(), pageable.getOrderBy());
@@ -36,5 +39,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public int updateInsStateCode(int aplPk, int aplStateCode) throws Exception{
         return adminMapper.updateInsStateCode(aplPk, aplStateCode);
+    }
+
+    @Override
+    public List<AdminClaimDto> selectClaimDtoList(Character useYN, Pageable pageable) throws Exception{
+        List<AdminClaimDto> list = adminMapper.selectClaimDtoList(useYN, pageable.getStart(), pageable.getSize(), pageable.getOrderBy());
+        for(int i=0; i<list.size(); i++){
+            AdminClaimDto claimDto = list.get(i);
+            claimDto.setClntJumin(aes.decrypt(claimDto.getClntJumin()));
+            list.set(i,claimDto);
+        }
+        return list;
     }
 }

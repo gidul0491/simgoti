@@ -53,18 +53,17 @@ public class EmailServiceImpl implements EmailService {
 //        private final String smtpPass = "Qkrwnsgh97^^"; // simg pass
 //        private final String smtpServer = "simg.daouoffice.com"; // daouoffice smtp server
 
-// 시간 자르는 메소드
-public String cutSec(String str) {
-    if(str.length()>16){
-        return str.substring(0,str.length()-3);
+    // 시간 자르는 메소드
+    public String cutSec(String str) {
+        if (str.length() > 16) {
+            return str.substring(0, str.length() - 3);
+        } else {
+            return str;
+        }
     }
-    else{
-        return str;
-    }
-}
+
     @Override
     public PDDocument createPdfKr(int aplPk) throws Exception {
-
 
         // 새로운 PDF 문서 생성
         PDDocument document = new PDDocument();
@@ -102,7 +101,7 @@ public String cutSec(String str) {
             float bottomY = margin;
 
             // 로고추가
-            ClassPathResource resource = new ClassPathResource("pdfResources"+File.separator+"hanaSimg_logo.png");
+            ClassPathResource resource = new ClassPathResource("pdfResources" + File.separator + "hanaSimg_logo.png");
             InputStream fileStream = resource.getInputStream();
             BufferedImage img = ImageIO.read(fileStream);
             PDImageXObject pdImage = LosslessFactory.createFromImage(document, img);
@@ -110,11 +109,11 @@ public String cutSec(String str) {
             float imgWidth = pageX / 3;
             float imgHeight = imgWidth * ((float) img.getHeight(null) / img.getWidth(null));
             yPosition -= imgHeight;
-            contentStream.drawImage(pdImage, margin, yPosition,imgWidth, imgHeight);
+            contentStream.drawImage(pdImage, margin, yPosition, imgWidth, imgHeight);
 
             // 타이틀 추가
             yPosition -= 10;
-            resource = new ClassPathResource("pdfResources"+File.separator+"title_bg.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "title_bg.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -124,7 +123,7 @@ public String cutSec(String str) {
             yPosition -= imgHeight;
             contentStream.drawImage(pdImage, margin, yPosition, imgWidth, imgHeight);
 
-            contentStream.setNonStrokingColor(255,255,255);
+            contentStream.setNonStrokingColor(255, 255, 255);
             contentStream.beginText();
             contentStream.setFont(nanumGothic, 14);
             float titlePadding = imgHeight * 0.33f;
@@ -135,7 +134,7 @@ public String cutSec(String str) {
             // 기본정보, 증권번호(테이블제목)
             yPosition -= 40;
             float tableTitleFontSize = 13f;
-            contentStream.setNonStrokingColor(0,0,0);
+            contentStream.setNonStrokingColor(0, 0, 0);
             contentStream.beginText();
             contentStream.setFont(nanumGothic, tableTitleFontSize);
             contentStream.newLineAtOffset(margin + 4, yPosition + 4);
@@ -154,7 +153,7 @@ public String cutSec(String str) {
 
             // 기본정보 테이블
             yPosition -= 6;
-            resource = new ClassPathResource("pdfResources"+File.separator+"info1.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "info1.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -166,7 +165,7 @@ public String cutSec(String str) {
 
             // 기본정보 테이블 1번째 행
             yPosition += imgHeight;
-            float info1TrHeight = imgHeight * 8/35;
+            float info1TrHeight = imgHeight * 8 / 35;
             float info1FontSize = 10f;
 
             yPosition -= info1TrHeight;
@@ -188,14 +187,14 @@ public String cutSec(String str) {
             info1Text = "단체계약자";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
             info1Text = "에스아이엠지";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
@@ -219,14 +218,14 @@ public String cutSec(String str) {
             info1Text = "여행지";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
             info1Text = dto.getTrPlace();
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
@@ -259,14 +258,14 @@ public String cutSec(String str) {
             info1Text = "여행목적";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
             info1Text = dto.getTrPurpose();
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
@@ -291,20 +290,20 @@ public String cutSec(String str) {
             info1Text = "보험료 납입일시";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
             info1Text = cutSec(dto.getPayedDt());
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info1Text);
             contentStream.endText();
 
             // 기본정보 아래 작은글씨 설명
             yPosition -= 15;
-            contentStream.setNonStrokingColor(100,100,100);
+            contentStream.setNonStrokingColor(100, 100, 100);
             float smallFontSize = 6f;
             String smallText1 = "* 이 상품은 에스아이엠지를 계약자로 지정한 단체보험으로, 피보험자의 봏머청구는 하나손해보험에서 정상적으로 처리됩니다.";
             contentStream.beginText();
@@ -315,7 +314,7 @@ public String cutSec(String str) {
 
             yPosition -= smallFontSize * 1.5;
 
-            String smallText2 = "* 이 상품은 "+commonService.attachJosa(dto.getTrPlace())+" 제외한 세계 어느 지역의 여행이든 보장하나, 대한민국 외교부가 지정한 여행금지국가와 3단계 여행경보지역은 보장에서 제외됩니다.";
+            String smallText2 = "* 이 상품은 " + commonService.attachJosa(dto.getTrPlace()) + " 제외한 세계 어느 지역의 여행이든 보장하나, 대한민국 외교부가 지정한 여행금지국가와 3단계 여행경보지역은 보장에서 제외됩니다.";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, smallFontSize);
             contentStream.newLineAtOffset(margin, yPosition);
@@ -325,7 +324,7 @@ public String cutSec(String str) {
             // 피보험자 정보
             yPosition -= 40;
             // 표 제목
-            contentStream.setNonStrokingColor(0,0,0);
+            contentStream.setNonStrokingColor(0, 0, 0);
             contentStream.beginText();
             contentStream.setFont(nanumGothic, tableTitleFontSize);
             contentStream.newLineAtOffset(margin + 4, yPosition + 4);
@@ -333,7 +332,7 @@ public String cutSec(String str) {
             contentStream.endText();
             // 표 그림
             yPosition -= 6;
-            resource = new ClassPathResource("pdfResources"+File.separator+"info2.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "info2.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -342,11 +341,11 @@ public String cutSec(String str) {
             yPosition -= imgHeight;
             contentStream.drawImage(pdImage, margin, yPosition, imgWidth, imgHeight);
             // 피보험자정보 1번째 행
-            float info2TrHeight = imgHeight * 78/272;
+            float info2TrHeight = imgHeight * 78 / 272;
             yPosition += imgHeight;
             yPosition -= info2TrHeight;
 
-            String info2Text = clntNum==1?"가입자":"대표가입자";
+            String info2Text = clntNum == 1 ? "가입자" : "대표가입자";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
             contentStream.newLineAtOffset(margin + info1FontSize, yPosition + info1FontSize);
@@ -363,14 +362,14 @@ public String cutSec(String str) {
             info2Text = "보험종류";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info2Text);
             contentStream.endText();
 
             info2Text = "해외여행자보험";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info2Text);
             contentStream.endText();
 
@@ -394,15 +393,15 @@ public String cutSec(String str) {
             info2Text = "휴대폰번호";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info2Text);
             contentStream.endText();
 
             String phoneNum = dto.getClntPhone();
-            info2Text = phoneNum.substring(0,phoneNum.length()-4) + "****";
+            info2Text = phoneNum.substring(0, phoneNum.length() - 4) + "****";
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + imgWidth/2 + imgWidth/5 + info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + imgWidth / 2 + imgWidth / 5 + info1FontSize, yPosition + info1FontSize);
             contentStream.showText(info2Text);
             contentStream.endText();
 
@@ -432,31 +431,30 @@ public String cutSec(String str) {
             contentStream.endText();
             yPosition += info1FontSize * 1.1;
 
-            if(clntNum != 1){
+            if (clntNum != 1) {
                 // 피보험자테이블 4번째줄 피보험자리스트
                 yPosition = yPosition + info2TrHeight * 3 - imgHeight;
 
                 // 행 이미지 기본설정
-                resource = new ClassPathResource("pdfResources"+File.separator+"info2_insList.png");
+                resource = new ClassPathResource("pdfResources" + File.separator + "info2_insList.png");
                 fileStream = resource.getInputStream();
                 img = ImageIO.read(fileStream);
                 pdImage = LosslessFactory.createFromImage(document, img);
                 imgWidth = contentX;
-                for(int i=0; i<clntNum+1; i++){
+                for (int i = 0; i < clntNum + 1; i++) {
                     float rowHeight = info1FontSize * 1.1f;
-                    if(i ==0){
+                    if (i == 0) {
                         rowHeight = info2TrHeight;
                     }
 
-                    if(i != clntNum){
+                    if (i != clntNum) {
                         // 행 이미지 높이, 위치
                         imgHeight = rowHeight;
                         yPosition -= imgHeight;
                         contentStream.drawImage(pdImage, margin, yPosition, imgWidth, imgHeight);
-                    }
-                    else {
+                    } else {
                         // 테이블 하단 라인
-                        resource = new ClassPathResource("pdfResources"+File.separator+"table_line.png");
+                        resource = new ClassPathResource("pdfResources" + File.separator + "table_line.png");
                         fileStream = resource.getInputStream();
                         img = ImageIO.read(fileStream);
                         pdImage = LosslessFactory.createFromImage(document, img);
@@ -466,7 +464,7 @@ public String cutSec(String str) {
                         contentStream.drawImage(pdImage, margin, yPosition, imgWidth, imgHeight);
                     }
 
-                    if(i == 0){
+                    if (i == 0) {
                         info2Text = "피보험자";
                         contentStream.beginText();
                         contentStream.setFont(nanumGothic, info1FontSize);
@@ -475,14 +473,13 @@ public String cutSec(String str) {
                         contentStream.endText();
                     }
 
-                    if(i != clntNum) {
+                    if (i != clntNum) {
                         // 행 내용
                         PdfClntDto clntDto;
-                        try{
+                        try {
                             clntDto = clnt.get(i);
                             info2Text = clntDto.getClntNm() + "(" + clntDto.getClntBirth() + "-" + clntDto.getClntGen() + "******)";
-                        }
-                        catch(Exception e){
+                        } catch (Exception e) {
                             info2Text = "-";
                         }
 
@@ -497,7 +494,7 @@ public String cutSec(String str) {
 
             // 연령별 보장내용
             yPosition -= 40;
-            if(yPosition-6 -imgHeight-info2TrHeight*2 < bottomY){
+            if (yPosition - 6 - imgHeight - info2TrHeight * 2 < bottomY) {
                 contentStream.close();
                 // 새로운 페이지 생성
                 page = new PDPage(PDRectangle.A4);
@@ -517,7 +514,7 @@ public String cutSec(String str) {
             // 연련별 보장내용 테이블
             yPosition -= 6;
             // 헤더
-            resource = new ClassPathResource("pdfResources"+File.separator+"cov_header.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "cov_header.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -533,7 +530,7 @@ public String cutSec(String str) {
             float covHeaderStringWidth = nanumGothic.getStringWidth(covHeader) / 1000 * info1FontSize;
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
-            contentStream.newLineAtOffset(margin + contentX - imgWidth*1/5 - covHeaderStringWidth - info1FontSize, yPosition + info1FontSize);
+            contentStream.newLineAtOffset(margin + contentX - imgWidth * 1 / 5 - covHeaderStringWidth - info1FontSize, yPosition + info1FontSize);
             contentStream.showText(covHeader);
             contentStream.endText();
 
@@ -549,13 +546,13 @@ public String cutSec(String str) {
             int covNum = cov.size();
             float covTrHeight = info2TrHeight;
             float covDFontSize = 10f;
-            Integer[] covOnlyForAdultArray = {1012010101, 1012010103,1012010201, 1012010203,1012010301, 1012010303};
+            Integer[] covOnlyForAdultArray = {1012010101, 1012010103, 1012010201, 1012010203, 1012010301, 1012010303};
             List<Integer> covOnlyForAdult = new ArrayList<>(Arrays.asList(covOnlyForAdultArray));
-            for(int i=0; i<covNum; i++){
+            for (int i = 0; i < covNum; i++) {
                 yPosition -= covTrHeight;
                 PdfCovDto covD = cov.get(i);
 
-                if(yPosition > bottomY){
+                if (yPosition > bottomY) {
                     // 세부담보 내용 쓰기
                     String covDText = covD.getCovDNm();
                     contentStream.beginText();
@@ -564,21 +561,20 @@ public String cutSec(String str) {
                     contentStream.showText(covDText);
                     contentStream.endText();
 
-                    if(covOnlyForAdult.contains(covD.getCovDCode())){
+                    if (covOnlyForAdult.contains(covD.getCovDCode())) {
                         covDText = "-";
-                    }
-                    else{
-                        covDText = df.format(covD.getCovDAmt())+"원";
+                    } else {
+                        covDText = df.format(covD.getCovDAmt()) + "원";
                     }
                     float amtStringWidth = nanumGothic.getStringWidth(covDText) / 1000 * covDFontSize;
                     contentStream.beginText();
                     contentStream.setFont(nanumGothic, covDFontSize);
-                    contentStream.newLineAtOffset(margin + contentX - imgWidth*1/5 - amtStringWidth - covDFontSize, yPosition + covDFontSize);
+                    contentStream.newLineAtOffset(margin + contentX - imgWidth * 1 / 5 - amtStringWidth - covDFontSize, yPosition + covDFontSize);
                     contentStream.showText(covDText);
                     contentStream.endText();
 
-                    int amt = covD.getCovDAmt();
-                    covDText = df.format(covD.getCovDAmt())+"원";
+//                    int amt = covD.getCovDAmt();
+                    covDText = df.format(covD.getCovDAmt()) + "원";
                     amtStringWidth = nanumGothic.getStringWidth(covDText) / 1000 * covDFontSize;
                     contentStream.beginText();
                     contentStream.setFont(nanumGothic, covDFontSize);
@@ -588,15 +584,14 @@ public String cutSec(String str) {
 
                     contentStream.drawLine(margin, yPosition, margin + imgWidth, yPosition);
 
-                }
-                else{
+                } else {
                     contentStream.close();
                     // 새로운 페이지 생성
                     page = new PDPage(PDRectangle.A4);
                     document.addPage(page);
                     // 페이지 컨텐츠 스트림 생성
                     contentStream = new PDPageContentStream(document, page);
-                    i-=1;
+                    i -= 1;
                     yPosition = pageY - margin;
                     contentStream.setStrokingColor(230, 230, 230);
                 }
@@ -605,7 +600,7 @@ public String cutSec(String str) {
 
             // 하단 확인 인장
             yPosition -= 40;
-            resource = new ClassPathResource("pdfResources"+File.separator+"hana_signature.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "hana_signature.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -613,30 +608,30 @@ public String cutSec(String str) {
             imgWidth = contentX / 4;
             imgHeight = imgWidth * ((float) img.getHeight(null) / img.getWidth(null));
             yPosition -= imgHeight * 2;
-            if(yPosition < bottomY){
+            if (yPosition < bottomY) {
                 contentStream.close();
                 // 새로운 페이지 생성
                 page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
                 // 페이지 컨텐츠 스트림 생성
                 contentStream = new PDPageContentStream(document, page);
-                yPosition = pageY - margin -imgHeight * 2;
+                yPosition = pageY - margin - imgHeight * 2;
             }
-            contentStream.drawImage(pdImage, margin+contentX-imgWidth, yPosition, imgWidth, imgHeight);
+            contentStream.drawImage(pdImage, margin + contentX - imgWidth, yPosition, imgWidth, imgHeight);
 
             // 하단 확인 글귀
             yPosition += imgHeight + 20;
             float checkFontSize = 12f;
 
-            String clntNim = dto.getClntNm()+"님";
-            if(clntNum > 1){
-                clntNim = clntNim+" 외 "+String.valueOf(clntNum -1)+"명께서";
+            String clntNim = dto.getClntNm() + "님";
+            if (clntNum > 1) {
+                clntNim = clntNim + " 외 " + String.valueOf(clntNum - 1) + "명께서";
             }
-            String checkText = "하나손해보험은 "+clntNim+" 해외여행자보험에 가입하셨음을 확인합니다.";
-            float checkFontWidth = nanumGothic.getStringWidth(checkText)/1000*checkFontSize;
+            String checkText = "하나손해보험은 " + clntNim + " 해외여행자보험에 가입하셨음을 확인합니다.";
+            float checkFontWidth = nanumGothic.getStringWidth(checkText) / 1000 * checkFontSize;
             contentStream.beginText();
             contentStream.setFont(nanumGothic, checkFontSize);
-            contentStream.newLineAtOffset(margin + (contentX - checkFontWidth)/2, yPosition + checkFontSize);
+            contentStream.newLineAtOffset(margin + (contentX - checkFontWidth) / 2, yPosition + checkFontSize);
             contentStream.showText(checkText);
             contentStream.endText();
             yPosition -= imgHeight;
@@ -644,7 +639,7 @@ public String cutSec(String str) {
 
             // 최하단 안내 이미지
             yPosition -= 20;
-            resource = new ClassPathResource("pdfResources"+File.separator+"hana_bottom.png");
+            resource = new ClassPathResource("pdfResources" + File.separator + "hana_bottom.png");
             fileStream = resource.getInputStream();
             img = ImageIO.read(fileStream);
             pdImage = LosslessFactory.createFromImage(document, img);
@@ -652,16 +647,16 @@ public String cutSec(String str) {
             imgWidth = contentX;
             imgHeight = imgWidth * ((float) img.getHeight(null) / img.getWidth(null));
             yPosition -= imgHeight;
-            if(yPosition < bottomY){
+            if (yPosition < bottomY) {
                 contentStream.close();
                 // 새로운 페이지 생성
                 page = new PDPage(PDRectangle.A4);
                 document.addPage(page);
                 // 페이지 컨텐츠 스트림 생성
                 contentStream = new PDPageContentStream(document, page);
-                yPosition = pageY - margin -imgHeight;
+                yPosition = pageY - margin - imgHeight;
             }
-            contentStream.drawImage(pdImage, margin+contentX-imgWidth, yPosition, imgWidth, imgHeight);
+            contentStream.drawImage(pdImage, margin + contentX - imgWidth, yPosition, imgWidth, imgHeight);
 
 //            // 테이블 위치, 크기 관련 필드
 //            float tableWidth = page.getMediaBox().getWidth() - 2 * margin;
@@ -748,9 +743,9 @@ public String cutSec(String str) {
     }
 
     @Override
-    public void sendApplyMail(int aplPk,String title, String email, String fileName) throws Exception {
+    public void sendApplyMail(int aplPk, String title, String email, String fileName) throws Exception {
         // 파일생성
-        String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_"+aplPk+".pdf";
+        String filePath = System.getProperty("user.dir") + File.separator + "tempPdf" + File.separator + "application_" + aplPk + ".pdf";
         PDDocument document = this.createPdfKr(aplPk);
         document.save(filePath);
         document.close();
@@ -797,15 +792,14 @@ public String cutSec(String str) {
             contentPart.setContent(content, "text/html; charset=euc-kr");
             multipart.addBodyPart(contentPart);
 
-            if(filePath != null){
+            if (filePath != null) {
                 // 첨부할 파일 추가
                 MimeBodyPart attachmentPart = new MimeBodyPart();
                 FileDataSource fileDataSource = new FileDataSource(filePath);
                 attachmentPart.setDataHandler(new DataHandler(fileDataSource));
                 attachmentPart.setFileName(fileName);
                 multipart.addBodyPart(attachmentPart);
-            }
-            else{
+            } else {
                 System.out.println("가입증명서 생성 실패");
             }
 
@@ -815,8 +809,7 @@ public String cutSec(String str) {
             System.out.println("이메일 발송완료");
         } catch (MessagingException e) {
             throw new RuntimeException(e);
-        }
-        finally {
+        } finally {
             // 생성한 PDF 파일 삭제
             File generatedPdf = new File(filePath);
             if (generatedPdf.exists()) {
@@ -824,9 +817,136 @@ public String cutSec(String str) {
             }
         }
     }
+
     @Override
-    public String selectEmailByAplPk(int aplPk) throws Exception{
+    public String selectEmailByAplPk(int aplPk) throws Exception {
         return clientMapper.selectEmailByAplPk(aplPk);
+    }
+
+    @Override
+    public void sendPaymentMail(String title, String email, String accBank, String accName, String accNum, String dueDt, int prem) throws Exception {
+
+        // 메일전송----
+        Properties props = new Properties();
+
+        props.put("mail.smtp.host", smtpServer);
+        props.put("mail.smtp.port", port);
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.default.encoding", "UTF-8");
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(senderEmail, smtpPass);
+            }
+        });
+
+        try {
+            // 메시지 본문과 첨부 파일을 함께 처리할 Multipart 객체 생성
+            Multipart multipart = new MimeMultipart();
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("pol0258@simg.kr")); // 보내는 이메일 주소
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email)); // 받는 이메일 주소
+            message.setSubject(title);
+            // 메일 본문
+            String content =
+                    "<h1 style=\"color:#05219a;\">SIMG 해외여행자보험 결제 안내</h1>" +
+                            "<p>안녕하세요</p>" +
+                            "<p>SIMG 해외여행자보험에서 입금 요청서를 보내드립니다.</p>" +
+                            "<p>아래 내용을 확인해주세요.</p>" +
+                            "<p>감사합니다.</p>" +
+                            "<br>" +
+                            "<div>" +
+
+                            "<table style=\"width:20rem\">" +
+                            "<colgroup>" +
+                            "<col style=\"width:50%\">" +
+                            "<col style=\"width:50%\">" +
+                            "</colgroup>" +
+
+                            "<tr>" +
+                            "<td>입금 기한</td>" +
+                            "<td id=\"accDueDt\">" + dueDt + "</td>" +
+                            "</tr>" +
+
+                            "<tr>" +
+                            "<td>입금하실 보험료</td>" +
+                            "<td id=\"totalPrem2\">" + df.format(prem) + "원</td>" +
+                            "</tr>" +
+
+                            "<tr>" +
+                            "<td>입금하실 계좌</td>" +
+                            "<td id=\"accBank\">" + accBank + "</td>" +
+                            "</tr>" +
+
+                            "<tr>" +
+                            "<td></td>" +
+                            "<td id=\"accNum\">" + accNum + "</td>" +
+                            "</tr>" +
+
+                            "<tr>" +
+                            "<td></td>" +
+                            "<td id=\"accNm\">" + accName + "</td>" +
+                            "</tr>" +
+
+                            "</table>" +
+                            "</div>" +
+                            "<br>";
+            MimeBodyPart contentPart = new MimeBodyPart();
+            contentPart.setContent(content, "text/html; charset=euc-kr");
+            multipart.addBodyPart(contentPart);
+            message.setContent(multipart);
+            Transport.send(message);
+            System.out.println("이메일 발송완료");
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void sendClaimMail(String title, String email) throws Exception {
+
+        // 메일전송----
+        Properties props = new Properties();
+
+        props.put("mail.smtp.host", smtpServer);
+        props.put("mail.smtp.port", port);
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.default.encoding", "UTF-8");
+        Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(senderEmail, smtpPass);
+            }
+        });
+
+        try {
+            // 메시지 본문과 첨부 파일을 함께 처리할 Multipart 객체 생성
+            Multipart multipart = new MimeMultipart();
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress("pol0258@simg.kr")); // 보내는 이메일 주소
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email)); // 받는 이메일 주소
+            message.setSubject(title);
+            // 메일 본문
+            String content =
+                    "<h1 style=\"color:#05219a;\">SIMG 해외여행자보험 사고접수 안내</h1>" +
+                            "<p>안녕하세요</p>" +
+                            "<p>SIMG 해외여행자보험 사고접수가 완료되었습니다.</p>" +
+                            "<p>접수내용은 보험사 직원이 확인 후 빠른 시일 내에 연락드리도록 하겠습니다.</p>" +
+                            "<p>감사합니다.</p>" +
+                            "<br>";
+            MimeBodyPart contentPart = new MimeBodyPart();
+            contentPart.setContent(content, "text/html; charset=euc-kr");
+            multipart.addBodyPart(contentPart);
+            message.setContent(multipart);
+            Transport.send(message);
+            System.out.println("이메일 발송완료");
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

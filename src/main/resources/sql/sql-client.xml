@@ -305,5 +305,11 @@
         where
             a.aplPk = #{aplPk} and a.useYN = 'Y' and c.useYN = 'Y'
     </select>
+    <insert id="insertClaim">
+        insert into
+            simgotidb.claim (clntNm, clntJumin, benefRel, benefNm, benefEmail, benefPhone, clmDt, clmPlace, clmAmt, clmDetail, benefCollectAgreeDt, benefReadAgreeDt, benef3rdAgreeDt)
+        values
+            (#{clntNm}, #{clntJumin}, #{benefRel}, #{benefNm}, #{benefEmail}, #{benefPhone}, #{clmDt}, #{clmPlace}, #{clmAmt}, #{clmDetail}, now(), now(), now())
+    </insert>
 </mapper>
 

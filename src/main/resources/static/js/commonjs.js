@@ -1,6 +1,7 @@
 $(document).ready(function () {
     $("#tabs").load("/tabs.html");
     $("#header").load("/header.html");
+    $("#tabs-admin").load("/admin/adminTabs.html");
 
 
 });
@@ -293,4 +294,9 @@ function removeServerSession(){
             return false;
         }
     });
+}
+
+
+function cutSec(dateStr){
+    return dateStr.length==19?dateStr.substring(0,dateStr.length-3):dateStr;
 }

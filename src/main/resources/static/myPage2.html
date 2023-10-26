@@ -38,11 +38,11 @@
     </style>
 
     <script>
-        let insList = [];
-        let clntPk;
-        let email;
-
         $(document).ready(function () {
+            let insList = [];
+            let clntPk;
+            let email;
+
             let ul = $("#ins-ul");
             getInsList();
 
@@ -187,9 +187,11 @@
                 $("#clntEmail-text-b").val(emailB);
                 // 계약상태에 따라 가입증명서버튼 보이기
                 const state = summary.aplStateCode;
+                let cancelStr = "가입취소";
                 console.log(state);
                 if(state == 402 || state == 405){
                     $("#email-pdf-kr-div").removeAttr("hidden");
+
                 }
                 else{
                     $("#email-pdf-kr-div").attr("hidden","hidden");
@@ -199,7 +201,7 @@
                 $("#application-cancel-div").empty();
                 if(summary.aplstateCode != 405){
                     $("#application-cancel-div").append(`
-                        <button type="button" class="btn main-btn-outlined-red mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입취소</button>
+                        <button type="button" class="btn main-btn-outlined-red mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn" value="${state}">${cancelStr}</button>
                         <div class="popup" hidden style="z-index: 1">
                             <div class="popup-content d-flex justify-content-center align-items-center">
                                 <span class="my-3">보험 가입을 취소하시겠습니까?</span>
@@ -384,12 +386,13 @@
             // 가입취소 예 클릭시
             $("html").on("click","#application-cancel",function(){
                 const aplPk = $(this).val();
+
                 $.ajax({
                     url:"/api/client/applicationCancel",
                     method:"PUT",
                     data:{
                         clntPk:clntPk,
-                        aplPk:aplPk,
+                        aplPk:aplPk
                     },
                     success:(data)=>{
                         console.log(data);
@@ -482,6 +485,7 @@
                 const refnBank = $("#acc-bank-select").val();
                 const refnAccount = $("#acc-number-text").val();
                 const refnName = $("#acc-name-text").val();
+                const aplStatecode =$("#email-pdf-kr-popup-btn").val();
                 $.ajax({
                     url:"/api/client/applicationCancel/account",
                     method:"PUT",
