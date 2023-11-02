@@ -18,7 +18,7 @@ function hideHiddenAlert() {
 // 경고팝업 띄워주는 함수
 function showPopup(msg, btnId){
     $("#warn-popup").removeAttr("hidden");
-    $("#warn-popup-content").text(msg);
+    $("#warn-popup-content").append(msg);
     $("#warn-popup .popup-ok-btn").attr("id",btnId);
 }
 

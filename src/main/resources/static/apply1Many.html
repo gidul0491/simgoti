@@ -265,7 +265,9 @@
                         if (data.result == "success") {
                             if (data.isDuplicated == "yes") {
                                 console.log("중복된 가입이력 존재");
-                                showPopup("고객님께서는 선택하신 날짜에 이미 가입이력이 존재합니다.\n 보험가입이력은 마이페이지에서 확인 가능합니다.", "moveToCal");
+                                showPopup(`고객님께서는 선택하신 날짜와 겹치는 가입이력이 존재합니다.
+                                중복되지 않는 날짜를 선택해주세요. <br>
+                                보험가입이력은 마이페이지에서 확인 가능합니다.`, "moveToCal");
                                 $("html").on("click", "#moveToCal", function () {
                                     location.href = "/simg/simgOti/calculate";
                                 });
@@ -458,6 +460,7 @@
                                 } else {
                                     $(".table-num").removeAttr("hidden");
                                 }
+
                                 $("#prem-check-btn").attr("disabled", "disabled");
                                 showPremCheckContainer(totalPrem, data.length);
                                 $("#fromDt").text(startDt);

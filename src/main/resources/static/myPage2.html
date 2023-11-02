@@ -146,32 +146,52 @@
                 $("#ins-detail-toDt").empty().text(`${summary.trToDt} 까지 `);
                 $("#ins-detail-period").empty().text(`(${summary.period}일)`);
                 $("#clntCnt").empty().append(`<span>가입인원 ${summary.clntCnt}명</span>`);
-                $("#companion-table").empty().append(`
-                <colgroup>
-                    <col style="width: 10%">
-                    <col style="width: 20%">
-                    <col style="width: 40%">
-                    <col style="width: 20%">
-                    <col style="width: 10%">
-                </colgroup>
-                <tr>
-                    <th>번호</th>
-                    <th>이름</th>
-                    <th>주민등록번호</th>
-                    <th>보험료</th>
-                    <th>보장</th>
-                </tr>`);
-                if (companion.length > 1) {
-                    $("#coverage-list-div").attr("hidden", "hidden");
-                    $("#companion-list-div").removeAttr("hidden");
-                    for (let i = 0; i < companion.length; i++) {
-                        addCompanionTableTr(i, companion[i].clntNm, `${companion[i].clntBirth}-${companion[i].clntGen}******`, companion[i].premium, summary.covNm, companion[i].covDList)
-                    }
-                } else {
-                    $("#companion-list-div").attr("hidden", "hidden");
-                    $("#coverage-list-div").removeAttr("hidden");
-                    $("#coverage-detail-alone").empty().append(coverageDetail(summary.covNm, companion[0].covDList));
+
+                // $("#companion-table").empty().append(`
+                // <colgroup>
+                //     <col style="width: 10%">
+                //     <col style="width: 20%">
+                //     <col style="width: 40%">
+                //     <col style="width: 20%">
+                //     <col style="width: 10%">
+                // </colgroup>
+                // <tr>
+                //     <th>번호</th>
+                //     <th>이름</th>
+                //     <th>주민등록번호</th>
+                //     <th>보험료</th>
+                //     <th>보장</th>
+                // </tr>`);
+                //
+
+                $("#companion-table tbody").empty();
+                for (let i = 0; i < companion.length; i++) {
+                    // totalPrem += companion[i].premium;
+                    addCompanionRow(i==0?"대표":i,
+                        companion[i].clntNm,
+                        companion[i].clntBirth + "-" + companion[i].clntGen+"******",
+                        summary.covNm,
+                        companion[i].premium,
+                        companion[i].covDList);
                 }
+                if (companion.length < 2) {
+                    $(".table-num").attr("hidden", "hidden");
+                } else {
+                    $(".table-num").removeAttr("hidden");
+                }
+
+
+                // if (companion.length > 1) {
+                //     $("#coverage-list-div").attr("hidden", "hidden");
+                //     $("#companion-list-div").removeAttr("hidden");
+                //     for (let i = 0; i < companion.length; i++) {
+                //         addCompanionTableTr(i, companion[i].clntNm, `${companion[i].clntBirth}-${companion[i].clntGen}******`, companion[i].premium, summary.covNm, companion[i].covDList)
+                //     }
+                // } else {
+                //     $("#companion-list-div").attr("hidden", "hidden");
+                //     $("#coverage-list-div").removeAttr("hidden");
+                //     $("#coverage-detail-alone").empty().append(coverageDetail(summary.covNm, companion[0].covDList));
+                // }
 
                 email = rep.clntEmail
                 $("#ins-detail-prem").empty().append(`<span>보험료 ${putComma(summary.premium)}원</span>`);
@@ -545,7 +565,7 @@
                     </div>
                     <div id="ins-detail-companion" class="d-flex justify-content-start align-items-center">
                         <div id="clntCnt"></div>
-                        <div id="companion-list-div" hidden>
+                        <div id="companion-list-div" >
                             <button type="button" class="btn main-btn-outlined show-popup p-0 px-1 ms-1"
                                     id="companion-list-btn">가입자명단
                             </button>
@@ -558,19 +578,26 @@
                                     <div class="w-100">
                                         <table id="companion-table" class="w-100">
                                             <colgroup>
+                                                <col style="width: 13%" class="table-num">
+                                                <col style="width: 17%">
+                                                <col style="width: 22%">
                                                 <col style="width: 10%">
-                                                <col style="width: 20%">
-                                                <col style="width: 40%">
-                                                <col style="width: 20%">
-                                                <col style="width: 10%">
+                                                <col style="width: 24%">
+                                                <col style="width: 14%">
                                             </colgroup>
+                                            <thead>
                                             <tr>
-                                                <th>번호</th>
+                                                <th class="table-num">번호</th>
                                                 <th>이름</th>
-                                                <th>주민등록번호</th>
+                                                <th class="px-0">생년월일</th>
+                                                <th class="px-0">성별</th>
                                                 <th>보험료</th>
                                                 <th>보장</th>
                                             </tr>
+                                            </thead>
+                                            <tbody>
+
+                                            </tbody>
                                         </table>
                                     </div>
                                     <div class="w-100 me-3 mt-3">
