@@ -13,7 +13,7 @@
 
 /* 모바일 화면 */
 /*@media all and (max-aspect-ratio: 1/1){*/
-@media all and (max-width: 480px){
+@media all and (max-width: 1024px){
     html {
         font-size: 3.6vw;
     }
@@ -35,7 +35,7 @@
 }
 /* pc 화면 */
 /*@media all and (min-aspect-ratio:1/1) and (min-width: 768px){*/
-@media all and (min-width: 481px){
+@media all and (min-width: 1025px){
     .mainView {
         padding:1.5rem;
         width: 540px;

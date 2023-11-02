@@ -241,7 +241,7 @@ function calculateInsAge(birth) {
     return insAge;
 }
 
-// 만 나이 구하는 함수
+// 8자리 생년월일로 만 나이 구하는 함수
 function calculateManAge(birth){
     const year = birth.substring(0, 4);
     const mth = birth.substring(4, 6);
@@ -275,8 +275,12 @@ function validate8birth(dateInput) {
     const date = new Date(year, month - 1, day);
 
     if (date.getFullYear() == year && date.getMonth() + 1 == month && date.getDate() == day) {
-        if(calculateManAge(dateInput) > 79 || calculateManAge(dateInput) < 0){
+        const manAge = calculateManAge(dateInput);
+        if(manAge > 79 || manAge < 0){
             return "age";
+        }
+        else if(manAge > 0 && manAge < 19){
+            return "minor";
         }
         else {
             return "valid";

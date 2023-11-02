@@ -497,6 +497,12 @@
                 } else if (validateBirth == "invalid") {
                     showPopup("생년월일을 정확히 입력해주세요.")
                 }
+                else if(validateBirth == "minor"){
+                    showPopup("만 19세 미만은 1인 가입 또는 2인 이상 단체의 대표가입자로서 가입이 불가능합니다.","ageNewLoad");
+                    $("html").on("click", "#ageNewLoad", function () {
+
+                    });
+                }
                 // getPremiumAndCoverage();
             });
 
