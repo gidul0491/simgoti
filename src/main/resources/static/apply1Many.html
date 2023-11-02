@@ -511,11 +511,13 @@
                             $("#read-" + showNum).removeClass("checked");
                         }
                     }
+
                 }
 
                 if (read[0] && read[1] && read[2] && read[3] && read[4]) {
                     check0bool = true;
                     $("#check-0").addClass("checked");
+                    checkAllVars();
                 } else {
                     check0bool = false;
                     $("#check-0").removeClass("checked");
