@@ -526,7 +526,7 @@ public class EmailServiceImpl implements EmailService {
             contentStream.setStrokingColor(230, 230, 230);
             contentStream.drawLine(margin, yPosition, margin + imgWidth, yPosition);
 
-            String covHeader = "0 ~ 18세";
+            String covHeader = "만 0 ~ 18세";
             float covHeaderStringWidth = nanumGothic.getStringWidth(covHeader) / 1000 * info1FontSize;
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
@@ -534,7 +534,7 @@ public class EmailServiceImpl implements EmailService {
             contentStream.showText(covHeader);
             contentStream.endText();
 
-            covHeader = "19 ~ 79세";
+            covHeader = "만 19 ~ 79세";
             covHeaderStringWidth = nanumGothic.getStringWidth(covHeader) / 1000 * info1FontSize;
             contentStream.beginText();
             contentStream.setFont(nanumGothic, info1FontSize);
@@ -934,8 +934,9 @@ public class EmailServiceImpl implements EmailService {
             String content =
                     "<h1 style=\"color:#05219a;\">SIMG 해외여행자보험 사고접수 안내</h1>" +
                             "<p>안녕하세요</p>" +
-                            "<p>SIMG 해외여행자보험 사고접수가 완료되었습니다.</p>" +
-                            "<p>접수내용은 보험사 직원이 확인 후 빠른 시일 내에 연락드리도록 하겠습니다.</p>" +
+                            "<p>SIMG 해외여행자보험 사고접수 신청 내역이 확인되었습니다.</p>" +
+                            "<p>사고 내용은 빠른 시일내에 보험사에 전달될 예정이며,</p>" +
+                            "<p>보험사에서 확인 후 접수가 완료되면 별도로 안내해 드리도록 하겠습니다.</p>" +
                             "<p>감사합니다.</p>" +
                             "<br>";
             MimeBodyPart contentPart = new MimeBodyPart();

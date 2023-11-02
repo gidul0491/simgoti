@@ -23,8 +23,10 @@
                 benefEmail:"",
                 clmDt:"",
                 clmPlace:"",
-                clmAmt:"",
-                clmDetail:""
+                clmDetail:"",
+                clmAccBank:"",
+                clmAccNum:"",
+                clmAccNm:"",
             };
 
             let read = [false, false, false];
@@ -60,8 +62,11 @@
                 }
 
                 info.clmPlace = $("#clmPlace-text").val();
-                info.clmAmt = $("#clmAmt-text").val();
                 info.clmDetail = $("#clmDetail-text").val();
+
+                info.clmAccBank = $("#clmAccBank-select option:selected").val();
+                info.clmAccNum = $("#clmAccNum-text").val();
+                info.clmAccNm = $("#clmAccNm-text").val();
 
                 console.log("******************************************");
                 Object.keys(info).forEach((key)=>{
@@ -203,10 +208,24 @@
                         benefEmail:info.benefEmail,
                         clmDt:info.clmDt,
                         clmPlace:info.clmPlace,
-                        clmAmt:info.clmAmt,
-                        clmDetail:info.clmDetail
+                        clmDetail:info.clmDetail,
+                        clmAccBank:info.clmAccBank,
+                        clmAccNum:info.clmAccNum,
+                        clmAccNm:info.clmAccNm,
                     },
                     success: (data) => {
+                        $("#claim-btn").text("접수중..").attr("disabled","disabled");
+                        $.ajax({
+                            url: "/api/client/claim/email",
+                            type: "POST",
+                            data: {
+                                benefEmail: info.benefEmail,
+                            },
+                            success: (data) => {
+                            },
+                            error: () => {
+                            }
+                        });
                         console.log(data.result);
                         if(data.result == "success"){
                             showPopup(data.msg, "done");
@@ -405,18 +424,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- 피해금액 -->
-                <div class="text-start my-3" id="clmAmt-div">
-                    <div class="d-flex justify-content-between">
-                        <div class="w-25">
-                            <span>피해(예상)금액</span>
-                        </div>
-                        <div class="w-75 d-flex justify-content-between align-items-center">
-                            <div class="w-100 pe-2"><input type="text" class="form-control" id="clmAmt-text" maxlength="20"></div>
-                            <div class="text-end"><span>원</span></div>
-                        </div>
-                    </div>
-                </div>
+
                 <!-- 사고내용 -->
                 <div class="text-start my-3" id="clmDetail-div">
                     <div class="d-flex justify-content-between">
@@ -424,7 +432,53 @@
                             <span>사고 내용</span>
                         </div>
                         <div class="w-75">
-                            <input type="text" class="form-control" id="clmDetail-text" maxlength="20">
+                            <input type="text" class="form-control" id="clmDetail-text" maxlength="500" placeholder="육하원칙에 따라 상세히 작성해주세요.">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 계좌정보 입력 -->
+            <div id="account" class="mt-5">
+                <h5 class="text-start">보험금 받으실 계좌</h5>
+                <!-- 은행 -->
+                <div class="text-start my-3" id="clmAccBank-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>은행</span>
+                        </div>
+                        <div class="w-75 d-flex justify-content-between align-items-center">
+                            <select id="clmAccBank-select"
+                                    class="form-control">
+                                <option value='' hidden="hidden" disabled selected>선택</option>
+                                <option value='하나은행'>하나은행</option>
+                                <option value='신한은행'>신한은행</option>
+                                <option value='국민은행'>국민은행</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 계좌번호 -->
+                <div class="text-start my-3" id="clmAccNum-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>계좌번호</span>
+                        </div>
+                        <div class="w-75 d-flex justify-content-between align-items-center">
+                            <input type="text" class="form-control" id="clmAccNum-text" maxlength="50" placeholder="피보험자(수익자)의 계좌번호를 입력해주세요.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 계좌 -->
+                <div class="text-start my-3" id="clmAccNm-div">
+                    <div class="d-flex justify-content-between">
+                        <div class="w-25">
+                            <span>예금주</span>
+                        </div>
+                        <div class="w-75 d-flex justify-content-between align-items-center">
+                            <input type="text" class="form-control" id="clmAccNm-text" maxlength="37">
                         </div>
                     </div>
                 </div>

@@ -202,7 +202,8 @@
 
             let today = new Date();
             let todayStr = dateToStr(today);
-            let after3mth = new Date(`${today.getFullYear()}-${numPadding2(today.getMonth() + 4)}-${today.getDate() - 1}`);
+            let after3mth = new Date();
+            after3mth.setDate(today.getDate() + 62);
             let after3mthStr = dateToStr(after3mth);
             let maxDate;
 
@@ -248,7 +249,8 @@
                     // 여행종료일시 최대일자를 여행출발일시로부터 3개월 후로 설정
                     $("#end-date").attr("min", startDate);
                     maxDate = new Date(startDate);
-                    maxDate.setMonth(maxDate.getMonth() + 3);
+                    maxDate.setDate(maxDate.getDate() + 90)
+                    // maxDate.setMonth(maxDate.getMonth() + 3);
                     const maxDateStr = dateToStr(maxDate);
                     $("#end-date").attr("max", maxDateStr);
                 }
@@ -550,7 +552,7 @@
 
                     <div class="d-flex justify-content-between">
                         <div class="w-50 d-flex justify-content-center align-items-center">
-                            <span>여행 출발</span>
+                            <span>자택 출발</span>
                         </div>
                         <div class="w-100 pe-1">
                             <input type="date" class="form-control" id="start-date">
@@ -592,7 +594,7 @@
 
                     <div class="d-flex justify-content-between">
                         <div class="w-50 d-flex justify-content-center align-items-center">
-                            <span>여행 종료</span>
+                            <span>자택 도착</span>
                         </div>
                         <div class="w-100 pe-1">
                             <input type="date" class="form-control" id="end-date" disabled>
@@ -1180,11 +1182,11 @@
                     <div class="coverage-list"></div>
                     <!-- 가입신청 1인 동승자 버튼 -->
                     <div class="d-flex justify-content-between">
-                        <div class="w-100 py-3 pe-2">
-                            <button type="button" class="btn main-btn" id="apply-alone">1인 가입</button>
-                        </div>
+<!--                        <div class="w-100 py-3 pe-2">-->
+<!--                            <button type="button" class="btn main-btn" id="apply-alone">1인 가입</button>-->
+<!--                        </div>-->
                         <div class="w-100 py-3 ps-2">
-                            <button type="button" class="btn main-btn" id="apply-many">2인 이상 가입</button>
+                            <button type="button" class="btn main-btn" id="apply-many">1인 또는 2인 이상 가입</button>
                         </div>
                     </div>
                 </div>

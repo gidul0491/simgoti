@@ -48,11 +48,20 @@ public class AdminController {
     @RequestMapping(value = "/payedYN", method = RequestMethod.PUT)
     public Object updateInsPayedYN(@RequestParam int aplPk, @RequestParam Character payedYN) throws Exception{
         adminService.updateInsPayedYN(aplPk, payedYN);
+//        if(payedYN.equals('Y')){ // payedYN을 Y로 바꾸는경우(결제되지 않은 상태에서 결제확인후 Y로 바꾸는 경우)
+//            String clntEmail = emailService.selectEmailByAplPk(aplPk);
+//            emailService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입이 완료되었습니다.", clntEmail, "가입증명서.pdf");
+//        }
+        return adminService.selectAdminInsSumDto(aplPk);
+    }
+
+    @RequestMapping(value = "/payedYN/email", method = RequestMethod.POST)
+    public Object updateInsPayedYNEmail(@RequestParam int aplPk, @RequestParam Character payedYN) throws Exception{
         if(payedYN.equals('Y')){ // payedYN을 Y로 바꾸는경우(결제되지 않은 상태에서 결제확인후 Y로 바꾸는 경우)
             String clntEmail = emailService.selectEmailByAplPk(aplPk);
             emailService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입이 완료되었습니다.", clntEmail, "가입증명서.pdf");
         }
-        return adminService.selectAdminInsSumDto(aplPk);
+        return "ok";
     }
 
     @RequestMapping(value = "/stateCode", method = RequestMethod.PUT)

@@ -62,13 +62,20 @@ public class ClientController {
             return resp;
         } else {
             int travelDay = commonService.getPeriod(startDt, endDt);
-            Map<String, List> data = new HashMap<>();
-            data.put("coverageList", clientService.selectCoverageList(isOver19));
-            data.put("coverageTabList", clientService.selectCoverageTypeList(insAge, clntGen, travelDay, isOver19));
+            if(travelDay > 90){
+                resp.put("msg","여행기간은 최대 90일까지입니다.");
+                resp.put("result","error");
+                return resp;
+            }
+            else{
+                Map<String, List> data = new HashMap<>();
+                data.put("coverageList", clientService.selectCoverageList(isOver19));
+                data.put("coverageTabList", clientService.selectCoverageTypeList(insAge, clntGen, travelDay, isOver19));
 
-            resp.put("data", data);
-            resp.put("result", "success");
-            return resp;
+                resp.put("data", data);
+                resp.put("result", "success");
+                return resp;
+            }
         }
     }
 
@@ -232,6 +239,7 @@ public class ClientController {
     @RequestMapping(value = "/summary", method = RequestMethod.GET)
     public Object getAppSum(HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
+        System.out.println("결제페이지 로드");
         ApplyFinalCheckDto applyFinalCheckDto = new ApplyFinalCheckDto();
         try {
             int clntCnt = (int) session.getAttribute("clntCnt");
@@ -262,9 +270,9 @@ public class ClientController {
             );
             applyFinalCheckDto.setAppSummaryDto(appSummaryDto);
 
-            // 결제페이지에 표시될 동승자 명단을 dto에 추가, 동승자가 2인 이상일시 추가됨
+            // 결제페이지에 표시될 동승자 명단을 dto에 추가, 동승자가 2인 이상일시 추가됨 > 1인이상도 추가
             List<CompanionDto> companionDtoList = new ArrayList<>();
-            if (session.getAttribute("companion") != null && (int) session.getAttribute("clntCnt") > 1) {
+            if (session.getAttribute("companion") != null && (int) session.getAttribute("clntCnt") > 0) {
                 companionDtoList = (ArrayList<CompanionDto>) session.getAttribute("companion");
                 for(int i=0; i<companionDtoList.size(); i++){
                     char isOver19 = companionDtoList.get(i).getIsOver19();
@@ -381,12 +389,26 @@ public class ClientController {
 //                clientService.insertApplyInsuredList(aplPk, clntPk, totalPrem, 'Y');
 //            }
 
-            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
+//            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
 
             return "ok";
         } catch (Exception e) {
             System.out.println(e);
             return e;
+        }
+    }
+
+    @RequestMapping(value = "/applyFinish/email", method = RequestMethod.POST)
+    public Object applyFinishEmail(@RequestParam String clntEmail,@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, HttpServletRequest req) throws Exception {
+        HttpSession session = req.getSession();
+        try{
+            int premium = Integer.parseInt(session.getAttribute("totalPrem").toString());
+            String dueDt = session.getAttribute("dueDt").toString();
+            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
+            return "ok";
+        }
+        catch(Exception e){
+            return "failed";
         }
     }
 
@@ -641,9 +663,8 @@ public class ClientController {
         }
     }
     @RequestMapping(value = "/claim", method = RequestMethod.POST)
-    public Object claim(@RequestParam String clntNm, @RequestParam String clntJumin, @RequestParam String benefRel, @RequestParam String benefNm, @RequestParam String benefPhone, @RequestParam String benefEmail, @RequestParam String clmDt, @RequestParam String clmPlace, @RequestParam String clmAmt, @RequestParam String clmDetail) throws Exception {
+    public Object claim(ClaimDto claim, HttpServletRequest req) throws Exception {
         Map<String,Object> result = new HashMap<>();
-        ClaimDto claim = new ClaimDto(clntNm, clntJumin, benefRel, benefNm, benefEmail, benefPhone, clmDt, clmPlace, clmAmt, clmDetail);
         int inserted = clientService.insertClaim(claim);
         System.out.println(inserted);
         if(inserted == 0){
@@ -653,7 +674,38 @@ public class ClientController {
         else{
             result.put("result","success");
             result.put("msg","보험금 청구 신청이 완료되었습니다.");
+            HttpSession session = req.getSession();
+            session.setAttribute("benefEmail",claim.getBenefEmail());
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/claim/email", method = RequestMethod.POST)
+    public Object claimEmail(@RequestParam String benefEmail, HttpServletRequest req) throws Exception {
+        Map<String,Object> result = new HashMap<>();
+        HttpSession session = req.getSession();
+        String reqEmail = (String) session.getAttribute("benefEmail");
+        if(reqEmail.equals(benefEmail)){
+            result.put("result","success");
             emailService.sendClaimMail("[SIMG 해외여행자보험] 사고접수가 완료되었습니다.", benefEmail);
+        }
+        else{
+            result.put("result","fail");
+        }
+        return result;
+    }
+    @RequestMapping(value = "/checkDuplicatedApplication", method = RequestMethod.POST)
+    public Object checkDuplicatedApplication(@RequestParam String clntNm, @RequestParam String clntJumin, @RequestParam String trFromDt, @RequestParam String trToDt) throws Exception {
+        Map<String,Object> result = new HashMap<>();
+        int clntPk = clientService.selectClientNmJumin(clntNm, clntJumin);
+        int duplicatedAppCnt = clientService.checkDuplicatedApplication(clntPk, trFromDt, trToDt);
+        if(duplicatedAppCnt > 0){
+            result.put("result","success");
+            result.put("isDuplicated","yes");
+        }
+        else{
+            result.put("result","success");
+            result.put("isDuplicated","no");
         }
         return result;
     }

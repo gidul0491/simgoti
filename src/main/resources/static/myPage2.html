@@ -238,7 +238,7 @@
                             const emailPdfBtn = $("#email-pdf-kr-popup-btn");
                             emailPdfBtn.val(aplPk);
                             if(emailPdfBtn.hasClass("main-btn")){
-                                emailPdfBtn.removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서");
+                                emailPdfBtn.removeClass("main-btn").addClass("main-btn-outlined").text("가입증명서 전송");
                             }
                             // 고객의 이메일에따라 이메일변경 팝업에서 이메일 select 관련 처리
                             $("#clntEmail-select").empty();
@@ -375,7 +375,7 @@
                     },
                     success:(data)=>{
                         console.log("success");
-                        $("#email-pdf-kr-popup-btn").text("가입증명서 전송 완료");
+                        $("#email-pdf-kr-popup-btn").text("가입증명서 전송 완료(클릭시 재전송)");
                     },
                     error:()=>{
                         $("#email-pdf-kr-popup-btn").text("네트워크 연결이 원활하지 않습니다.");
@@ -664,10 +664,10 @@
                     </div>
                     <div id="ins-detail-acc"></div>
                     <div id="email-pdf-kr-div" hidden>
-                        <button type="button" class="btn main-btn-outlined mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입증명서</button>
+                        <button type="button" class="btn main-btn-outlined mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn">가입증명서 전송</button>
                         <div class="popup" hidden style="z-index: 1">
                             <div class="popup-content d-flex justify-content-center align-items-center">
-                                <h5>가입증명서</h5>
+                                <h5>가입증명서 전송</h5>
                                 <span>아래의 이메일로 가입 증명서가 전송됩니다.</span>
                                 <span id="popup-email"></span>
                                 <div class="d-flex justify-content-between w-100 mt-3">

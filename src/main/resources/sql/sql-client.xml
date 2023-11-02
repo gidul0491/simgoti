@@ -307,9 +307,12 @@
     </select>
     <insert id="insertClaim">
         insert into
-            simgotidb.claim (clntNm, clntJumin, benefRel, benefNm, benefEmail, benefPhone, clmDt, clmPlace, clmAmt, clmDetail, benefCollectAgreeDt, benefReadAgreeDt, benef3rdAgreeDt)
+            simgotidb.claim (clntNm, clntJumin, benefRel, benefNm, benefEmail, benefPhone, clmDt, clmPlace, clmAccBank, clmAccNum, clmAccNm, clmDetail, benefCollectAgreeDt, benefReadAgreeDt, benef3rdAgreeDt)
         values
-            (#{clntNm}, #{clntJumin}, #{benefRel}, #{benefNm}, #{benefEmail}, #{benefPhone}, #{clmDt}, #{clmPlace}, #{clmAmt}, #{clmDetail}, now(), now(), now())
+            (#{clntNm}, #{clntJumin}, #{benefRel}, #{benefNm}, #{benefEmail}, #{benefPhone}, #{clmDt}, #{clmPlace}, #{clmAccBank}, #{clmAccNum}, #{clmAccNm}, #{clmDetail}, now(), now(), now())
     </insert>
+    <select id="checkDuplicatedApplication">
+        select checkDuplicatedApplication(#{clntPk}, #{trFromDt}, #{trToDt})
+    </select>
 </mapper>
 

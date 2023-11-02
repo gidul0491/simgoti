@@ -60,10 +60,83 @@ $("html").on("click", function (e) {
 // // 이메일 관련
 // const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
 
+// companion-table에 값 저장하는 함수
+function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
+    const gender = jumin.split("-")[1].substring(0,1)%2==1?"남":"여";
+    $("#companion-table").append(
+        `<tr>
+                    <td class="table-num">${num}</td>
+                    <td>${nm}</td>
+                    <td>${jumin.split("-")[0]}</td>
+                    <td>${gender}</td>
+                    <td>${putComma(prem)} 원</td>
+                    <td>
+                    <button type="button" class="btn main-btn-outlined show-popup p-0">확인</button>
+                        <div class="popup" hidden style="z-index: 2">
+                            <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
+                                ${coverageDetail(covNm, covDList)}
+                            </div>
+                        </div>
+                    </td>
+                </tr>`
+    )
+}
+
+// 보장내용 확인
+function coverageDetail(covNm, covDList) {
+    let category = "";
+    const result = `
+                <span>${covNm}</span>
+                <div class="w-100 d-flex flex-column coverage-detail mb-4">
+                
+                ${covDList.map((item, index) => {
+                    let openOrCloseDiv = "";
+                    let covDNm = item.covDNm;
+                    if(item.covDNm.split("-").length > 1){
+                        category = item.covDNm.split("-")[0];
+                        covDNm = item.covDNm.split("-")[1];
+                        if(index-1 > -1 && covDList[index-1].covDNm.split("-").length < 2){
+                            openOrCloseDiv = "open";
+                        }
+                        
+                        if(covDList[index+1].covDNm.split("-").length < 2){
+                            openOrCloseDiv = "close";
+                        }
+                       
+                    }
+                    else{ category = ""}
+        return `
+                    <div class="d-flex justify-content-between">
+                        ${openOrCloseDiv=="open"?`
+                        <div class="text-start w-100"><span>${category}</span></div>
+                        <div class="w-25 text-end"><span></span></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+`:""}
+                        <div class="text-start w-100"><span>${category==""?"":" - "}${covDNm}</span></div>
+                        <div class="w-25 text-end"><span>${putComma(numToKrUnit(item.covDAmt))}원</span></div>
+                      
+                    </div>
+                    `
+    }).join('')}
+                
+                </div>
+                <div class="w-100 coverage-detail-close-div">
+                    <button type="button" class="btn main-btn coverage-detail-close">확인</button>
+                </div>
+                `;
+    return result;
+}
 
 // 스크롤 이동하는 함수
 function moveScrollTop(item) {
     const top = $(item).offset().top - 10;
+    $("html").animate({scrollTop: top}, 10);
+}
+
+// 요소 바로 위로 스크롤 이동하는 함수
+function moveScrollBottom(item){
+    const top = $(item).offset().top - window.innerHeight + $(item).outerHeight() + 10;
     $("html").animate({scrollTop: top}, 10);
 }
 

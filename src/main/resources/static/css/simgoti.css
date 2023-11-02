@@ -13,7 +13,7 @@
 
 /* 모바일 화면 */
 /*@media all and (max-aspect-ratio: 1/1){*/
-@media all and (max-width: 991px){
+@media all and (max-width: 480px){
     html {
         font-size: 3.6vw;
     }
@@ -29,10 +29,13 @@
         margin-bottom: 0;
         padding: 0.6rem;
     }
+    .popup-content{
+        font-size: 0.96rem;
+    }
 }
 /* pc 화면 */
 /*@media all and (min-aspect-ratio:1/1) and (min-width: 768px){*/
-@media all and (min-width: 992px){
+@media all and (min-width: 481px){
     .mainView {
         padding:1.5rem;
         width: 540px;

@@ -76,7 +76,7 @@
 
    <select id="selectClaimDtoList" resultType="com.simg.simgoti.dto.AdminClaimDto">
       select
-         clmPk, clntNm, clntJumin, clmCdt, benefRel, benefNm, benefPhone, benefEmail, clmDt, clmPlace, clmDetail, clmAmt
+         clmPk, clntNm, clntJumin, clmCdt, benefRel, benefNm, benefPhone, benefEmail, clmDt, clmPlace, clmDetail, clmAccBank, clmAccNum, clmAccNm
       from
          simgotidb.claim
       where

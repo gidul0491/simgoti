@@ -61,6 +61,17 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    public int selectClientNmJumin(String clntNm, String clntJumin) throws Exception{
+        String clntJuminEnc = aes.encrypt(clntJumin);
+        try{
+            return clientMapper.selectClientNmJumin(clntNm, clntJuminEnc).get(0);
+        }
+        catch (Exception e){
+            return -1;
+        }
+    }
+
+    @Override
     public List<CoverageDto> selectCovDList(String covCode, char isOver19){
         return clientMapper.selectCovDList(covCode, isOver19);
     };
@@ -200,5 +211,10 @@ public class ClientServiceImpl implements ClientService {
         String clntJuminEnc = aes.encrypt(claim.getClntJumin());
         claim.setClntJumin(clntJuminEnc);
         return clientMapper.insertClaim(claim);
+    }
+
+    @Override
+    public int checkDuplicatedApplication(int clntPk, String trFromDt, String trToDt) throws Exception{
+        return clientMapper.checkDuplicatedApplication(clntPk, trFromDt, trToDt);
     }
 }

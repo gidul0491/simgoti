@@ -20,11 +20,13 @@
             border-radius: 0.2rem;
             padding: 0.6rem;
         }
+
         #iframe-div {
             width: 100%;
             padding-bottom: 150%;
             position: relative;
         }
+
         #iframe-div iframe {
             position: absolute;
             left: 0;
@@ -33,86 +35,53 @@
         }
 
         .companion-delete {
-            background: rgba(0,0,0,0);
+            background: rgba(0, 0, 0, 0);
+        }
+
+        .check-btn.checked span {
+            color: black;
         }
     </style>
     <script>
-        let clntNm;
-        let clntJuminA = sessionStorage.getItem("clntBirth").substring(2) || null;
-        let clntJuminB;
-        let clntPhone;
-        let clntEmail;
-        let clntCnt = 1;
-        let companionList = [];
-        let read = [false, false, false, false, false];
 
-        let covCode = sessionStorage.getItem("covCode") || null;
-        let startDt = `${sessionStorage.getItem("startDate")} ${sessionStorage.getItem("startTime")}` || null;
-        let endDt = `${sessionStorage.getItem("endDate")} ${sessionStorage.getItem("endTime")}` || null;
-        let check0bool = false;
+        $(document).ready(function () {
+            let clntNm;
+            let clntJuminA = sessionStorage.getItem("clntBirth").substring(2) || null;
+            let clntJuminB;
+            let clntPhone;
+            let clntEmail;
+            let clntCnt = 1;
+            let companionList = [];
+            let read = [false, false, false, false, false];
 
-        const regexNum = /[^0-9]/g;
+            let covCode = sessionStorage.getItem("covCode") || null;
+            let startDt = `${sessionStorage.getItem("startDate")} ${sessionStorage.getItem("startTime")}` || null;
+            let endDt = `${sessionStorage.getItem("endDate")} ${sessionStorage.getItem("endTime")}` || null;
+            let check0bool = false;
 
-        // 대표가입자의 정보를 모두 변수에 저장
-        function inputAll() {
-            clntNm = $("#clntNm-text").val();
-            clntJuminB = $("#jumin-text-b").val();
-            clntPhone = $("#clntPhone-text").val().replace(regexNum, "");
-            clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
-        }
+            const regexNum = /[^0-9]/g;
 
-        // companion-table에 값 저장하는 함수
-        function addCompanionRow(num, nm, jumin,covNm, prem, covDList) {
-            $("#companion-table").append(
-                `<tr>
-                    <td>${num}</td>
-                    <td>${nm}</td>
-                    <td>${jumin}</td>
-                    <td>${prem} 원</td>
-                    <td>
-                    <button type="button" class="btn main-btn-outlined show-popup p-0">확인</button>
-                        <div class="popup" hidden style="z-index: 2">
-                            <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
-                                ${coverageDetail(covNm, covDList)}
-                            </div>
-                        </div>
-                    </td>
-                </tr>`
-            )
-        }
+            // 대표가입자의 정보를 모두 변수에 저장
+            function inputAll() {
+                clntNm = $("#clntNm-text").val();
+                clntJuminB = $("#jumin-text-b").val();
+                clntPhone = $("#clntPhone-text").val().replace(regexNum, "");
+                clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
+            }
 
-        // 보장내용 확인
-        function coverageDetail(covNm, covDList) {
-            const result = `
-                <span>${covNm}</span>
-                <div class="w-100 d-flex flex-column coverage-detail">
-                ${covDList.map((item) => {
-                return `
-                    <div class="d-flex justify-content-between">
-                        <div><span>${item.covDNm}</span></div>
-                        <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
-                    </div>
-                    `
-            }).join('')}
-                </div>
-                <div class="w-100 coverage-detail-close-div">
-                    <button type="button" class="btn main-btn coverage-detail-close">확인</button>
-                </div>
-                `;
-            return result;
-        }
-        $("html").on("click", ".coverage-detail-close", function () {
-            $(".popup").attr("hidden", "hidden");
-            $("#companion-list-popup").removeAttr("hidden");
-        });
 
-        // 동반가입자정보 입력란 추가하는 함수
-        function addCompanion() {
-            if (clntCnt < 21) {
-                clntCnt += 1;
-                const divToAdd = $("#companion")
-                const appendDiv =
-                    `<div class="companion-input-div my-3 pt-2 pb-3 px-3">
+            $("html").on("click", ".coverage-detail-close", function () {
+                $(".popup").attr("hidden", "hidden");
+                $("#companion-list-popup").removeAttr("hidden");
+            });
+
+            // 동반가입자정보 입력란 추가하는 함수
+            function addCompanion() {
+                if (clntCnt < 21) {
+                    clntCnt += 1;
+                    const divToAdd = $("#companion")
+                    const appendDiv =
+                        `<div class="companion-input-div my-3 pt-2 pb-3 px-3">
                     <div class="d-flex justify-content-between mb-3 ">
                         <div>
                             <span>동반 </span><span class="companionNum-span"></span>
@@ -154,81 +123,84 @@
                         </div>
                     </div>
                 </div>`
-                divToAdd.append(appendDiv);
-                if(clntCnt > 20){
-                    $("#add-companion-btn").attr("hidden","hidden");
+                    divToAdd.append(appendDiv);
+                    if (clntCnt > 20) {
+                        $("#add-companion-btn").attr("hidden", "hidden");
+                    }
                 }
+                premCheckBtnAble();
+                setCompanionNumAndDelBtn();
             }
-            $("#prem-check-btn").removeAttr("disabled");
-            setCompanionNumAndDelBtn();
-        }
 
-        // 동승자 입력 div 숫자 재설정 및 삭제 버튼 추가 함수
-        function setCompanionNumAndDelBtn() {
-            $(".companion-input-div").each(function (index, item) {
-                const num = index + 1;
-                $(this).find(".companionNum-span").text(num);
-                $(this).find(".companion-delete-div").empty();
-                if (clntCnt - 1 > 1) {
-                    $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete text-secondary border-0' value='${num}'><i class="bi bi-x-circle"></i></button>`)
-                }
-                if(clntCnt <21){
+            // 동승자 입력 div 숫자 재설정 및 삭제 버튼 추가 함수
+            function setCompanionNumAndDelBtn() {
+                $(".companion-input-div").each(function (index, item) {
+                    const num = index + 1;
+                    $(this).find(".companionNum-span").text(num);
+                    $(this).find(".companion-delete-div").empty();
+                    if (clntCnt - 1 > 0) {
+                        $(this).find(".companion-delete-div").append(`<button type='button' class='companion-delete text-secondary border-0' value='${num}'><i class="bi bi-x-circle"></i></button>`)
+                    }
+                });
+                if (clntCnt < 21) {
                     $("#add-companion-btn").removeAttr("hidden");
                 }
+                if (clntCnt > 1) {
+                    $("#companion-h5").removeAttr("hidden");
+                    $("#repClnt-h5").text("대표가입자 정보");
+                } else {
+                    $("#companion h5").attr("hidden", "hidden");
+                    $("#repClnt-h5").text("가입자 정보");
+                }
                 console.log(clntCnt);
-            });
-        }
+            }
 
-        // 삭제버튼 클릭시
-        $(document).on("click", ".companion-delete", function () {
-            const num = $(this).val();
-            console.log(`delete ${num}`);
-            $(".companion-input-div").each(function (index, item) {
-                if (index + 1 == num) {
-                    $(this).remove();
+            // 삭제버튼 클릭시
+            $(document).on("click", ".companion-delete", function () {
+                const num = $(this).val();
+                console.log(`delete ${num}`);
+                $(".companion-input-div").each(function (index, item) {
+                    if (index + 1 == num) {
+                        $(this).remove();
+                        return false;
+                    }
+                });
+                clntCnt -= 1;
+                premCheckBtnAble();
+                setCompanionNumAndDelBtn();
+            });
+
+            // 산출된 보험료 표시해주는 함수
+            function showPremCheckContainer(totalPrem, clntCnt) {
+                $("#prem-check-container").removeAttr("hidden");
+                $(".total-prem").text(putComma(totalPrem));
+                $(".clntCnt").text(clntCnt);
+            }
+
+            function isVarsAllNotNull() {
+                if (
+                    (clntNm != "" && clntNm != null) &&
+                    (clntJuminA != "" && clntJuminA != null) &&
+                    (clntJuminB != "" && clntJuminB != null) &&
+                    (clntPhone != "" && clntPhone != null) &&
+                    (clntEmail != "" && clntEmail != null) &&
+                    check0bool
+                ) {
+                    console.log(true);
+                    return true;
+                } else {
+                    console.log(false);
                     return false;
                 }
-            });
-            clntCnt -= 1;
-            $("#prem-check-btn").removeAttr("disabled");
-            setCompanionNumAndDelBtn();
-        });
-
-        // 산출된 보험료 표시해주는 함수
-        function showPremCheckContainer(totalPrem, clntCnt) {
-            $("#prem-check-container").removeAttr("hidden");
-            $(".total-prem").text(totalPrem);
-            $(".clntCnt").text(clntCnt);
-        }
-
-        function isVarsAllNotNull(){
-            if(
-                (clntNm != "" && clntNm != null)&&
-                (clntJuminA != "" && clntJuminA != null)&&
-                (clntJuminB != "" && clntJuminB != null)&&
-                (clntPhone != "" && clntPhone != null)&&
-                (clntEmail != "" && clntEmail != null)&&
-                check0bool
-            ){
-                console.log(true);
-                return true;
             }
-            else {
-                console.log(false);
-                return false;
-            }
-        }
 
-        $(document).ready(function () {
-            function checkAllVars(){
-                if(isVarsAllNotNull()){
+            function checkAllVars() {
+                if (isVarsAllNotNull()) {
                     $("#apply-btn").removeAttr("disabled");
-                }
-                else{
-                    $("#apply-btn").attr("disabled","disabled");
+                } else {
+                    $("#apply-btn").attr("disabled", "disabled");
                 }
             }
-            addCompanion();
 
             // 이름
             $("#clntNm-text").on("keyup", function () {
@@ -242,10 +214,60 @@
 
             // 주민번호 앞자리
             if (clntJuminA == null) {
-                alert("보험료 간편계산부터 진행해 주세요.");
+                showPopup("간편계산을 먼저 진행해주세요.", "moveToCal");
+                $("html").on("click", "#moveToCal", function () {
+                    location.href = "/simg/simgOti/calculate";
+                });
             } else {
                 $("#jumin-text-a").val(clntJuminA);
                 $("#jumin-text-a").attr("disabled", "disabled");
+            }
+
+            // 이름, 주민 입력받았을때 날짜가 중복되는 가입이력이 있는지 확인
+            $(".checkDuplicatedApplication").on("keyup", function () {
+                const name = clntNm;
+                const jumin = clntJuminA + clntJuminB;
+                if (jumin.length == 13) {
+
+                    if (startDt != null && startDt != "" && endDt != null && endDt != "") {
+                        checkDuplicatedApplication(name, jumin, startDt, endDt);
+                    } else {
+                        showPopup("간편계산을 먼저 진행해주세요.", "moveToCal");
+                        $("html").on("click", "#moveToCal", function () {
+                            location.href = "/simg/simgOti/calculate";
+                        });
+                    }
+
+                }
+            });
+
+            // 중복되는 가입이 있는지 확인하는 함수
+            function checkDuplicatedApplication(name, jumin, trFromDt, trToDt) {
+                $.ajax({
+                    url: "/api/client/checkDuplicatedApplication",
+                    method: "POST",
+                    data: {
+                        clntNm: name,
+                        clntJumin: jumin,
+                        trFromDt: trFromDt,
+                        trToDt: trToDt
+                    },
+                    success: (data) => {
+                        if (data.result == "success") {
+                            if (data.isDuplicated == "yes") {
+                                console.log("중복된 가입이력 존재");
+                                showPopup("고객님께서는 선택하신 날짜에 이미 가입이력이 존재합니다.\n 보험가입이력은 마이페이지에서 확인 가능합니다.", "moveToCal");
+                                $("html").on("click", "#moveToCal", function () {
+                                    location.href = "/simg/simgOti/calculate";
+                                });
+                            } else {
+                                console.log("중복된 가입이력 없음");
+                            }
+                        }
+                    },
+                    error: (error) => {
+                    }
+                });
             }
 
             // 폰번호 입력 관련
@@ -261,15 +283,15 @@
             });
 
             // 이메일 관련
-            const emailDomain = ["직접입력","naver.com","gmail.com","daum.net","hanmail.net","nate.com"];
+            const emailDomain = ["직접입력", "naver.com", "gmail.com", "daum.net", "hanmail.net", "nate.com"];
 
             // 이메일 select 옵션 넣기
-            emailDomain.map((item)=>{
+            emailDomain.map((item) => {
                 $("#clntEmail-select").append(`<option value='${item}'>${item}</option>`);
             });
 
             // 이메일 직접입력
-            $("#clntEmail-text-b").on("keyup",function(){
+            $("#clntEmail-text-b").on("keyup", function () {
                 clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
                 checkAllVars();
             });
@@ -283,18 +305,18 @@
                     clntEmail = null;
                     emailB.removeAttr("hidden");
                     emailB.val(null).focus();
-                }else{
+                } else {
                     emailB.val(selected);
-                    emailB.attr("hidden","hidden");
+                    emailB.attr("hidden", "hidden");
                     clntEmail = $("#clntEmail-text-a").val() + "@" + $("#clntEmail-text-b").val();
                 }
                 checkAllVars();
+                premCheckBtnAble();
             })
 
             // 보험료 산출이후에도 동반가입자 정보를 바꾸면 보험료산출버튼이 활성화됨
-            // $(document).on("keyup",".companionNm, .companionJuminA, .companionJuminB", function () {
-            $(document).on("keyup","input", function () {
-                $("#prem-check-btn").removeAttr("disabled");
+            $(document).on("keyup", "input", function () {
+                premCheckBtnAble();
             });
 
             // 입력된 모든 동반 가입자 정보를 변수에 저장
@@ -313,7 +335,6 @@
                         prem: 0
                     });
                 });
-                console.log(companionList)
             }
 
             // 신청 버튼 클릭
@@ -357,135 +378,212 @@
                 }
             });
 
+            // 모든 input태그에 값이 입력되어있을 때 false를 반환하는 함수
+            function isInputNull(){
+                const inputs = $("input");
+                let result = false;
+                $.each(inputs, function(index, input){
+                    if($(input).val() == "" || $(input).val() == null){
+                        result = true;
+                        return result;
+                    }
+                });
+                return result;
+            }
+
+            // 보험료 산출버튼 활성화
+            function premCheckBtnAble(){
+                if(!isInputNull()){
+                    $("#prem-check-btn").removeAttr("disabled");
+                }
+                else{
+                    $("#prem-check-btn").attr("disabled","disabled");
+                }
+            }
 
             // 보험료 산출 버튼 클릭
             $("#prem-check-btn").on("click", function () {
-                inputAll();
-                inputAllCompanion();
-                if (
-                    covCode != null &&
-                    startDt != null &&
-                    endDt != null
-                ) {
-                    $.ajax({
-                        url: "/api/client/cliInfoMany",
-                        method: "POST",
-                        data: {
-                            data: JSON.stringify(companionList),
-                            covCode: covCode,
-                            startDt: startDt,
-                            endDt: endDt,
-                            clntNm: clntNm,
-                            clntJuminA: clntJuminA,
-                            clntJuminB: clntJuminB,
-                            clntPhone: clntPhone,
-                            clntEmail: clntEmail,
-                            clntCnt: clntCnt,
-                            // clntCnt:companionList.length +1,
-                            calOrApl: "cal",
-                        },
-                        success: (data) => {
-                            let totalPrem = 0;
-                            let companionCnt;
-                            console.log(data);
 
-                            $("#companion-table tbody").empty();
-                            for (i in data) {
-                                totalPrem += data[i].prem;
-                                addCompanionRow(data[i].companionNum,
-                                    data[i].companionNm,
-                                    data[i].companionJuminA + "-" + data[i].companionJuminB,
-                                    data[i].covNm,
-                                    data[i].prem,
-                                    data[i].covDList);
+                // 모든 input태그가 입력되어있을 때
+                if(!isInputNull()){
+                    inputAll();
+                    inputAllCompanion();
+                    if (
+                        covCode != null &&
+                        startDt != null &&
+                        endDt != null
+                    ) {
+                        $.ajax({
+                            url: "/api/client/cliInfoMany",
+                            method: "POST",
+                            data: {
+                                data: JSON.stringify(companionList),
+                                covCode: covCode,
+                                startDt: startDt,
+                                endDt: endDt,
+                                clntNm: clntNm,
+                                clntJuminA: clntJuminA,
+                                clntJuminB: clntJuminB,
+                                clntPhone: clntPhone,
+                                clntEmail: clntEmail,
+                                clntCnt: clntCnt,
+                                // clntCnt:companionList.length +1,
+                                calOrApl: "cal",
+                            },
+                            success: (data) => {
+                                let totalPrem = 0;
+                                let companionCnt = data.length;
+
+                                $("#companion-table tbody").empty();
+                                for (i in data) {
+                                    totalPrem += data[i].prem;
+                                    addCompanionRow(data[i].companionNum,
+                                        data[i].companionNm,
+                                        data[i].companionJuminA + "-" + data[i].companionJuminB,
+                                        data[i].covNm,
+                                        data[i].prem,
+                                        data[i].covDList);
+                                }
+                                if (companionCnt < 2) {
+                                    $(".table-num").attr("hidden", "hidden");
+                                } else {
+                                    $(".table-num").removeAttr("hidden");
+                                }
+                                $("#prem-check-btn").attr("disabled", "disabled");
+                                showPremCheckContainer(totalPrem, data.length);
+                                $("#fromDt").text(startDt);
+                                $("#toDt").text(endDt);
+
+                                moveScrollTop("#prem-check");
+                            },
+                            error: () => {
                             }
-                            $("#prem-check-btn").attr("disabled", "disabled");
-                            showPremCheckContainer(totalPrem, data.length);
-                            $("#fromDt").text(startDt);
-                            $("#toDt").text(endDt);
-                        },
-                        error: () => {
-                        }
-                    });
+                        });
+                    }
                 }
+
             });
 
             // 동반가입자 추가 버튼
             $("#add-companion-btn").on("click", function () {
                 addCompanion();
+                premCheckBtnAble();
             });
 
-            // 약관 보이기
-            $(".show-btn").on("click", function(){
+            // 약관 클릭
+            $(".show-btn").on("click", function () {
                 const showNum = $(this).attr("id").split("-")[2];
-                // 한번 클릭하면 true로 바뀜
-                read[showNum] = true;
+                // 미동의상태에서 클릭시 read[showNum] 토글 true, false 변경
+                if (read[showNum] == false) {
+                    read[showNum] = true;
 
-                // 약관버튼의 체크표시를 파란색으로 바꿈
-                if(!$("#read-"+showNum).hasClass("checked")){
-                    $("#read-"+showNum).addClass("checked");
-                }
+                    // 약관버튼의 체크표시를 파란색으로 바꿈
+                    if (!$("#read-" + showNum).hasClass("checked")) {
+                        $("#read-" + showNum).addClass("checked");
+                    }
 
-                // "모든 약관을 확인해주세요" 안내를 숨김
-                $("#hidden-alert").attr("hidden","hidden");
-
-                if(showNum === "4"){
-                    const option = `width=${800}, height=${600}, top=${this.clientY - 300}, left=${this.clientX + 50}`;
-                    window.open("/files/oti_insurance_terms.pdf#navpanes=0","_blank",option);
-                }
-                else{
-                    if(!$(this).hasClass("show")){
-                        $(this).addClass("show");
-                        $(".show-div#show-div-"+showNum).removeAttr("hidden");
-                        $("#show-btn-"+showNum+" i.closed").attr("hidden","hidden");
-                        $("#show-btn-"+showNum+" i.opened").removeAttr("hidden");
-
-                        // moveScrollTop(this);
+                    if(showNum == "4"){
+                        // 보험약관인 경우 약관파일 열기
+                        const option = `width=${800}, height=${600}, top=${this.clientY - 300}, left=${this.clientX + 50}`;
+                        window.open("/files/oti_insurance_terms.pdf#navpanes=0", "_blank", option);
+                        $("html").animate({scrollTop: $(document).height()}, 10);
                     }
                     else{
-                        $(this).removeClass("show");
-                        $(".show-div#show-div-"+showNum).attr("hidden","hidden");
-                        $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
-                        $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
+                        // 보험약관이 아닌 경우 약관내용 보이기
+                        showTerm(showNum);
+                        moveScrollBottom("#show-btn-"+(parseInt(showNum)+1).toString());
+                    }
+                } else {
+                    // 보험약관이 아닌 경우 한번 체크해제 및 약관내용 숨기기
+                    if (showNum != "4") {
+                        read[showNum] = false;
+                        // 약관버튼의 체크표시 파란색에서 회색으로 바꿈
+                        if ($("#read-" + showNum).hasClass("checked")) {
+                            $("#read-" + showNum).removeClass("checked");
+                        }
+                        hideTerm(showNum);
+                    }
+                    // 보험약관인경우 그냥 체크해제
+                    else{
+                        read[showNum] = false;
+                        // 약관버튼의 체크표시 파란색에서 회색으로 바꿈
+                        if ($("#read-" + showNum).hasClass("checked")) {
+                            $("#read-" + showNum).removeClass("checked");
+                        }
                     }
                 }
 
-                // 위 모든 ~ 동의합니다.  버튼이 .agree-check-disable 클래스를 가지고 있을 때
-                // read 배열의 모든 요소가 true이면 위 모든 ~ 동의합니다 버튼의 클래스를 .agree-check-disable에서 ...-able로 바꿈
-                if($("#agree-check").hasClass("agree-check-disable")){
-                    if(!read.includes(false)){
-                        $("#agree-check").removeClass("agree-check-disable").addClass("agree-check-able");
-                    }
+                if (read[0] && read[1] && read[2] && read[3] && read[4]) {
+                    check0bool = true;
+                    $("#check-0").addClass("checked");
+                } else {
+                    check0bool = false;
+                    $("#check-0").removeClass("checked");
                 }
+
             });
 
-            // 약관 펼쳐졌을때  보이는 접기버튼
-            $(".close").on("click", function(){
-                const showNum = $(this).val();
-                console.log("close "+showNum);
-                $("#show-btn-"+showNum).removeClass("show");
-                $(".show-div#show-div-"+showNum).attr("hidden","hidden");
-                $("#show-btn-"+showNum+" i.closed").removeAttr("hidden");
-                $("#show-btn-"+showNum+" i.opened").attr("hidden","hidden");
-            });
+            // 숨겨진 약관내용 보이기
+            function showTerm(showNum) {
+                if(!$(".show-btn-"+showNum).hasClass("show")){
+                    $(".show-btn-"+showNum).addClass("show");
+                }
 
-            // 약관 동의 체크
-            $(document).on("click",".agree-check-able #check-0", function () {
-                if(!check0bool){
+                $(".show-div#show-div-" + showNum).removeAttr("hidden");
+                $("#show-btn-" + showNum + " i.closed").attr("hidden", "hidden");
+                $("#show-btn-" + showNum + " i.opened").removeAttr("hidden");
+            }
+
+            // 약관내용 숨기기
+            function hideTerm(showNum) {
+                if($(".show-btn-"+showNum).hasClass("show")){
+                    $(".show-btn-"+showNum).removeClass("show");
+                }
+                $(".show-div#show-div-" + showNum).attr("hidden", "hidden");
+                $("#show-btn-" + showNum + " i.closed").removeAttr("hidden");
+                $("#show-btn-" + showNum + " i.opened").attr("hidden", "hidden");
+            }
+
+            // 모두 동의 클릭
+            $(document).on("click", "#check-0", function () {
+                if (!check0bool) {
+                    read.map((item, i) => {
+                        read[i] = true;
+                        // 약관버튼의 체크표시를 파란색으로 바꿈
+                        if (!$("#read-" + i).hasClass("checked")) {
+                            $("#read-" + i).addClass("checked");
+                        }
+                        if(i != 4){
+                            showTerm(i);
+                        }
+
+                    });
                     check0bool = true;
                     $(this).addClass("checked");
-
+                    $("html").animate({scrollTop: $(document).height()}, 10);
                 } else {
+                    read.map((item, i) => {
+                        // 보험약관 제외 한번 더 클릭시 체크해제
+                        read[i] = false;
+                        // 약관버튼의 체크표시 파란색에서 회색으로 바꿈
+                        if ($("#read-" + i).hasClass("checked")) {
+                            $("#read-" + i).removeClass("checked");
+                        }
+                        if(i != 4) {
+                            hideTerm(i);
+                        }
+                    });
+
                     check0bool = false;
                     $(this).removeClass("checked");
                 }
                 checkAllVars();
             });
 
-            // 약관 안읽었는데 동의 체크하려고할때
-            $(document).on("click",".agree-check-disable #check-0", function () {
-                $("#hidden-alert").removeAttr("hidden");
-            });
+            // // 약관 안읽었는데 동의 체크하려고할때
+            // $(document).on("click", ".agree-check-disable #check-0", function () {
+            //     $("#hidden-alert").removeAttr("hidden");
+            // });
         });
 
     </script>
@@ -498,9 +596,9 @@
         <!-- 탭 아래 본문내용-->
         <div id="content">
 
-            <h5 class="text-blue text-start">대표 가입자</h5>
+            <h5 class="text-blue text-start" id="repClnt-h5">가입자 정보</h5>
             <!-- 이름 -->
-            <div class="text-start my-3" id="clntNm-div">
+            <div class="text-start my-3 checkDuplicatedApplication" id="clntNm-div">
                 <div class="d-flex justify-content-between">
                     <div class="w-25">
                         <span>이름</span>
@@ -521,12 +619,12 @@
                     <div class="w-75">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="w-100 pe-2">
-                                <input type="text" class="form-control" id="jumin-text-a">
+                                <input type="text" class="form-control checkDuplicatedApplication" id="jumin-text-a">
                             </div>
 
                             <span>-</span>
                             <div class="w-100 ms-2">
-                                <input type="text" class="form-control" id="jumin-text-b">
+                                <input type="text" class="form-control checkDuplicatedApplication" id="jumin-text-b">
                             </div>
 
                         </div>
@@ -554,7 +652,7 @@
                     </div>
                     <div class="w-75">
                         <div class="d-flex justify-content-between align-items-top">
-                            <div  class="w-100 pe-2">
+                            <div class="w-100 pe-2">
                                 <input type="text" class="form-control" id="clntEmail-text-a">
                             </div>
 
@@ -575,7 +673,7 @@
 
             <!-- 동반 가입차 입력란이 추가되는 div-->
             <div id="companion">
-                <h5 class="text-blue text-start">동반 가입자(최대 20명)</h5>
+                <h5 class="text-blue text-start" id="companion-h5" hidden>동반 가입자(최대 20명)</h5>
             </div>
 
             <div class="w-50 mx-auto my-3" id="add-companion-div">
@@ -584,7 +682,7 @@
             </div>
 
             <!-- 보험료 산출 버튼 -->
-            <button type="button" class="btn main-btn w-75" id="prem-check-btn">보험료 산출</button>
+            <button type="button" class="btn main-btn w-75" id="prem-check-btn" disabled>보험료 산출</button>
 
             <!-- 산출된 보험료 -->
             <!--            <div id="prem-check-container" hidden>-->
@@ -613,17 +711,19 @@
                                 <div class="w-100">
                                     <table id="companion-table" class="w-100 table">
                                         <colgroup>
-                                            <col style="width: 13%">
+                                            <col style="width: 13%" class="table-num">
                                             <col style="width: 17%">
-                                            <col style="width: 36%">
-                                            <col style="width: 20%">
+                                            <col style="width: 22%">
+                                            <col style="width: 10%">
+                                            <col style="width: 24%">
                                             <col style="width: 14%">
                                         </colgroup>
                                         <thead>
                                         <tr>
-                                            <th>번호</th>
+                                            <th class="table-num">번호</th>
                                             <th>이름</th>
-                                            <th>주민등록번호</th>
+                                            <th class="px-0">생년월일</th>
+                                            <th class="px-0">성별</th>
                                             <th>보험료</th>
                                             <th>보장</th>
                                         </tr>
@@ -634,18 +734,27 @@
                                     </table>
                                 </div>
 
-                                <div>
-                                    <span>여행 기간: </span>
-                                    <span id="fromDt"></span><span> 부터</span>
-                                    <span id="toDt"></span><span> 까지</span>
-                                </div>
-
-                                <div>
-                                    <span>총 가입자: </span><span class="clntCnt"></span><span> 명</span>
-                                </div>
-                                <div>
-
-                                    <span>총 보험료: </span><span class="total-prem"></span><span> 원</span>
+                                <div class="w-100">
+                                    <table class="w-100">
+                                        <colgroup>
+                                            <col style="width: 20%">
+                                            <col style="width: 80%">
+                                        </colgroup>
+                                        <tbody>
+                                        <tr>
+                                            <th class="text-end">여행 기간 :</th>
+                                            <td><span id="fromDt"></span><span> ~ </span><span id="toDt"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-end">가입자 수 :</th>
+                                            <td><span class="clntCnt"></span><span> 명</span></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-end">총 보험료 :</th>
+                                            <td><span class="total-prem"></span><span> 원</span></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
 
                                 <div class="w-100 mt-3">
@@ -661,12 +770,17 @@
                 <!-- 약관 동의 -->
                 <div class="mb-3">
                     <!--                <span>보험 가입을 위해 아래 약관을 모두 확인해 주세요.</span>-->
+
                     <div class="agree-terms">
                         <ul class="list-unstyled mb-0">
                             <li>
                                 <button type="button" class="show-btn" id="show-btn-0">
-                                    <div>이용약관 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                    <div id="read-0" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                    <div>이용약관 <i class="bi bi-caret-down-fill closed"></i><i
+                                            class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-0" class="check-btn">
+                                        <span>동의</span>
+                                        <i class="bi bi-check-circle-fill icon"></i>
+                                    </div>
                                 </button>
                                 <div class="show-div" id="show-div-0" hidden>
                                 <pre>
@@ -717,13 +831,17 @@
 제9조 (분쟁의 해결)
 1) 당사자는 서비스와 관련하여 분쟁이 발생한 경우에 이를 원만하게 해결하기 위하여 노력합니다.
 2) 전항의 규정에도 불구하고, 당사자간 분쟁으로 인하여 소송이 제기될 경우 서울중앙지방법원을 관할법원으로 합니다.</pre>
-                                    <button type="button" class="close mx-auto my-2" value="0">[접기]</button>
+                                    <!--                                    <button type="button" class="close mx-auto my-2" value="0">[접기]</button>-->
                                 </div>
                             </li>
                             <li>
                                 <button type="button" class="show-btn" id="show-btn-1">
-                                    <div>단체규약 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                    <div id="read-1" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                    <div>단체규약 <i class="bi bi-caret-down-fill closed"></i><i
+                                            class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-1" class="check-btn">
+                                        <span>동의</span>
+                                        <i class="bi bi-check-circle-fill icon"></i>
+                                    </div>
                                 </button>
                                 <div class="show-div" id="show-div-1" hidden>
                                <pre>
@@ -743,13 +861,17 @@
 2. 에스아이엠지는 규약변경을 위해 필요한 경우 회원들에게 의견을 구할 수 있으며, 회원들은 이에 성실히 응합니다.
 3. 규약변경을 희망하는 회원은 에스아이엠지에 그 구체적 변경안과 이유를 제시하여 규약변경을 제안할 수 있습니다. 이에 대하여는 에스아이엠지는 전항에 따라 처리합니다.
 4. 에스아이엠지는 단체보험가입 등 규약에 직접적으로 영향을 받는 서비스를 이용하는 회원에게는 개별적으로 규약적용에 부동의하는지 의견을 구합니다. 이 때 규약에 부동의하는 회원은 해당서비스를 이용하지 않거나, 회원 탈퇴를 할 수 있습니다.</pre>
-                                    <button type="button" class="close mx-auto my-2" value="1">[접기]</button>
+                                    <!--                                    <button type="button" class="close mx-auto my-2" value="1">[접기]</button>-->
                                 </div>
                             </li>
                             <li>
                                 <button type="button" class="show-btn" id="show-btn-2">
-                                    <div>개인정보수집 및 이용 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                    <div id="read-2" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                    <div>개인정보수집 및 이용 <i class="bi bi-caret-down-fill closed"></i><i
+                                            class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-2" class="check-btn">
+                                        <span>동의</span>
+                                        <i class="bi bi-check-circle-fill icon"></i>
+                                    </div>
                                 </button>
                                 <div class="show-div" id="show-div-2" hidden>
                                 <pre>
@@ -792,13 +914,17 @@
 
 13. 민감정보 및 고유식별정보의 처리에 관한 사항
 당사는 개인정보보호법 제23조 및 제24조에 따라 본 계약과 관련하여 상기의 개인(신용)정보에 대한 개별 동의 사항에 대하여 다음과 같이 고객님의 민감정보(질병•상해정보) 및 고유식별정보(주민등록번호•외국인등록번호)를 처리(수집/이용, 제공 등)하고자 합니다.</pre>
-                                    <button type="button" class="close mx-auto my-2" value="2">[접기]</button>
+                                    <!--                                    <button type="button" class="close mx-auto my-2" value="2">[접기]</button>-->
                                 </div>
                             </li>
                             <li class="border-0">
                                 <button type="button" class="show-btn" id="show-btn-3">
-                                    <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i class="bi bi-caret-up-fill opened" hidden></i></div>
-                                    <div id="read-3" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                    <div>알아두실 사항 <i class="bi bi-caret-down-fill closed"></i><i
+                                            class="bi bi-caret-up-fill opened" hidden></i></div>
+                                    <div id="read-3" class="check-btn">
+                                        <span>확인</span>
+                                        <i class="bi bi-check-circle-fill icon"></i>
+                                    </div>
                                 </button>
                                 <div class="show-div" id="show-div-3" hidden>
                                 <pre>
@@ -837,28 +963,30 @@
 
 금융감독원 보험 범죄 신고센터 안내
 - 보험범죄는 형법 제347조(사기)에 의거 10년 이하의 징역이나 2천만원 이하의 벌금에 처해지며, 보험범죄를 교사한 경우에도 동일한처벌을 받을 수 있습니다. 금융감독원 민원상담전화 국번 없이 1332, 인터넷 www.fss.or.kr</pre>
-                                    <button type="button" class="close mx-auto my-2" value="3">[접기]</button>
+                                    <!--                                    <button type="button" class="close mx-auto my-2" value="3">[접기]</button>-->
                                 </div>
                             </li>
                             <li>
 
                                 <button type="button" class="show-btn" id="show-btn-4">
-                                    <div>보험약관</div>
-                                    <div id="read-4" class="check-btn"><i class="bi bi-check-circle-fill icon"></i></div>
+                                    <div>
+                                        보험약관 <span style="color: #888"><small>(열기)</small></span>
+                                    </div>
+                                    <div id="read-4" class="check-btn">
+                                        <span>동의</span>
+                                        <i class="bi bi-check-circle-fill icon"></i>
+                                    </div>
                                 </button>
 
                             </li>
                         </ul>
-
                     </div>
                     <div class="my-3 agree-check-disable" id="agree-check">
                         <button class="check-btn me-3 border-0" id="check-0">
-                            <span class="text">위 모든 사항을 확인했으며 이에 동의합니다.</span>
+                            <span class="text">이용약관, 단체규약, 개인정보 수집 및 이용, 알아두실 사항, 보험약관을 모두 확인했으며 이에 동의합니다.</span>
                             <span class="icon"><i class="bi bi-check-circle-fill"></i></span>
                         </button>
-                        <div id="hidden-alert" class="text-danger" hidden><span>모든 약관을 확인해주세요.</span></div>
                     </div>
-
                 </div>
                 <!-- 신청 버튼 -->
                 <button type="button" class="btn main-btn w-75" id="apply-btn" disabled="disabled">신청</button>

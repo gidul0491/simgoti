@@ -41,4 +41,5 @@ public interface ClientMapper {
     int selectByCovAgeGen(String covCode, int age, char gen, int day) throws Exception;
     String selectEmailByAplPk(int aplPk) throws Exception;
     int insertClaim(ClaimDto claim) throws Exception;
+    int checkDuplicatedApplication(int clntPk, String trFromDt, String trToDt) throws Exception;
 }

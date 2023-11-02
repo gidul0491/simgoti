@@ -96,7 +96,10 @@
                 const benefEmail = item.benefEmail;
                 const clmDt = cutSec(item.clmDt);
                 const clmPlace = item.clmPlace;
-                const clmAmt = item.clmAmt;
+                const clmAccBank = item.clmAccBank;
+                const clmAccNum = item.clmAccNum;
+                const clmAccNm = item.clmAccNm;
+
                 const clmDetail = item.clmDetail;
 
                 let tr= $("tr#"+clmPk);
@@ -104,16 +107,18 @@
                 tr.empty().append(`
     <td class="clickable-td">${clmPk}</td>
     <td class="clickable-td">${clntNm}</td>
-    <td class="clickable-td">${clntJumin}</td>
+    <td class="clickable-td">${clntJumin.substring(0,clntJumin.length-6)}******</td>
     <td class="clickable-td">${clmCdt}</td>
     <td class="clickable-td">${benefNm}(${benefRel})</td>
-    <td class="clickable-td">${benefPhone}</td>
+    <td class="clickable-td">${benefPhone.substring(0,benefPhone.length-4)}****</td>
     <td class="clickable-td">${benefEmail}</td>
     <td class="clickable-td">${clmDt}</td>
     <td class="clickable-td">
     <button type="button" class="btn main-btn clmContent" value="${clmPk}">보기</button>
     <span hidden id="${clmPk}-clmPlace">${clmPlace}</span>
-    <span hidden id="${clmPk}-clmAmt">${clmAmt}</span>
+    <span hidden id="${clmPk}-clmAccBank">${clmAccBank}</span>
+    <span hidden id="${clmPk}-clmAccNum">${clmAccNum}</span>
+    <span hidden id="${clmPk}-clmAccNm">${clmAccNm}</span>
     <span hidden id="${clmPk}-clmDetail" >${clmDetail}</span>
     </td>
 
@@ -128,7 +133,9 @@
                 popup.removeAttr("hidden");
                 $("#clmPk").empty().text(clmPk);
                 $("#clmPlace").empty().text($(`#${clmPk}-clmPlace`).text());
-                $("#clmAmt").empty().text($(`#${clmPk}-clmAmt`).text());
+                $("#clmAccBank").empty().text($(`#${clmPk}-clmAccBank`).text());
+                $("#clmAccNum").empty().text($(`#${clmPk}-clmAccNum`).text());
+                $("#clmAccNm").empty().text($(`#${clmPk}-clmAccNm`).text());
                 $("#clmDetail").empty().text($(`#${clmPk}-clmDetail`).text());
             }
         });
@@ -166,8 +173,10 @@
             <div class="popup-content d-flex flex-column pe-3" style="border: 1px solid black">
                 <div class="popup-content-in">
                     <div><span>청구번호 : </span><span id="clmPk"></span></div>
+                    <div><span>계좌은행 : </span><span id="clmAccBank"></span></div>
+                    <div><span>계좌번호 : </span><span id="clmAccNum"></span></div>
+                    <div><span>예금주 : </span><span id="clmAccNm"></span></div>
                     <div><span>사고장소 : </span><span id="clmPlace"></span></div>
-                    <div><span>피해(예상)금액 : </span><span id="clmAmt"></span></div>
                     <div><span>사고 내용 : </span></div>
                     <div class="px-2 w-100" id="clmDetail-div"><span id="clmDetail"></span></div>
 

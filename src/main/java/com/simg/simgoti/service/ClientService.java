@@ -11,7 +11,7 @@ public interface ClientService {
     List<CoverageTypeDto> selectCoverageTypeList(int insAge, char gen, int day, char isOver19) throws Exception;
 
     int insertOrUpdateClient(String clntNm, String clntBirth, String clntGen, String clntJumin, String clntPhone, String clntEmail) throws Exception;
-//    int selectClientNmJumin(String clntNm, String clntJumin) throws Exception;
+    int selectClientNmJumin(String clntNm, String clntJumin) throws Exception;
     List<CoverageDto> selectCovDList(String covCode, char inOver19);
     String selectCovNm(String covCode);
     int insertApplyPayment(int premium, String payDueDt, String accBank, String accNum, String accNm) throws Exception;
@@ -30,4 +30,5 @@ public interface ClientService {
     int updateAplStateCode(int aplPk,int clntPk, int aplStateCode) throws Exception;
     int callAplRefund(int aplPk, int clntPk, String refnBank, String refnAccount, String refnName) throws Exception;
     int insertClaim(ClaimDto claim) throws Exception;
+    int checkDuplicatedApplication(int clntPk, String trFromDt, String trToDt) throws Exception;
 }

@@ -31,46 +31,46 @@
 
             let accData;
 
-            // companion-table에 값 저장하는 함수
-            function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
-                $("#companion-table").append(
-                    `<tr>
-                    <td>${num}</td>
-                    <td>${nm}</td>
-                    <td>${jumin}</td>
-                    <td>${prem} 원</td>
-                    <td>
-                    <button type="button" class="btn main-btn-outlined show-popup p-0">확인</button>
-                        <div class="popup" hidden style="z-index: 2">
-                            <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
-                                ${coverageDetail(covNm, covDList)}
-                            </div>
-                        </div>
-                    </td>
-                </tr>`
-                )
-            }
-
-            // 보장내용 확인
-            function coverageDetail(covNm, covDList) {
-                const result = `
-                <span>${covNm}</span>
-                <div class="w-100 d-flex flex-column coverage-detail">
-                ${covDList.map((item) => {
-                    return `
-                    <div class="d-flex justify-content-between">
-                        <div><span>${item.covDNm}</span></div>
-                        <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
-                    </div>
-                    `
-                }).join('')}
-                </div>
-                <div class="w-100 coverage-detail-close-div">
-                    <button type="button" class="btn main-btn coverage-detail-close">확인</button>
-                </div>
-                `;
-                return result;
-            }
+            // // companion-table에 값 저장하는 함수
+            // function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
+            //     $("#companion-table").append(
+            //         `<tr>
+            //         <td>${num}</td>
+            //         <td>${nm}</td>
+            //         <td>${jumin}</td>
+            //         <td>${prem} 원</td>
+            //         <td>
+            //         <button type="button" class="btn main-btn-outlined show-popup p-0">확인</button>
+            //             <div class="popup" hidden style="z-index: 2">
+            //                 <div class="popup-content d-flex justify-content-center align-items-center coverage-detail-popup">
+            //                     ${coverageDetail(covNm, covDList)}
+            //                 </div>
+            //             </div>
+            //         </td>
+            //     </tr>`
+            //     )
+            // }
+            //
+            // // 보장내용 확인
+            // function coverageDetail(covNm, covDList) {
+            //     const result = `
+            //     <span>${covNm}</span>
+            //     <div class="w-100 d-flex flex-column coverage-detail">
+            //     ${covDList.map((item) => {
+            //         return `
+            //         <div class="d-flex justify-content-between">
+            //             <div class="text-start"><span>${item.covDNm}</span></div>
+            //             <div class="w-25 text-end"><span>${numToKrUnit(item.covDAmt)}원</span></div>
+            //         </div>
+            //         `
+            //     }).join('')}
+            //     </div>
+            //     <div class="w-100 coverage-detail-close-div">
+            //         <button type="button" class="btn main-btn coverage-detail-close">확인</button>
+            //     </div>
+            //     `;
+            //     return result;
+            // }
 
             $("html").on("click", ".coverage-detail-close", function () {
                 $(".popup").attr("hidden", "hidden");
@@ -193,8 +193,6 @@
                 const accNm = accData[i].accNm;
                 const accDueDt = accData[i].accDueDt;
 
-                $("#accDueDt").empty().append(`<span>가입신청 중..</span>`)
-
                 // 서버랑 통신해서 db에 결제정보, 가입신청정보 저장
                 $.ajax({
                     url: "/api/client/applyFinish",
@@ -211,7 +209,6 @@
                         } else if (data == "ok") {
                             console.log("가입 성공");
 
-
                             $("#accDueDt").empty().append(`<span>입금기한: ${accDueDt}</span>`)
                             $("#totalPrem2").empty().append(`<span>${putComma(totalPrem)} 원</span>`);
                             $("#accBank").empty().append(`<span>${accBank}</span>`);
@@ -220,7 +217,25 @@
                             $("#account-div").remove();
                             $("#account-info-div").removeAttr("hidden");
 
-                            removeServerSession();
+                            $.ajax({
+                                url: "/api/client/applyFinish/email",
+                                type: "POST",
+                                data: {
+                                    accBank: accBank,
+                                    accNum: accNum,
+                                    accNm: accNm,
+                                    clntEmail: clntEmail
+                                },
+                                success: (data) => {
+                                    removeServerSession();
+                                    $("#email-done").removeAttr("hidden");
+                                    console.log("이메일 발송:"+data);
+                                },
+                                error: () => {
+                                }
+                            });
+
+
                         } else {
                             console.log(data);
                         }
@@ -282,16 +297,18 @@
                                             <div class="w-100">
                                                 <table id="companion-table" class="w-100">
                                                     <colgroup>
-                                                        <col style="width: 13%">
+                                                        <col style="width: 13%" class="table-num">
                                                         <col style="width: 17%">
-                                                        <col style="width: 36%">
-                                                        <col style="width: 20%">
+                                                        <col style="width: 22%">
+                                                        <col style="width: 10%">
+                                                        <col style="width: 24%">
                                                         <col style="width: 14%">
                                                     </colgroup>
                                                     <tr>
-                                                        <th>번호</th>
+                                                        <th class="table-num">번호</th>
                                                         <th>이름</th>
-                                                        <th>주민등록번호</th>
+                                                        <th class="px-0">생년월일</th>
+                                                        <th class="px-0">성별</th>
                                                         <th>보험료</th>
                                                         <th>보장</th>
                                                     </tr>
@@ -436,6 +453,11 @@
                     <tr>
                         <td></td>
                         <td id="accNm"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <span id="email-done" hidden>결제요청내용을 이메일로 보내드렸습니다. 확인 후 기한까지 입금해주시기 바랍니다.</span>
+                        </td>
                     </tr>
                 </table>
             </div>

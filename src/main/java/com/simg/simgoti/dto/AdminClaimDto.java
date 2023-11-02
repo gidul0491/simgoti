@@ -14,6 +14,8 @@ public class AdminClaimDto {
     String benefPhone;
     String clmDt;
     String clmPlace;
-    String clmAmt;
+    String clmAccBank;
+    String clmAccNum;
+    String clmAccNm;
     String clmDetail;
 }
