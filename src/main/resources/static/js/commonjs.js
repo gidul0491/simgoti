@@ -18,17 +18,14 @@ function hideHiddenAlert() {
 // 경고팝업 띄워주는 함수
 function showPopup(msg, btnId){
     $("#warn-popup").removeAttr("hidden");
-    $("#warn-popup-content").append(msg);
+    $("#warn-popup-content").empty().append(msg);
     $("#warn-popup .popup-ok-btn").attr("id",btnId);
 }
-
 
 // 숫자를 받아서 2자리수 문자열로 변환하는 함수
 function numPadding2(number) {
     return number < 10 ? "0" + number : number.toString();
 }
-
-
 
 // 페이지 이동 함수
 function moveToCalculate() {
@@ -82,43 +79,66 @@ function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
     )
 }
 
-// 보장내용 확인
-function coverageDetail(covNm, covDList) {
-    let category = "";
-    const result = `
-                <span>${covNm}</span>
-                <div class="w-100 d-flex flex-column coverage-detail mb-4">
-                
-                ${covDList.map((item, index) => {
-                    let openOrCloseDiv = "";
-                    let covDNm = item.covDNm;
-                    if(item.covDNm.split("-").length > 1){
-                        category = item.covDNm.split("-")[0];
-                        covDNm = item.covDNm.split("-")[1];
-                        if(index-1 > -1 && covDList[index-1].covDNm.split("-").length < 2){
-                            openOrCloseDiv = "open";
-                        }
-                        
-                        if(covDList[index+1].covDNm.split("-").length < 2){
-                            openOrCloseDiv = "close";
-                        }
-                       
-                    }
-                    else{ category = ""}
-        return `
-                    <div class="d-flex justify-content-between">
+// 세부담보 div 리스트 생성
+function covDDivList(covDList){
+    let result = "";
+    covDList.map((item, index) => {
+        let openOrCloseDiv = "";
+        let covDNm = item.covDNm;
+        if(item.covDNm.split("-").length > 1){
+            category = item.covDNm.split("-")[0];
+            covDNm = item.covDNm.split("-")[1];
+            if(index-1 > -1 && covDList[index-1].covDNm.split("-").length < 2){
+                openOrCloseDiv = "open";
+            }
+        }
+        else{ category = ""}
+        result = result + `<div class="d-flex justify-content-between">
                         ${openOrCloseDiv=="open"?`
                         <div class="text-start w-100"><span>${category}</span></div>
                         <div class="w-25 text-end"><span></span></div>
                         </div>
-                        <div class="d-flex justify-content-between">
-`:""}
+                        <div class="d-flex justify-content-between">`:""}
                         <div class="text-start w-100"><span>${category==""?"":" - "}${covDNm}</span></div>
                         <div class="w-25 text-end"><span>${putComma(numToKrUnit(item.covDAmt))}원</span></div>
                       
-                    </div>
-                    `
-    }).join('')}
+                    </div>`
+    })
+    return result;
+}
+
+// // 세부담보 생성
+// function renderCovD(covDName, covDAmt){
+//     let openOrCloseDiv = "";
+//     if(item.covDNm.split("-").length > 1){
+//         category = covDName.split("-")[0];
+//         covDNm = covDName.split("-")[1];
+//         if(index-1 > -1 && covDList[index-1].covDNm.split("-").length < 2){
+//             openOrCloseDiv = "open";
+//         }
+//     }
+//     else{ category = ""}
+//     return `<div class="d-flex justify-content-between">
+//                         ${openOrCloseDiv=="open"?`
+//                         <div class="text-start w-100"><span>${category}</span></div>
+//                         <div class="w-25 text-end"><span></span></div>
+//                         </div>
+//                         <div class="d-flex justify-content-between">`:""}
+//                         <div class="text-start w-100"><span>${category==""?"":" - "}${covDNm}</span></div>
+//                         <div class="w-25 text-end"><span>${putComma(numToKrUnit(covDAmt))}원</span></div>
+//
+//                     </div>`;
+// }
+
+// 보장내용 확인
+function coverageDetail(covNm, covDList) {
+    let category = "";
+    const renderCovDList = covDDivList(covDList);
+    const result = `
+                <span>${covNm}</span>
+                <div class="w-100 d-flex flex-column coverage-detail mb-4">
+                
+                ${renderCovDList}
                 
                 </div>
                 <div class="w-100 coverage-detail-close-div">
@@ -126,6 +146,26 @@ function coverageDetail(covNm, covDList) {
                 </div>
                 `;
     return result;
+}
+
+// 가입증명서 이메일 보내는 함수
+function sendRegisterCertiPdf(aplPk, clntPk, email){
+    $.ajax({
+        url:"/api/client/applicationPdfKrEmail",
+        method:"GET",
+        data:{
+            aplPk:aplPk,
+            clntPk:clntPk,
+            clntEmail:email,
+        },
+        success:(data)=>{
+            console.log("success");
+            return "가입증명서 전송 완료(클릭시 재전송)";
+        },
+        error:()=>{
+            return "네트워크 연결이 원활하지 않습니다.";
+        }
+    });
 }
 
 // 스크롤 이동하는 함수
@@ -139,7 +179,6 @@ function moveScrollBottom(item){
     const top = $(item).offset().top - window.innerHeight + $(item).outerHeight() + 10;
     $("html").animate({scrollTop: top}, 10);
 }
-
 
 // 날짜객체를 yyyy-MM-dd hh:mm으로 변환
 function dateTimeToStr(date) {
@@ -160,7 +199,6 @@ function dateToStr(date) {
 
     return year + '-' + month + '-' + day;
 }
-
 
 // alert 및 이동
 function alertAndMove(msg, url) {
@@ -205,7 +243,7 @@ function numToKrUnit(num) {
 
     for (let i = 0; i < splitedNum.length; i++) {
         if (splitedNum[i] != 0) {
-            result = splitedNum[i] + unit[i] + result;
+            result = putComma(splitedNum[i]) + unit[i] + result;
         }
     }
 

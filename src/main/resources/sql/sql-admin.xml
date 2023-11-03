@@ -64,12 +64,12 @@
          simgotidb.application
       set
          aplStateCode = #{aplStateCode}, aplUdt = now()
-      <if test="aplStateCode == 401 or aplStateCode == 402 or aplStateCode == 403 or aplStateCode == 405 or aplStateCode == 406">
-         ,useYN = 'Y'
-      </if>
-      <if test="aplStateCode == 404 or aplStateCode == 407">
-         ,useYN = 'N'
-      </if>
+<!--      <if test="aplStateCode == 401 or aplStateCode == 402 or aplStateCode == 403 or aplStateCode == 405 or aplStateCode == 406">-->
+<!--         ,useYN = 'Y'-->
+<!--      </if>-->
+<!--      <if test="aplStateCode == 404 or aplStateCode == 407">-->
+<!--         ,useYN = 'N'-->
+<!--      </if>-->
       where
          aplPk = #{aplPk}
    </update>

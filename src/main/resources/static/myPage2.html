@@ -211,15 +211,14 @@
                 console.log(state);
                 if(state == 402 || state == 405){
                     $("#email-pdf-kr-div").removeAttr("hidden");
-
                 }
                 else{
                     $("#email-pdf-kr-div").attr("hidden","hidden");
                 }
 
-                // 계약 상태가 만기해지가 아닐때 계약취소버튼 추가
+                // 계약 상태가 가입신청, 가입완료일때 가입취소버튼 추가
                 $("#application-cancel-div").empty();
-                if(summary.aplstateCode != 405){
+                if(state == 401 || state == 402){
                     $("#application-cancel-div").append(`
                         <button type="button" class="btn main-btn-outlined-red mt-3 show-btn show-popup" id="email-pdf-kr-popup-btn" value="${state}">${cancelStr}</button>
                         <div class="popup" hidden style="z-index: 1">
@@ -383,24 +382,11 @@
             // 가입증명서 이메일로 받기
             $("#email-pdf-kr").on("click", function(){
                 const aplPk = $(this).val();
-                $("#email-pdf-kr-popup-btn").removeClass("main-btn-outlined").addClass("main-btn").text("가입증명서 전송중..");
-
-                $.ajax({
-                    url:"/api/client/applicationPdfKrEmail",
-                    method:"GET",
-                    data:{
-                        aplPk:aplPk,
-                        clntPk:clntPk,
-                        clntEmail:email,
-                    },
-                    success:(data)=>{
-                        console.log("success");
-                        $("#email-pdf-kr-popup-btn").text("가입증명서 전송 완료(클릭시 재전송)");
-                    },
-                    error:()=>{
-                        $("#email-pdf-kr-popup-btn").text("네트워크 연결이 원활하지 않습니다.");
-                    }
-                });
+                $("#email-pdf-kr-popup-btn")
+                    .removeClass("main-btn-outlined")
+                    .addClass("main-btn")
+                    .text("가입증명서 전송중..")
+                    .text(sendRegisterCertiPdf(aplPk, clntPk, email));
             });
 
             // 가입취소 예 클릭시
@@ -422,12 +408,10 @@
                         else if(data.result=="success"){
                             console.log(data.msg);
                             if(data.msg == "deleted"){
-
                                 showPopup("가입이 취소되었습니다.","warn-popup-apply-cancel-btn");
                                 $("html").on("click","#warn-popup-apply-cancel-btn",function(){
                                     location.reload();
                                 });
-
                             }
                             else if(data.msg == "account required"){
                                 showAccInputPopup(data.aplPk);
@@ -505,7 +489,7 @@
                 const refnBank = $("#acc-bank-select").val();
                 const refnAccount = $("#acc-number-text").val();
                 const refnName = $("#acc-name-text").val();
-                const aplStatecode =$("#email-pdf-kr-popup-btn").val();
+                const aplStateCode =$("#email-pdf-kr-popup-btn").val();
                 $.ajax({
                     url:"/api/client/applicationCancel/account",
                     method:"PUT",

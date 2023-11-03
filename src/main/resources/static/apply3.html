@@ -24,12 +24,19 @@
             let cnt;
             let totalPrem;
 
+            let clntPk;
             let clntNm;
             let clntJumin;
             let clntPhone;
             let clntEmail;
 
             let accData;
+            let aplPk;
+
+            let accBank;
+            let accNum;
+            let accNm;
+            let accDueDt;
 
             // // companion-table에 값 저장하는 함수
             // function addCompanionRow(num, nm, jumin, covNm, prem, covDList) {
@@ -85,8 +92,11 @@
                 success: (data) => {
                     console.log(data);
 
-                    if (data == "session expired") {
-                        alertAndMove("세션이 만료되었습니다. 간편계산 페이지로 이동합니다.", "/simg/simgOti/calculate");
+                    if (data == "session timeout") {
+                        showPopup("세션이 만료되었습니다. 간편계산 페이지로 이동합니다.", "moveFromAppToCal");
+                        $("html").on("click","#moveFromAppToCal",function(){
+                            location.href = "/simg/simgOti/calculate";
+                        });
                     }
 
                     // 가입신청정보요약
@@ -106,18 +116,17 @@
 
                     // 가입자명단
                     const companionList = data.companionDtoList;
-                    if (companionList.length > 0) {
-                        $("#companion-list-btn-div").removeAttr("hidden");
-                        for (i in companionList) {
-                            const item = companionList[i];
-                            addCompanionRow(item.companionNum,
-                                item.companionNm,
-                                item.companionJuminA + "-" + item.companionJuminB,
-                                item.covNm,
-                                item.prem,
-                                item.covDList
-                            )
-                        }
+                    clntPk = companionList[0].clntPk;
+                    console.log(`clntpk : ${clntPk}`);
+                    for (i in companionList) {
+                        const item = companionList[i];
+                        addCompanionRow(item.companionNum,
+                            item.companionNm,
+                            item.companionJuminA + "-" + item.companionJuminB,
+                            item.covNm,
+                            item.prem,
+                            item.covDList
+                        )
                     }
 
 
@@ -188,10 +197,10 @@
             // select에서 은행 선택하면 실행됨
             $(document).on("input", "#accBank-select", function (e) {
                 const i = $("#accBank-select").val();
-                const accBank = accData[i].accBank;
-                const accNum = accData[i].accNum;
-                const accNm = accData[i].accNm;
-                const accDueDt = accData[i].accDueDt;
+                accBank = accData[i].accBank;
+                accNum = accData[i].accNum;
+                accNm = accData[i].accNm;
+                accDueDt = accData[i].accDueDt;
 
                 // 서버랑 통신해서 db에 결제정보, 가입신청정보 저장
                 $.ajax({
@@ -201,13 +210,15 @@
                         accBank: accBank,
                         accNum: accNum,
                         accNm: accNm,
-                        clntEmail:clntEmail
+                        accDueDt: accDueDt,
+                        clntEmail: clntEmail
                     },
                     success: (data) => {
-                        if (data == "session expired") {
+                        if (data.result == "error" && data.msg == "session expired") {
                             // alertAndMove("세션이 만료되었습니다. 간편 페이지로 이동합니다.","/simg/simgOti/calculate");
-                        } else if (data == "ok") {
+                        } else if (data.result == "ok") {
                             console.log("가입 성공");
+                            aplPk = data.aplPk;
 
                             $("#accDueDt").empty().append(`<span>입금기한: ${accDueDt}</span>`)
                             $("#totalPrem2").empty().append(`<span>${putComma(totalPrem)} 원</span>`);
@@ -217,37 +228,43 @@
                             $("#account-div").remove();
                             $("#account-info-div").removeAttr("hidden");
 
-                            $.ajax({
-                                url: "/api/client/applyFinish/email",
-                                type: "POST",
-                                data: {
-                                    accBank: accBank,
-                                    accNum: accNum,
-                                    accNm: accNm,
-                                    clntEmail: clntEmail
-                                },
-                                success: (data) => {
-                                    removeServerSession();
-                                    $("#email-done").removeAttr("hidden");
-                                    console.log("이메일 발송:"+data);
-                                },
-                                error: () => {
-                                }
-                            });
-
-
+                            paymentSend(accBank, accNum, accNm, accDueDt, clntEmail);
                         } else {
                             console.log(data);
                         }
-
                     },
                     error: (err) => {
 
                     }
                 });
-            })
-        })
-        ;
+            });
+
+            // 결제요청 이메일 재전송
+            $("#payment-resend").on("click", function () {
+                paymentSend(accBank, accNum, accNm, accDueDt, clntEmail);
+            });
+
+            function paymentSend(accBank, accNum, accNm, accDueDt, clntEmail) {
+                $.ajax({
+                    url: "/api/client/applyFinish/email",
+                    type: "POST",
+                    data: {
+                        accBank: accBank,
+                        accNum: accNum,
+                        accNm: accNm,
+                        accDueDt: accDueDt,
+                        clntEmail: clntEmail
+                    },
+                    success: (data) => {
+                        removeServerSession();
+                        $("#email-done").removeAttr("hidden");
+                        console.log("이메일 발송:" + data);
+                    },
+                    error: () => {
+                    }
+                });
+            }
+        });
 
     </script>
 </head>
@@ -288,7 +305,7 @@
                             <td>가입인원</td>
                             <td class="d-flex">
                                 <div id="applicant-count"></div>
-                                <div id="companion-list-btn-div" class="text-start ms-2" hidden>
+                                <div id="companion-list-btn-div" class="text-start ms-2">
                                     <button type="button" class="btn main-btn-outlined show-popup p-0"
                                             id="companion-list-btn">가입자명단
                                     </button>
@@ -455,8 +472,9 @@
                         <td id="accNm"></td>
                     </tr>
                     <tr>
-                        <td colspan="2">
-                            <span id="email-done" hidden>결제요청내용을 이메일로 보내드렸습니다. 확인 후 기한까지 입금해주시기 바랍니다.</span>
+                        <td colspan="2" class="pt-5">
+                            <span id="email-done">결제요청내용을 이메일로 보내드렸습니다. 확인 후 기한까지 입금해주시기 바랍니다.</span>
+                            <button type="button" class="btn main-btn w-75" id="payment-resend">재전송</button>
                         </td>
                     </tr>
                 </table>

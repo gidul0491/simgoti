@@ -24,6 +24,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 
 @RestController
@@ -82,7 +83,10 @@ public class AdminController {
     @RequestMapping(value = "/insList/download", method = RequestMethod.GET)
     public void selectClaimDtoList(@RequestParam char useYn, Pageable pageable, HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Pageable pageableStartCal = new Pageable(pageable.getPage(), pageable.getSize(), pageable.getOrderBy());
-        String filePath = System.getProperty("user.dir") + File.separator + "tempXxls" + File.separator + "application_list.xlsx";
+        Random random = new Random();
+        int num = random.nextInt(1000000);
+        String numStr = String.format("%06d",num);
+        String filePath = System.getProperty("user.dir") + File.separator + "tempXxls" + File.separator + "application_list_"+numStr+".xlsx";
 
         XSSFWorkbook workbook = excelService.createInsListExcel(filePath, useYn,pageableStartCal);
         File xlsFile = new File(filePath);
@@ -100,10 +104,10 @@ public class AdminController {
         resp.getOutputStream().flush();
         resp.getOutputStream().close();
 
-        // 생성한 PDF 파일 삭제
-        File generatedPdf = new File(filePath);
-        if (generatedPdf.exists()) {
-            generatedPdf.delete();
+        // 생성한 파일 삭제
+        File generatedXlsx = new File(filePath);
+        if (generatedXlsx.exists()) {
+            generatedXlsx.delete();
         }
     }
 }

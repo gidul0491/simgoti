@@ -292,7 +292,7 @@ public class ClientController {
             repClientDto.setClntEmail(session.getAttribute("clntEmail").toString());
             applyFinalCheckDto.setRepClientDto(repClientDto);
         } catch (Exception e) {
-            return e;
+            return "session timeout";
         }
         return applyFinalCheckDto;
     }
@@ -350,6 +350,7 @@ public class ClientController {
     @RequestMapping(value = "/applyFinish", method = RequestMethod.POST)
     public Object applyFinish(@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, @RequestParam String clntEmail,  HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
+        Map<String, Object> result = new HashMap<>();
         try {
             int totalPrem = Integer.parseInt(session.getAttribute("totalPrem").toString());
             String dueDt = session.getAttribute("dueDt").toString();
@@ -391,20 +392,23 @@ public class ClientController {
 
 //            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
 
-            return "ok";
+            result.put("result","ok");
+            result.put("aplPk",aplPk);
+            return result;
         } catch (Exception e) {
+            result.put("result","error");
+            result.put("msg","session expired");
             System.out.println(e);
             return e;
         }
     }
 
     @RequestMapping(value = "/applyFinish/email", method = RequestMethod.POST)
-    public Object applyFinishEmail(@RequestParam String clntEmail,@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm, HttpServletRequest req) throws Exception {
+    public Object applyFinishEmail(@RequestParam String clntEmail,@RequestParam String accBank, @RequestParam String accNum, @RequestParam String accNm,@RequestParam String accDueDt, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
         try{
             int premium = Integer.parseInt(session.getAttribute("totalPrem").toString());
-            String dueDt = session.getAttribute("dueDt").toString();
-            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, dueDt, premium);
+            emailService.sendPaymentMail("[SIMG 해외여행자보험] 입금요청 내역입니다.",clntEmail, accBank, accNm, accNum, accDueDt, premium);
             return "ok";
         }
         catch(Exception e){
@@ -611,7 +615,6 @@ public class ClientController {
             emailService.sendApplyMail(aplPk,"[SIMG 해외여행자보험] 가입증명서", clntEmail, "가입증명서.pdf");
         }
     }
-
     @RequestMapping(value = "/applicationCancel", method = RequestMethod.PUT)
     public Object applicationCancel(@RequestParam int aplPk, @RequestParam int clntPk, HttpServletRequest req) throws Exception {
         HttpSession session = req.getSession();
@@ -679,7 +682,6 @@ public class ClientController {
         }
         return result;
     }
-
     @RequestMapping(value = "/claim/email", method = RequestMethod.POST)
     public Object claimEmail(@RequestParam String benefEmail, HttpServletRequest req) throws Exception {
         Map<String,Object> result = new HashMap<>();

@@ -274,9 +274,9 @@
             simgotidb.application
         set
             aplStateCode = #{aplStateCode}, aplUdt = now()
-        <if test="aplStateCode == 404">
-            , aplDdt = now(), useYN = 'N'
-        </if>
+<!--        <if test="aplStateCode == 404">-->
+<!--            , aplDdt = now()-->
+<!--        </if>-->
         where
             aplPk = #{aplPk} and clntPk = #{clntPk}
     </update>

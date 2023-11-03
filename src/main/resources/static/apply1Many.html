@@ -8,6 +8,7 @@
     <script src="/js/bootstrap.bundle.js"></script>
     <script src="/js/jquery-3.7.0.js"></script>
     <link rel="stylesheet" href="/css/simgoti.css">
+    <script src="/js/commonjs.js"></script>
     <style>
         .companion-input-div {
             background: #efefef;
@@ -46,7 +47,22 @@
 
         $(document).ready(function () {
             let clntNm;
-            let clntJuminA = sessionStorage.getItem("clntBirth").substring(2) || null;
+
+            let clntJuminA
+
+            if(!sessionStorage.getItem("clntBirth")){
+                console.log("session 없음");
+                showPopup("간편계산을 먼저 진행해주세요.", "moveToCal");
+                $("html").on("click", "#moveToCal", function () {
+                    location.href = "/simg/simgOti/calculate";
+                });
+                alertAndMove("간편계산을 먼저 진행해주세요","/simg/simgOti/calculate")
+            }
+            else{
+                clntJuminA = sessionStorage.getItem("clntBirth").substring(2) || null;
+            }
+
+
             let clntJuminB;
             let clntPhone;
             let clntEmail;
@@ -1015,5 +1031,5 @@
 <div class="footer">
 </div>
 </body>
-<script src="/js/commonjs.js"></script>
+
 </html>
