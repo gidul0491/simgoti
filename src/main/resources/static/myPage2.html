@@ -209,7 +209,7 @@
                 const state = summary.aplStateCode;
                 let cancelStr = "가입취소";
                 console.log(state);
-                if(state == 402 || state == 405){
+                if(state == 402 || state == 409 || state == 407 || state == 408){
                     $("#email-pdf-kr-div").removeAttr("hidden");
                 }
                 else{
@@ -385,8 +385,10 @@
                 $("#email-pdf-kr-popup-btn")
                     .removeClass("main-btn-outlined")
                     .addClass("main-btn")
-                    .text("가입증명서 전송중..")
-                    .text(sendRegisterCertiPdf(aplPk, clntPk, email));
+                    .text("가입증명서 재전송");
+
+                const sendResult = sendRegisterCertiPdf(aplPk, clntPk, email)
+
             });
 
             // 가입취소 예 클릭시

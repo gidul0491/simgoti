@@ -16,6 +16,7 @@
     </style>
 
     <script>
+
         $(document).ready(function () {
             let period;
             let startDt;
@@ -90,15 +91,15 @@
                 type: "GET",
                 data: {},
                 success: (data) => {
-                    console.log(data);
-
-                    if (data == "session timeout") {
+                    const msg = data;
+                    console.log(msg);
+                    if (msg == "session timeout") {
                         showPopup("세션이 만료되었습니다. 간편계산 페이지로 이동합니다.", "moveFromAppToCal");
                         $("html").on("click","#moveFromAppToCal",function(){
                             location.href = "/simg/simgOti/calculate";
                         });
+                        alertAndMove("세션이 만료되었습니다. 간편계산 페이지로 이동합니다.","/simg/simgOti/calculate");
                     }
-
                     // 가입신청정보요약
                     period = data.appSummaryDto.period;
                     startDt = data.appSummaryDto.startDt;
@@ -118,6 +119,7 @@
                     const companionList = data.companionDtoList;
                     clntPk = companionList[0].clntPk;
                     console.log(`clntpk : ${clntPk}`);
+                    let companionCnt = companionList.length;
                     for (i in companionList) {
                         const item = companionList[i];
                         addCompanionRow(item.companionNum,
@@ -128,7 +130,11 @@
                             item.covDList
                         )
                     }
-
+                    if (companionCnt < 2) {
+                        $(".table-num").attr("hidden", "hidden");
+                    } else {
+                        $(".table-num").removeAttr("hidden");
+                    }
 
                     // 대표가입자정보
                     clntNm = data.repClientDto.clntNm;
@@ -321,6 +327,7 @@
                                                         <col style="width: 24%">
                                                         <col style="width: 14%">
                                                     </colgroup>
+                                                    <thead>
                                                     <tr>
                                                         <th class="table-num">번호</th>
                                                         <th>이름</th>
@@ -329,6 +336,10 @@
                                                         <th>보험료</th>
                                                         <th>보장</th>
                                                     </tr>
+                                                    </thead>
+                                                   <tbody>
+
+                                                   </tbody>
                                                 </table>
                                             </div>
 

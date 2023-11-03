@@ -150,6 +150,7 @@ function coverageDetail(covNm, covDList) {
 
 // 가입증명서 이메일 보내는 함수
 function sendRegisterCertiPdf(aplPk, clntPk, email){
+    let result;
     $.ajax({
         url:"/api/client/applicationPdfKrEmail",
         method:"GET",
@@ -160,12 +161,13 @@ function sendRegisterCertiPdf(aplPk, clntPk, email){
         },
         success:(data)=>{
             console.log("success");
-            return "가입증명서 전송 완료(클릭시 재전송)";
+            result = "success";
         },
         error:()=>{
-            return "네트워크 연결이 원활하지 않습니다.";
+            result = "failed";
         }
     });
+    return result;
 }
 
 // 스크롤 이동하는 함수
@@ -206,21 +208,6 @@ function alertAndMove(msg, url) {
     location.href = url;
 }
 
-// 상태코드 해석 함수
-function stateCodeToStr(code){
-    let str;
-    switch(code) {
-        case "401": str="신청";break;
-        case "402": str="가입";break;
-        case "403": str="가입취소";break;
-        case "404": str="가입취소";break;
-        case "405": str="만료";break;
-        case "406": str="중도해지";break;
-        case "407": str="중도해지";break;
-        default: str="신청";
-    }
-    return str;
-}
 
 // 1000단위로 끊는 함수
 function putComma(text) {

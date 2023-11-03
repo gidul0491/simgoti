@@ -114,8 +114,8 @@
                     console.log(`pk = ${pk}, value = ${value}`);
                     if(value=="N"){ // N인 상태에서 누르는경우 Y로 수정
                         updatePayedYN(pk,"Y");
-                        btn.addClass("loading");
-                        btn.empty().addClass("loading").append("<div class=\"spinner\"></div>");
+                        // btn.addClass("loading");
+                        // btn.empty().addClass("loading").append("<div class=\"spinner\"></div>");
 
                     }
                     else if (value=="Y"){ // Y인 상태에서 누르는 경우 N으로 수정
@@ -229,8 +229,10 @@
                         payedYN: payedYN,
                     },
                     success: (data) => {
+                        // Y로 수정완료시 가입완료 이메일 보내기
                         console.log(data);
                         addAppData(data);
+
                         $.ajax({
                             url: "/api/admin/payedYN/email",
                             method: "POST",
@@ -245,6 +247,7 @@
                                 console.log(err);
                             }
                         });
+
                     },
                     error: (err) => {
                         console.log(err);

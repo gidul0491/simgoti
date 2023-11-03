@@ -546,7 +546,7 @@ public class EmailServiceImpl implements EmailService {
             int covNum = cov.size();
             float covTrHeight = info2TrHeight;
             float covDFontSize = 10f;
-            Integer[] covOnlyForAdultArray = {1012010101, 1012010103, 1012010201, 1012010203, 1012010301, 1012010303};
+            Integer[] covOnlyForAdultArray = {1012010101, 1012010103, 1012010201, 1012010203, 1012010302, 1012010304};
             List<Integer> covOnlyForAdult = new ArrayList<>(Arrays.asList(covOnlyForAdultArray));
             for (int i = 0; i < covNum; i++) {
                 yPosition -= covTrHeight;
