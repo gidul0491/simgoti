@@ -689,7 +689,7 @@ public class ClientController {
         String reqEmail = (String) session.getAttribute("benefEmail");
         if(reqEmail.equals(benefEmail)){
             result.put("result","success");
-            emailService.sendClaimMail("[SIMG 해외여행자보험] 사고접수가 완료되었습니다.", benefEmail);
+            emailService.sendClaimMail("[SIMG 해외여행자보험] 사고접수 신청이 확인되었습니다.", benefEmail);
         }
         else{
             result.put("result","fail");
